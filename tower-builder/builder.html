@@ -194,6 +194,14 @@
     <input type="text" id="f-builderImg" placeholder="https://... (если пусто — используется эмодзи выше)">
     <div class="hint">Каждый вопрос = один этаж дома. Игра лучше всего работает с 4–8 вопросами — так и дом успевает вырасти, и урок не затягивается.</div>
 
+    <label>Фон сцены с краном (ссылка на изображение, необязательно)</label>
+    <input type="text" id="f-bgImg" placeholder="https://... (если пусто — используется небо+трава)">
+    <div class="hint">Замени на свою иллюстрацию — стройплощадка, космос, подводный мир, что угодно под тему урока.</div>
+
+    <label>Картинка блока/этажа (ссылка, необязательно)</label>
+    <input type="text" id="f-blockImg" placeholder="https://... (если пусто — обычный кубик)">
+    <div class="hint">Это то, что кран роняет и что складывается в башню — например, подарок, сундук, книга вместо стройблока.</div>
+
     <div id="questions"></div>
     <button class="add-q" id="addQ">+ Добавить вопрос</button>
     <br>
@@ -307,6 +315,8 @@ function generate(){
     builderName: document.getElementById('f-builderName').value,
     builderImg: document.getElementById('f-builderImg').value.trim(),
     builderEmoji: document.getElementById('f-builderEmoji').value || '👷',
+    bgImg: document.getElementById('f-bgImg').value.trim(),
+    blockImg: document.getElementById('f-blockImg').value.trim(),
     accent: document.getElementById('f-accent').value,
     lives: parseInt(document.getElementById('f-lives').value, 10) || 8,
     questions: questions

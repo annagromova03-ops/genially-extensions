@@ -186,6 +186,10 @@
     <label>Эмодзи-заглушка маскота (если картинки нет)</label>
     <input type="text" id="f-mascotEmoji" value="🦉">
 
+    <label>Фон страницы (ссылка на изображение, необязательно)</label>
+    <input type="text" id="f-bgImg" placeholder="https://... (если пусто — обычный градиент)">
+    <div class="hint">Показывается вокруг карточки с вопросом — своя иллюстрация под тему урока вместо стандартного градиента.</div>
+
     <div id="questions"></div>
     <button class="add-q" id="addQ">+ Добавить вопрос</button>
     <br>
@@ -301,6 +305,7 @@ function generate(){
     mascotName: document.getElementById('f-mascotName').value,
     mascotImg: document.getElementById('f-mascotImg').value.trim(),
     mascotEmoji: document.getElementById('f-mascotEmoji').value || '🙂',
+    bgImg: document.getElementById('f-bgImg').value.trim(),
     accent: document.getElementById('f-accent').value,
     questions: questions
   };

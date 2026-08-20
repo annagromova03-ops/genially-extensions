@@ -108,12 +108,22 @@
     border:3px solid #fff;
     box-shadow:0 2px 6px rgba(0,0,0,0.15);
     background:linear-gradient(180deg,#d8c7ae,#c3ad8c);
+    background-size:cover;
+    background-position:center;
+    filter:saturate(.55) brightness(.93);
   }
-  .floor.decorated{ background:linear-gradient(180deg,var(--accent),var(--accent-dark)); }
+  .floor.decorated{
+    background:linear-gradient(180deg,var(--accent),var(--accent-dark));
+    background-size:cover;
+    background-position:center;
+    filter:none;
+  }
   .floor.decorated:after{
-    content:"▦"; position:absolute; inset:0;
+    content:"★"; position:absolute; top:-7px; right:-7px;
+    width:18px; height:18px; border-radius:50%;
+    background:#fff; color:#f5b53f; font-size:11px;
     display:flex; align-items:center; justify-content:center;
-    color:#fff; font-size:15px; opacity:0.85;
+    box-shadow:0 2px 5px rgba(0,0,0,.25);
   }
   .floor.crooked{ transform:rotate(-4deg); }
   .hook{
@@ -124,6 +134,8 @@
     position:absolute;
     width:13.53%; height:8.95%;
     background:linear-gradient(180deg,var(--accent),var(--accent-dark));
+    background-size:cover;
+    background-position:center;
     border:3px solid #fff;
     border-radius:8px;
     box-shadow:0 4px 10px rgba(0,0,0,0.2);
@@ -255,6 +267,8 @@ const DEMO_CONFIG = {
   builderName: "Прораб Кроша",
   builderEmoji: "👷",
   builderImg: "",
+  bgImg: "",
+  blockImg: "",
   accent: "#7c5cff",
   lives: 8,
   questions: [
@@ -282,6 +296,22 @@ function loadConfig(){
 const config = loadConfig();
 document.documentElement.style.setProperty('--accent', config.accent || '#7c5cff');
 document.getElementById('gameTitle').textContent = config.title || 'Строим дом';
+
+if (config.bgImg){
+  const sw = document.getElementById('stageWrap');
+  sw.style.backgroundImage = `url("${config.bgImg}")`;
+  sw.style.backgroundSize = 'cover';
+  sw.style.backgroundPosition = 'center';
+}
+const blockBgStyle = config.blockImg
+  ? `background-image:url('${config.blockImg}');background-size:cover;background-position:center;`
+  : '';
+if (config.blockImg){
+  const b = document.getElementById('block');
+  b.style.backgroundImage = `url("${config.blockImg}")`;
+  b.style.backgroundSize = 'cover';
+  b.style.backgroundPosition = 'center';
+}
 
 // ---- geometry (percent of stage-wrap, logical design size 680x380) ----
 const STAGE_W = 680, STAGE_H = 380;
@@ -331,7 +361,7 @@ function renderFloors(){
   wrap.innerHTML = floors.map((f,i)=>{
     const bottomPct = GROUND_PCT + i*BLOCK_H_PCT;
     return `<div class="floor ${f.decorated?'decorated':''} ${f.crooked?'crooked':''}"
-      style="left:${leftPct}%; width:${BLOCK_W_PCT}%; height:${BLOCK_H_PCT}%; bottom:${bottomPct}%;"></div>`;
+      style="left:${leftPct}%; width:${BLOCK_W_PCT}%; height:${BLOCK_H_PCT}%; bottom:${bottomPct}%; ${blockBgStyle}"></div>`;
   }).join('');
 }
 

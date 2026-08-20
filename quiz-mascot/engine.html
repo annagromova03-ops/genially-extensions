@@ -247,6 +247,7 @@ const DEMO_CONFIG = {
   mascotName: "Сова Соня",
   mascotEmoji: "🦉",
   mascotImg: "",
+  bgImg: "",
   accent: "#7c5cff",
   questions: [
     {
@@ -286,6 +287,11 @@ function loadConfig(){
 const config = loadConfig();
 document.documentElement.style.setProperty('--accent', config.accent || '#7c5cff');
 document.getElementById('quizTitle').textContent = config.title || 'Квиз';
+if (config.bgImg){
+  document.body.style.backgroundImage = `url("${config.bgImg}")`;
+  document.body.style.backgroundSize = 'cover';
+  document.body.style.backgroundPosition = 'center';
+}
 
 // ---- state -------------------------------------------------------------
 let idx = 0;
