@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Конструктор: Строим дом</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Space+Mono:wght@400;700&display=swap');
+  :root{
+    --bg-page:#0b0c1f;
+    --bg-panel:#13152f;
+    --bg-input:#0c0e22;
+    --bg-terminal:#05060f;
+    --pink:#ff4fd8;
+    --pink-dim:rgba(255,79,216,0.35);
+    --blue:#4fd8ff;
+    --blue-dim:rgba(79,216,255,0.35);
+    --text:#eef0ff;
+    --text-dim:#8b90b8;
+    --danger:#ff6b81;
+    --success:#3ecf6a;
+    --line:#262a52;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Baloo 2','Trebuchet MS','Verdana',sans-serif;
+    color:var(--text);
+    background:
+      radial-gradient(1000px 560px at -8% -12%, var(--pink-dim), transparent 60%),
+      radial-gradient(1000px 560px at 108% 112%, var(--blue-dim), transparent 60%),
+      var(--bg-page);
+    min-height:100vh;
+  }
+  header{
+    background:rgba(255,255,255,0.03);
+    border-bottom:1px solid var(--line);
+    padding:18px 24px;
+  }
+  header h1{
+    margin:0;font-size:20px;
+    background:linear-gradient(90deg,var(--pink),var(--blue));
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    display:inline-block;
+  }
+  header p{margin:4px 0 0;font-size:13px;color:var(--text-dim);}
+  .layout{
+    display:flex;
+    gap:24px;
+    padding:24px;
+    align-items:flex-start;
+    flex-wrap:wrap;
+  }
+  .panel{
+    background:var(--bg-panel);
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:20px;
+    box-shadow:0 0 0 1px rgba(255,255,255,0.02), 0 12px 30px rgba(0,0,0,0.35);
+  }
+  .form-panel{flex:1 1 420px; min-width:320px; box-shadow:0 0 0 1px rgba(255,79,216,0.15), 0 0 30px -14px var(--pink);}
+  .preview-panel{flex:1 1 420px; min-width:320px; position:sticky; top:24px; box-shadow:0 0 0 1px rgba(79,216,255,0.15), 0 0 30px -14px var(--blue);}
+  label{display:block;font-weight:700;font-size:12px;letter-spacing:.04em;text-transform:uppercase;margin:14px 0 5px;color:var(--text-dim);}
+  label:first-child{margin-top:0;}
+  input[type=text], input[type=number], textarea{
+    width:100%;
+    padding:9px 11px;
+    background:var(--bg-input);
+    border:1px solid var(--line);
+    border-radius:10px;
+    color:var(--text);
+    font-family:inherit;
+    font-size:14px;
+    resize:vertical;
+    transition:border-color .15s, box-shadow .15s;
+  }
+  input[type=text]:focus, input[type=number]:focus, textarea:focus{
+    outline:none;
+    border-color:var(--pink);
+    box-shadow:0 0 0 3px rgba(255,79,216,0.18), 0 0 16px -4px var(--pink);
+  }
+  input[type=text]::placeholder, textarea::placeholder{color:#565b8a;}
+  input[type=color]{width:52px;height:36px;border:1px solid var(--line);border-radius:8px;cursor:pointer;vertical-align:middle;background:var(--bg-input);}
+  .row{display:flex;gap:12px;}
+  .row > div{flex:1;}
+  .question-block{
+    background:rgba(255,255,255,0.02);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:14px;
+    margin-top:16px;
+    position:relative;
+  }
+  .question-block h3{margin:0 0 8px;font-size:13px;letter-spacing:.03em;text-transform:uppercase;color:var(--blue);}
+  .answer-row{display:flex;align-items:center;gap:8px;margin-top:6px;}
+  .answer-row input[type=text]{flex:1;}
+  .answer-row input[type=radio]{width:18px;height:18px;flex:0 0 auto;accent-color:var(--pink);}
+  .remove-q{
+    position:absolute;top:10px;right:10px;
+    background:rgba(255,107,129,0.12);color:var(--danger);border:1px solid rgba(255,107,129,0.35);
+    border-radius:8px;padding:4px 10px;font-size:12px;font-weight:700;cursor:pointer;
+  }
+  .remove-q:hover{background:rgba(255,107,129,0.22);}
+  .add-q, .generate-btn{
+    display:inline-block;
+    margin-top:16px;
+    border:none;
+    border-radius:999px;
+    padding:11px 22px;
+    font-family:inherit;
+    font-weight:700;
+    font-size:14px;
+    cursor:pointer;
+  }
+  .add-q{background:transparent;border:1px solid var(--blue);color:var(--blue);}
+  .add-q:hover{background:rgba(79,216,255,0.12);}
+  .generate-btn{
+    width:100%;margin-top:20px;font-size:16px;padding:14px;
+    color:#0b0c1f;
+    background:linear-gradient(90deg,var(--pink),var(--blue));
+    box-shadow:0 0 24px -6px var(--pink), 0 0 34px -10px var(--blue);
+  }
+  .generate-btn:hover{filter:brightness(1.08);}
+  .hint{font-size:12px;color:var(--text-dim);margin-top:5px;}
+  .preview-frame-wrap{
+    border:1px solid var(--blue);
+    border-radius:14px;
+    padding:10px;
+    background:var(--bg-terminal);
+    box-shadow:0 0 0 1px rgba(79,216,255,0.15), 0 0 26px -10px var(--blue);
+  }
+  .preview-frame-wrap iframe{
+    width:100%;
+    height:560px;
+    border:none;
+    border-radius:10px;
+    background:#fff;
+  }
+  .out-label{display:flex;justify-content:space-between;align-items:center;margin:16px 0 4px;}
+  .copy-btn{
+    background:rgba(255,255,255,0.06);color:var(--blue);border:1px solid var(--line);border-radius:8px;
+    padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;
+  }
+  .copy-btn:hover{border-color:var(--blue);}
+  .copy-btn.copied{background:var(--success);color:#04170a;border-color:var(--success);}
+  textarea.output{height:70px;font-family:'Space Mono',monospace;font-size:12px;background:var(--bg-terminal);color:#8be9fd;border-color:var(--line);}
+  .steps{
+    font-size:13px;
+    line-height:1.5;
+    color:var(--text-dim);
+    background:rgba(79,216,255,0.06);
+    border:1px solid rgba(79,216,255,0.25);
+    border-radius:12px;
+    padding:14px 16px;
+    margin-top:16px;
+  }
+  .steps b{color:var(--pink);}
+</style>
+</head>
+<body>
+<header>
+  <h1>🛠️ Конструктор: Строим дом (кран + вопросы)</h1>
+  <p>Кран качает блок, ученик ловит момент, чтобы поставить его — потом отвечает на вопрос. Заполни форму слева, справа сразу видно результат.</p>
+</header>
+
+<div class="layout">
+  <div class="panel form-panel">
+    <label>Название игры</label>
+    <input type="text" id="f-title" value="Строим дом до небес">
+
+    <div class="row">
+      <div>
+        <label>Имя прораба (мини-персонаж сбоку)</label>
+        <input type="text" id="f-builderName" value="Прораб Кроша">
+      </div>
+      <div>
+        <label>Акцентный цвет</label>
+        <input type="color" id="f-accent" value="#7c5cff">
+      </div>
+    </div>
+
+    <div class="row">
+      <div>
+        <label>Эмодзи-заглушка прораба</label>
+        <input type="text" id="f-builderEmoji" value="👷">
+      </div>
+      <div>
+        <label>Жизни (попытки на неудачную установку блока)</label>
+        <input type="number" id="f-lives" value="8" min="3" max="12">
+      </div>
+    </div>
+
+    <label>Картинка прораба (ссылка, необязательно)</label>
+    <input type="text" id="f-builderImg" placeholder="https://... (если пусто — используется эмодзи выше)">
+    <div class="hint">Каждый вопрос = один этаж дома. Игра лучше всего работает с 4–8 вопросами — так и дом успевает вырасти, и урок не затягивается.</div>
+
+    <div id="questions"></div>
+    <button class="add-q" id="addQ">+ Добавить вопрос</button>
+    <br>
+    <button class="generate-btn" id="genBtn">Сгенерировать / обновить превью</button>
+  </div>
+
+  <div class="panel preview-panel">
+    <label style="margin-top:0;">Живое превью (как это будет выглядеть в рамке Genially)</label>
+    <div class="preview-frame-wrap">
+      <iframe id="previewFrame"></iframe>
+    </div>
+
+    <div class="out-label"><label style="margin:0;">Ссылка (если поле в Genially просит просто URL)</label>
+      <button class="copy-btn" id="copyLink">Копировать ссылку</button></div>
+    <textarea class="output" id="outLink" readonly></textarea>
+
+    <div class="out-label"><label style="margin:0;">Код для вставки (если поле просит embed-код)</label>
+      <button class="copy-btn" id="copyCode">Скопировать код для Genially</button></div>
+    <textarea class="output" id="outCode" readonly></textarea>
+
+    <div class="steps">
+      <b>Как вставить в Genially:</b> открой свой проект → «Вставить» → «Другое» → вставь туда ссылку или код выше → «Вставить». Ссылка должна начинаться с https (так и будет после публикации на хостинге).
+    </div>
+  </div>
+</div>
+
+<script>
+function toBase64Url(obj){
+  const json = JSON.stringify(obj);
+  const bytes = new TextEncoder().encode(json);
+  let binary = '';
+  bytes.forEach(b => binary += String.fromCharCode(b));
+  const base64 = btoa(binary);
+  return base64.replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+}
+
+let questions = [
+  {
+    q: "Сколько будет <b>6 × 7</b>?",
+    answers: ["36","42","48","45"],
+    correct: 1,
+    fbOk: "Точно, <b>42</b>! Этаж крепкий.",
+    fbBad: "Почти! Правильный ответ — <b>42</b>."
+  },
+  {
+    q: "Найди слово, в котором <b>4 слога</b>:",
+    answers: ["кот","машина","самолётик","дом"],
+    correct: 2,
+    fbOk: "Верно, в слове «самолётик» 4 слога!",
+    fbBad: "На самом деле 4 слога в слове «самолётик»."
+  }
+];
+
+function renderQuestions(){
+  const wrap = document.getElementById('questions');
+  wrap.innerHTML = '';
+  questions.forEach((qq, qi) => {
+    const block = document.createElement('div');
+    block.className = 'question-block';
+    block.innerHTML = `
+      <button class="remove-q" data-i="${qi}">Удалить</button>
+      <h3>Вопрос ${qi+1} (этаж ${qi+1})</h3>
+      <label>Текст вопроса (можно &lt;b&gt;жирным&lt;/b&gt; выделить ключевое слово)</label>
+      <textarea data-field="q" data-i="${qi}" rows="2">${qq.q}</textarea>
+      ${qq.answers.map((a,ai)=>`
+        <div class="answer-row">
+          <input type="radio" name="correct-${qi}" data-i="${qi}" data-ai="${ai}" ${qq.correct===ai?'checked':''}>
+          <input type="text" data-field="answer" data-i="${qi}" data-ai="${ai}" value="${a.replace(/"/g,'&quot;')}">
+        </div>`).join('')}
+      <label>Фидбек при верном ответе</label>
+      <input type="text" data-field="fbOk" data-i="${qi}" value="${qq.fbOk.replace(/"/g,'&quot;')}">
+      <label>Фидбек при неверном ответе</label>
+      <input type="text" data-field="fbBad" data-i="${qi}" value="${qq.fbBad.replace(/"/g,'&quot;')}">
+    `;
+    wrap.appendChild(block);
+  });
+
+  wrap.querySelectorAll('[data-field="q"]').forEach(el=>el.addEventListener('input', e=>{
+    questions[+e.target.dataset.i].q = e.target.value;
+  }));
+  wrap.querySelectorAll('[data-field="answer"]').forEach(el=>el.addEventListener('input', e=>{
+    questions[+e.target.dataset.i].answers[+e.target.dataset.ai] = e.target.value;
+  }));
+  wrap.querySelectorAll('[data-field="fbOk"]').forEach(el=>el.addEventListener('input', e=>{
+    questions[+e.target.dataset.i].fbOk = e.target.value;
+  }));
+  wrap.querySelectorAll('[data-field="fbBad"]').forEach(el=>el.addEventListener('input', e=>{
+    questions[+e.target.dataset.i].fbBad = e.target.value;
+  }));
+  wrap.querySelectorAll('input[type=radio]').forEach(el=>el.addEventListener('change', e=>{
+    questions[+e.target.dataset.i].correct = +e.target.dataset.ai;
+  }));
+  wrap.querySelectorAll('.remove-q').forEach(el=>el.addEventListener('click', e=>{
+    questions.splice(+e.target.dataset.i, 1);
+    renderQuestions();
+  }));
+}
+
+document.getElementById('addQ').addEventListener('click', () => {
+  questions.push({q:"Новый вопрос?", answers:["Вариант 1","Вариант 2","Вариант 3","Вариант 4"], correct:0, fbOk:"Верно!", fbBad:"Не страшно, дом всё равно растёт дальше!"});
+  renderQuestions();
+});
+
+function engineBaseUrl(){
+  return location.href.replace(/builder\.html.*$/, 'engine.html');
+}
+
+function generate(){
+  const config = {
+    title: document.getElementById('f-title').value,
+    builderName: document.getElementById('f-builderName').value,
+    builderImg: document.getElementById('f-builderImg').value.trim(),
+    builderEmoji: document.getElementById('f-builderEmoji').value || '👷',
+    accent: document.getElementById('f-accent').value,
+    lives: parseInt(document.getElementById('f-lives').value, 10) || 8,
+    questions: questions
+  };
+  const url = engineBaseUrl() + '?d=' + toBase64Url(config);
+  document.getElementById('previewFrame').src = url;
+  document.getElementById('outLink').value = url;
+  document.getElementById('outCode').value =
+    `<iframe src="${url}" width="800" height="560" style="border:none;max-width:100%;" title="${config.title}"></iframe>`;
+}
+
+function wireCopyButton(btnId, textareaId){
+  document.getElementById(btnId).addEventListener('click', () => {
+    const ta = document.getElementById(textareaId);
+    ta.select();
+    navigator.clipboard.writeText(ta.value).then(() => {
+      const btn = document.getElementById(btnId);
+      btn.classList.add('copied');
+      const old = btn.textContent;
+      btn.textContent = 'Скопировано!';
+      setTimeout(()=>{btn.classList.remove('copied'); btn.textContent = old;}, 1400);
+    });
+  });
+}
+
+document.getElementById('genBtn').addEventListener('click', generate);
+wireCopyButton('copyLink','outLink');
+wireCopyButton('copyCode','outCode');
+
+renderQuestions();
+generate();
+</script>
+</body>
+</html>

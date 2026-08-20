@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Строим дом</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap');
+
+  :root{
+    --accent: #7c5cff;
+    --accent-dark: #5f3fe0;
+    --bg-1: #ffe9c7;
+    --bg-2: #ffd1e8;
+    --ok: #3ecf6a;
+    --bad: #ff5d6c;
+    --sky-1: #bfe7ff;
+    --sky-2: #eaf7ff;
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0;
+    height:100%;
+    font-family:'Baloo 2','Trebuchet MS','Verdana',sans-serif;
+    background:linear-gradient(135deg,var(--bg-1),var(--bg-2));
+    overflow-x:hidden;
+  }
+  #app{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:clamp(10px,3vw,28px);
+  }
+  .card{
+    width:100%;
+    max-width:760px;
+    background:#fffdf9;
+    border-radius:28px;
+    box-shadow:0 18px 40px rgba(80,40,20,0.18);
+    padding:clamp(16px,4vw,32px);
+    position:relative;
+  }
+  .top-row{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    margin-bottom:10px;
+  }
+  .title{
+    font-weight:800;
+    font-size:clamp(17px,3.2vw,24px);
+    color:#4a3b2a;
+    flex:1;
+  }
+  .lives{
+    display:flex;
+    gap:3px;
+    font-size:clamp(14px,2.4vw,19px);
+    letter-spacing:1px;
+    white-space:nowrap;
+  }
+  .lives span.lost{filter:grayscale(1); opacity:0.35;}
+  .progress-wrap{
+    background:#f0e6d8;
+    border-radius:20px;
+    height:14px;
+    overflow:hidden;
+    margin-bottom:18px;
+    box-shadow:inset 0 2px 4px rgba(0,0,0,0.08);
+  }
+  .progress-bar{
+    height:100%;
+    border-radius:20px;
+    background:linear-gradient(90deg,var(--accent),var(--accent-dark));
+    width:0%;
+    transition:width .5s ease;
+  }
+
+  /* ---- crane stage ---- */
+  .stage-wrap{
+    width:100%;
+    max-width:680px;
+    aspect-ratio:680/380;
+    margin:0 auto;
+    position:relative;
+    border-radius:20px;
+    overflow:hidden;
+    background:linear-gradient(180deg,var(--sky-1),var(--sky-2) 65%,#dff0d8 65%,#cfe8c4);
+    touch-action:none;
+    cursor:pointer;
+    user-select:none;
+  }
+  .mast{ position:absolute; left:4%; top:10%; width:3.5%; height:60%; background:#8a6a4f; border-radius:6px; }
+  .beam{ position:absolute; left:4%; top:10%; width:78%; height:3.5%; background:#8a6a4f; border-radius:6px; }
+  .ground{ position:absolute; left:0; right:0; bottom:0; height:12%; background:#bcdb9e; }
+  .target-zone{
+    position:absolute;
+    border:3px dashed rgba(255,255,255,0.9);
+    border-radius:8px;
+    animation:pulse 1.1s ease-in-out infinite;
+    pointer-events:none;
+  }
+  @keyframes pulse{ 0%,100%{opacity:0.5;} 50%{opacity:1;} }
+  .floor{
+    position:absolute;
+    border-radius:6px;
+    border:3px solid #fff;
+    box-shadow:0 2px 6px rgba(0,0,0,0.15);
+    background:linear-gradient(180deg,#d8c7ae,#c3ad8c);
+  }
+  .floor.decorated{ background:linear-gradient(180deg,var(--accent),var(--accent-dark)); }
+  .floor.decorated:after{
+    content:"▦"; position:absolute; inset:0;
+    display:flex; align-items:center; justify-content:center;
+    color:#fff; font-size:15px; opacity:0.85;
+  }
+  .floor.crooked{ transform:rotate(-4deg); }
+  .hook{
+    position:absolute; top:13.5%; height:18%; width:2px;
+    background:#8a7a6a;
+  }
+  .block{
+    position:absolute;
+    width:13.53%; height:8.95%;
+    background:linear-gradient(180deg,var(--accent),var(--accent-dark));
+    border:3px solid #fff;
+    border-radius:8px;
+    box-shadow:0 4px 10px rgba(0,0,0,0.2);
+  }
+  .builder-badge{
+    position:absolute; left:3%; bottom:14%;
+    width:52px; height:52px; border-radius:50%;
+    background:#fff; box-shadow:0 4px 10px rgba(0,0,0,.15);
+    display:flex; align-items:center; justify-content:center;
+    font-size:26px; overflow:hidden;
+    transition:transform .2s ease;
+  }
+  .builder-badge img{width:100%;height:100%;object-fit:cover;}
+  .builder-badge.bounce{animation:bbounce .5s ease;}
+  .builder-badge.shake{animation:bshake .5s ease;}
+  @keyframes bbounce{
+    0%{transform:scale(1) translateY(0);}
+    30%{transform:scale(1.15) translateY(-8px);}
+    100%{transform:scale(1) translateY(0);}
+  }
+  @keyframes bshake{
+    0%,100%{transform:translateX(0);}
+    25%{transform:translateX(-6px);}
+    75%{transform:translateX(6px);}
+  }
+  .hint-tap{
+    position:absolute; left:50%; bottom:3%; transform:translateX(-50%);
+    font-size:13px; font-weight:700; color:#5a4634;
+    background:rgba(255,255,255,0.85); padding:4px 12px; border-radius:999px;
+    pointer-events:none;
+  }
+  .hidden{display:none !important;}
+
+  /* ---- question view (same visual language as the quiz engine) ---- */
+  .stage{ display:flex; gap:20px; align-items:flex-start; flex-wrap:wrap; }
+  .mascot-col{ flex:0 0 auto; display:flex; flex-direction:column; align-items:center; width:110px; }
+  .mascot{
+    width:96px; height:96px; border-radius:50%; background:#fff;
+    display:flex; align-items:center; justify-content:center; font-size:52px;
+    box-shadow:0 8px 18px rgba(0,0,0,0.12); overflow:hidden;
+  }
+  .mascot img{width:100%;height:100%;object-fit:cover;}
+  .mascot-name{ margin-top:8px; font-weight:700; font-size:13px; color:#7a6a53; text-align:center; }
+  .content-col{ flex:1 1 300px; min-width:0; }
+  .bubble{
+    position:relative; background:#f4f0ff; border-radius:18px; padding:14px 18px;
+    font-size:clamp(15px,2.4vw,19px); color:#3a3244; font-weight:600; margin-bottom:16px;
+  }
+  .bubble:before{
+    content:""; position:absolute; left:-10px; top:22px;
+    border-width:8px 12px 8px 0; border-style:solid;
+    border-color:transparent #f4f0ff transparent transparent;
+  }
+  .bubble b{color:var(--accent-dark);}
+  .bubble.feedback-ok{background:#e6faec;}
+  .bubble.feedback-ok:before{border-color:transparent #e6faec transparent transparent;}
+  .bubble.feedback-bad{background:#ffe9ea;}
+  .bubble.feedback-bad:before{border-color:transparent #ffe9ea transparent transparent;}
+  .answers{ display:grid; grid-template-columns:1fr; gap:10px; }
+  .answer-btn{
+    text-align:left; border:2px solid #ece3d3; background:#fff; border-radius:14px;
+    padding:12px 16px; font-family:inherit; font-size:clamp(14px,2.2vw,17px); font-weight:600;
+    color:#4a3b2a; cursor:pointer; transition:border-color .15s, transform .1s, background .15s;
+  }
+  .answer-btn:hover:not(:disabled){border-color:var(--accent); transform:translateY(-1px);}
+  .answer-btn:disabled{cursor:default;}
+  .answer-btn.correct{background:#e6faec;border-color:var(--ok);}
+  .answer-btn.wrong{background:#ffe9ea;border-color:var(--bad);}
+  .next-row{ display:flex; justify-content:flex-end; margin-top:18px; }
+  .next-btn{
+    display:inline-flex; align-items:center; gap:8px; background:var(--accent); color:#fff;
+    border:none; border-radius:999px; padding:12px 24px; font-family:inherit; font-size:16px;
+    font-weight:700; cursor:pointer; box-shadow:0 8px 16px rgba(124,92,255,0.35);
+    transition:transform .15s, background .15s; opacity:0; pointer-events:none;
+  }
+  .next-btn.show{opacity:1;pointer-events:auto;}
+  .next-btn:hover{background:var(--accent-dark); transform:translateX(3px);}
+
+  .final{ text-align:center; padding:16px 0 4px; width:100%; }
+  .final .score{ font-size:clamp(22px,4.6vw,32px); font-weight:800; color:var(--accent-dark); margin:8px 0 4px; }
+  .final .msg{ font-size:clamp(15px,2.6vw,19px); font-weight:600; color:#4a3b2a; margin-bottom:14px; }
+  .mini-tower{ display:flex; flex-direction:column-reverse; align-items:center; gap:3px; margin:0 auto 14px; width:130px; }
+  .mini-tower .mf{ width:110px; height:16px; border-radius:4px; border:2px solid #fff; flex:0 0 auto; }
+  .restart-btn{
+    background:#fff; border:2px solid var(--accent); color:var(--accent-dark); border-radius:999px;
+    padding:10px 22px; font-family:inherit; font-weight:700; font-size:15px; cursor:pointer;
+  }
+  .restart-btn:hover{background:var(--accent); color:#fff;}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="card">
+    <div class="top-row">
+      <div class="title" id="gameTitle"></div>
+      <div class="lives" id="lives"></div>
+    </div>
+    <div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div>
+
+    <div id="craneView">
+      <div class="stage-wrap" id="stageWrap">
+        <div class="mast"></div>
+        <div class="beam"></div>
+        <div class="ground"></div>
+        <div class="target-zone" id="targetZone"></div>
+        <div id="floors"></div>
+        <div class="hook" id="hook"></div>
+        <div class="block" id="block"></div>
+        <div class="builder-badge" id="builderBadge"></div>
+        <div class="hint-tap" id="hintTap">Нажми, чтобы отпустить блок!</div>
+      </div>
+    </div>
+    <div id="stage" class="stage hidden"></div>
+  </div>
+</div>
+
+<script>
+// ---- config decoding (same scheme as quiz-mascot/engine.html) ----
+function fromBase64Url(str){
+  let base64 = str.replace(/-/g,'+').replace(/_/g,'/');
+  while (base64.length % 4) base64 += '=';
+  const binary = atob(base64);
+  const bytes = Uint8Array.from(binary, c => c.charCodeAt(0));
+  return JSON.parse(new TextDecoder().decode(bytes));
+}
+
+const DEMO_CONFIG = {
+  title: "Строим дом до небес",
+  builderName: "Прораб Кроша",
+  builderEmoji: "👷",
+  builderImg: "",
+  accent: "#7c5cff",
+  lives: 8,
+  questions: [
+    { q:"Сколько будет <b>6 × 7</b>?", answers:["36","42","48","45"], correct:1,
+      fbOk:"Точно, <b>42</b>! Этаж крепкий.", fbBad:"Почти! Правильный ответ — <b>42</b>." },
+    { q:"Найди слово, в котором <b>4 слога</b>:", answers:["кот","машина","самолётик","дом"], correct:2,
+      fbOk:"Верно, в слове «самолётик» 4 слога!", fbBad:"На самом деле 4 слога в слове «самолётик»." },
+    { q:"Какое число пропущено: 5, 10, 15, ___, 25?", answers:["18","20","22","19"], correct:1,
+      fbOk:"Умница, это счёт по 5 — значит <b>20</b>!", fbBad:"Это счёт по 5, значит пропущено <b>20</b>." },
+    { q:"Сколько будет <b>9 + 8</b>?", answers:["16","17","18","15"], correct:1,
+      fbOk:"Да, верно — <b>17</b>!", fbBad:"Правильный ответ — <b>17</b>." }
+  ]
+};
+
+function loadConfig(){
+  const params = new URLSearchParams(location.search);
+  const d = params.get('d');
+  if (d){
+    try { return Object.assign({}, DEMO_CONFIG, fromBase64Url(d)); }
+    catch(e){ console.warn('Не удалось прочитать конфиг из URL, показываю демо-игру.', e); }
+  }
+  return DEMO_CONFIG;
+}
+
+const config = loadConfig();
+document.documentElement.style.setProperty('--accent', config.accent || '#7c5cff');
+document.getElementById('gameTitle').textContent = config.title || 'Строим дом';
+
+// ---- geometry (percent of stage-wrap, logical design size 680x380) ----
+const STAGE_W = 680, STAGE_H = 380;
+const BLOCK_W_PCT = 92/STAGE_W*100;
+const BLOCK_H_PCT = 34/STAGE_H*100;
+const CX_PCT = 50;
+const AMP_PCT = 170/STAGE_W*100;
+const HIT_TOL_PCT = 78/STAGE_W*100;
+const GROUND_PCT = 12;
+const HANG_TOP_PCT = 31.5;
+const PERIOD_S = 1.7;
+
+// ---- state ----
+const total = config.questions.length;
+let idx = 0;
+let lives = config.lives || 8;
+let floors = []; // { decorated:bool, crooked:bool }
+let phase = 'swing'; // swing | falling | over
+let swingStart = null;
+let rafId = null;
+let craneX = CX_PCT;
+let currentGood = false;
+let questionAnswered = false;
+
+function mascotHtml(){
+  if (config.builderImg) return `<img src="${config.builderImg}" alt="">`;
+  return config.builderEmoji || '👷';
+}
+
+function renderLives(){
+  const max = config.lives || 8;
+  document.getElementById('lives').innerHTML =
+    Array.from({length:max}, (_,i)=>`<span class="${i<lives?'':'lost'}">❤</span>`).join('');
+}
+
+function renderProgress(){
+  document.getElementById('progressBar').style.width = (idx/total*100)+'%';
+}
+
+function towerTopPct(){
+  return GROUND_PCT + floors.length*BLOCK_H_PCT;
+}
+
+function renderFloors(){
+  const wrap = document.getElementById('floors');
+  const leftPct = 50 - BLOCK_W_PCT/2;
+  wrap.innerHTML = floors.map((f,i)=>{
+    const bottomPct = GROUND_PCT + i*BLOCK_H_PCT;
+    return `<div class="floor ${f.decorated?'decorated':''} ${f.crooked?'crooked':''}"
+      style="left:${leftPct}%; width:${BLOCK_W_PCT}%; height:${BLOCK_H_PCT}%; bottom:${bottomPct}%;"></div>`;
+  }).join('');
+}
+
+function positionTargetZone(){
+  const tz = document.getElementById('targetZone');
+  const leftPct = 50 - BLOCK_W_PCT/2;
+  tz.style.cssText = `left:${leftPct}%; width:${BLOCK_W_PCT}%; height:${BLOCK_H_PCT}%; bottom:${towerTopPct()}%;`;
+}
+
+function placeBlockAt(xPct, topPct){
+  const leftPct = xPct - BLOCK_W_PCT/2;
+  document.getElementById('block').style.left = leftPct + '%';
+  document.getElementById('block').style.top = topPct + '%';
+  document.getElementById('hook').style.left = xPct + '%';
+}
+
+function craneLoop(ts){
+  if (swingStart === null) swingStart = ts;
+  const t = (ts - swingStart)/1000;
+  craneX = CX_PCT + AMP_PCT*Math.sin(2*Math.PI*t/PERIOD_S);
+  placeBlockAt(craneX, HANG_TOP_PCT);
+  if (phase === 'swing') rafId = requestAnimationFrame(craneLoop);
+}
+
+function startRound(){
+  phase = 'swing';
+  swingStart = null;
+  const block = document.getElementById('block');
+  block.style.transition = 'none';
+  block.style.transform = '';
+  placeBlockAt(CX_PCT, HANG_TOP_PCT);
+  document.getElementById('hook').style.top = '13.5%';
+  positionTargetZone();
+  renderFloors();
+  renderLives();
+  renderProgress();
+  document.getElementById('hintTap').classList.remove('hidden');
+  rafId = requestAnimationFrame(craneLoop);
+}
+
+function stageClick(){
+  if (phase !== 'swing') return;
+  phase = 'falling';
+  cancelAnimationFrame(rafId);
+  document.getElementById('hintTap').classList.add('hidden');
+
+  currentGood = Math.abs(craneX - CX_PCT) <= HIT_TOL_PCT;
+
+  const landingTopPct = 100 - GROUND_PCT - (floors.length+1)*BLOCK_H_PCT;
+  const block = document.getElementById('block');
+  block.style.transition = 'top .35s cubic-bezier(.3,.6,.4,1)';
+  block.style.top = landingTopPct + '%';
+  if (!currentGood){
+    block.style.transition += ', transform .3s ease .35s';
+    block.style.transform = 'rotate(-9deg)';
+  }
+  setTimeout(resolveDrop, 420);
+}
+
+function resolveDrop(){
+  if (!currentGood) lives = Math.max(0, lives-1);
+  floors.push({ decorated:false, crooked: !currentGood });
+  renderFloors();
+  renderLives();
+  const badge = document.getElementById('builderBadge');
+  badge.classList.add(currentGood ? 'bounce' : 'shake');
+  setTimeout(()=>{
+    badge.classList.remove('bounce','shake');
+    showQuestion();
+  }, 500);
+}
+
+function showQuestion(){
+  document.getElementById('craneView').classList.add('hidden');
+  const stage = document.getElementById('stage');
+  stage.classList.remove('hidden');
+  questionAnswered = false;
+  const qData = config.questions[idx];
+  stage.innerHTML = `
+    <div class="mascot-col">
+      <div class="mascot" id="mascot">${mascotHtml()}</div>
+      <div class="mascot-name">${config.builderName||''}</div>
+    </div>
+    <div class="content-col">
+      <div class="bubble" id="bubble">${qData.q}</div>
+      <div class="answers" id="answers"></div>
+      <div class="next-row"><button class="next-btn" id="nextBtn">Дальше →</button></div>
+    </div>
+  `;
+  const answersEl = document.getElementById('answers');
+  qData.answers.forEach((text,i)=>{
+    const btn = document.createElement('button');
+    btn.className = 'answer-btn';
+    btn.innerHTML = text;
+    btn.onclick = () => selectAnswer(i);
+    answersEl.appendChild(btn);
+  });
+  document.getElementById('nextBtn').onclick = afterQuestion;
+}
+
+function selectAnswer(i){
+  if (questionAnswered) return;
+  questionAnswered = true;
+  const qData = config.questions[idx];
+  const buttons = document.querySelectorAll('.answer-btn');
+  const mascot = document.getElementById('mascot');
+  const bubble = document.getElementById('bubble');
+  const isCorrect = i === qData.correct;
+
+  buttons.forEach((b,bi)=>{
+    b.disabled = true;
+    if (bi === qData.correct) b.classList.add('correct');
+    if (bi === i && !isCorrect) b.classList.add('wrong');
+  });
+
+  if (isCorrect){
+    floors[floors.length-1].decorated = true;
+    mascot.classList.add('bounce');
+    bubble.innerHTML = qData.fbOk || 'Верно!';
+    bubble.classList.add('feedback-ok');
+  } else {
+    mascot.classList.add('shake');
+    bubble.innerHTML = qData.fbBad || 'Не совсем, но дом всё равно растёт!';
+    bubble.classList.add('feedback-bad');
+  }
+  document.getElementById('nextBtn').classList.add('show');
+}
+
+function afterQuestion(){
+  idx++;
+  if (idx >= total){
+    renderWin();
+  } else if (lives <= 0){
+    renderGameOver();
+  } else {
+    document.getElementById('stage').classList.add('hidden');
+    document.getElementById('craneView').classList.remove('hidden');
+    startRound();
+  }
+}
+
+function miniTowerHtml(){
+  return floors.map(f=>`<div class="mf" style="background:${f.decorated?'linear-gradient(180deg,var(--accent),var(--accent-dark))':'#c3ad8c'}"></div>`).join('');
+}
+
+function renderWin(){
+  phase = 'over';
+  document.getElementById('progressBar').style.width = '100%';
+  document.getElementById('stage').classList.remove('hidden');
+  document.getElementById('stage').innerHTML = `
+    <div class="final">
+      <div style="font-size:44px;">🏠🎉</div>
+      <div class="score">Дом достроен!</div>
+      <div class="mini-tower">${miniTowerHtml()}</div>
+      <div class="msg">Этажей: ${floors.length}, из них ровных: ${floors.filter(f=>!f.crooked).length}</div>
+      <button class="restart-btn" id="restartBtn">Построить ещё раз</button>
+    </div>`;
+  document.getElementById('restartBtn').onclick = resetGame;
+}
+
+function renderGameOver(){
+  phase = 'over';
+  document.getElementById('stage').classList.remove('hidden');
+  document.getElementById('stage').innerHTML = `
+    <div class="final">
+      <div style="font-size:44px;">🏗️</div>
+      <div class="score">Кран сегодня подустал</div>
+      <div class="mini-tower">${miniTowerHtml()}</div>
+      <div class="msg">Но дом всё равно вырос на ${floors.length} этаж(ей)! Попробуй ещё раз.</div>
+      <button class="restart-btn" id="restartBtn">Попробовать снова</button>
+    </div>`;
+  document.getElementById('restartBtn').onclick = resetGame;
+}
+
+function resetGame(){
+  idx = 0; lives = config.lives || 8; floors = []; questionAnswered = false;
+  document.getElementById('stage').classList.add('hidden');
+  document.getElementById('craneView').classList.remove('hidden');
+  startRound();
+}
+
+document.getElementById('stageWrap').addEventListener('pointerdown', stageClick);
+document.getElementById('builderBadge').innerHTML = mascotHtml();
+
+startRound();
+</script>
+</body>
+</html>

@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Квиз с маскотом</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap');
+
+  :root{
+    --accent: #7c5cff;
+    --accent-dark: #5f3fe0;
+    --bg-1: #ffe9c7;
+    --bg-2: #ffd1e8;
+    --ok: #3ecf6a;
+    --bad: #ff5d6c;
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0;
+    height:100%;
+    font-family:'Baloo 2','Trebuchet MS','Verdana',sans-serif;
+    background:linear-gradient(135deg,var(--bg-1),var(--bg-2));
+    overflow-x:hidden;
+  }
+  #app{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:clamp(10px,3vw,28px);
+  }
+  .card{
+    width:100%;
+    max-width:720px;
+    background:#fffdf9;
+    border-radius:28px;
+    box-shadow:0 18px 40px rgba(80,40,20,0.18);
+    padding:clamp(16px,4vw,36px);
+    position:relative;
+  }
+  .top-row{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    margin-bottom:14px;
+  }
+  .title{
+    font-weight:800;
+    font-size:clamp(18px,3.4vw,26px);
+    color:#4a3b2a;
+    flex:1;
+  }
+  .progress-wrap{
+    background:#f0e6d8;
+    border-radius:20px;
+    height:16px;
+    overflow:hidden;
+    margin-bottom:22px;
+    box-shadow:inset 0 2px 4px rgba(0,0,0,0.08);
+  }
+  .progress-bar{
+    height:100%;
+    border-radius:20px;
+    background:linear-gradient(90deg,var(--accent),var(--accent-dark));
+    width:0%;
+    transition:width .5s ease;
+  }
+  .stage{
+    display:flex;
+    gap:20px;
+    align-items:flex-start;
+    flex-wrap:wrap;
+  }
+  .mascot-col{
+    flex:0 0 auto;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    width:120px;
+  }
+  .mascot{
+    width:110px;
+    height:110px;
+    border-radius:50%;
+    background:#fff;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:60px;
+    box-shadow:0 8px 18px rgba(0,0,0,0.12);
+    overflow:hidden;
+    transition:transform .25s ease;
+  }
+  .mascot img{width:100%;height:100%;object-fit:cover;}
+  .mascot-name{
+    margin-top:8px;
+    font-weight:700;
+    font-size:14px;
+    color:#7a6a53;
+    text-align:center;
+  }
+  .mascot.bounce{ animation:bounce .6s ease; }
+  .mascot.shake{ animation:shake .5s ease; }
+  @keyframes bounce{
+    0%{transform:scale(1) translateY(0);}
+    30%{transform:scale(1.15) translateY(-14px);}
+    55%{transform:scale(0.95) translateY(0);}
+    75%{transform:scale(1.05) translateY(-4px);}
+    100%{transform:scale(1) translateY(0);}
+  }
+  @keyframes shake{
+    0%,100%{transform:translateX(0);}
+    20%{transform:translateX(-8px) rotate(-4deg);}
+    40%{transform:translateX(8px) rotate(4deg);}
+    60%{transform:translateX(-6px) rotate(-3deg);}
+    80%{transform:translateX(6px) rotate(3deg);}
+  }
+  .content-col{
+    flex:1 1 320px;
+    min-width:0;
+  }
+  .bubble{
+    position:relative;
+    background:#f4f0ff;
+    border-radius:18px;
+    padding:14px 18px;
+    font-size:clamp(15px,2.4vw,19px);
+    color:#3a3244;
+    font-weight:600;
+    margin-bottom:16px;
+  }
+  .bubble:before{
+    content:"";
+    position:absolute;
+    left:-10px;
+    top:22px;
+    border-width:8px 12px 8px 0;
+    border-style:solid;
+    border-color:transparent #f4f0ff transparent transparent;
+  }
+  .bubble b{color:var(--accent-dark);}
+  .bubble.feedback-ok{background:#e6faec;}
+  .bubble.feedback-ok:before{border-color:transparent #e6faec transparent transparent;}
+  .bubble.feedback-bad{background:#ffe9ea;}
+  .bubble.feedback-bad:before{border-color:transparent #ffe9ea transparent transparent;}
+  .answers{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:10px;
+  }
+  .answer-btn{
+    text-align:left;
+    border:2px solid #ece3d3;
+    background:#fff;
+    border-radius:14px;
+    padding:12px 16px;
+    font-family:inherit;
+    font-size:clamp(14px,2.2vw,17px);
+    font-weight:600;
+    color:#4a3b2a;
+    cursor:pointer;
+    transition:border-color .15s, transform .1s, background .15s;
+  }
+  .answer-btn:hover:not(:disabled){border-color:var(--accent); transform:translateY(-1px);}
+  .answer-btn:disabled{cursor:default;}
+  .answer-btn.correct{background:#e6faec;border-color:var(--ok);}
+  .answer-btn.wrong{background:#ffe9ea;border-color:var(--bad);}
+  .next-row{
+    display:flex;
+    justify-content:flex-end;
+    margin-top:18px;
+  }
+  .next-btn{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    background:var(--accent);
+    color:#fff;
+    border:none;
+    border-radius:999px;
+    padding:12px 24px;
+    font-family:inherit;
+    font-size:16px;
+    font-weight:700;
+    cursor:pointer;
+    box-shadow:0 8px 16px rgba(124,92,255,0.35);
+    transition:transform .15s, background .15s;
+    opacity:0;
+    pointer-events:none;
+  }
+  .next-btn.show{opacity:1;pointer-events:auto;}
+  .next-btn:hover{background:var(--accent-dark); transform:translateX(3px);}
+  .final{
+    text-align:center;
+    padding:20px 0 4px;
+  }
+  .final .score{
+    font-size:clamp(28px,6vw,44px);
+    font-weight:800;
+    color:var(--accent-dark);
+    margin:8px 0 4px;
+  }
+  .final .msg{
+    font-size:clamp(15px,2.6vw,19px);
+    font-weight:600;
+    color:#4a3b2a;
+    margin-bottom:18px;
+  }
+  .restart-btn{
+    background:#fff;
+    border:2px solid var(--accent);
+    color:var(--accent-dark);
+    border-radius:999px;
+    padding:10px 22px;
+    font-family:inherit;
+    font-weight:700;
+    font-size:15px;
+    cursor:pointer;
+  }
+  .restart-btn:hover{background:var(--accent);color:#fff;}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="card">
+    <div class="top-row">
+      <div class="title" id="quizTitle"></div>
+    </div>
+    <div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div>
+    <div class="stage" id="stage"></div>
+  </div>
+</div>
+
+<script>
+// ---- config decoding -------------------------------------------------
+function fromBase64Url(str){
+  let base64 = str.replace(/-/g,'+').replace(/_/g,'/');
+  while (base64.length % 4) base64 += '=';
+  const binary = atob(base64);
+  const bytes = Uint8Array.from(binary, c => c.charCodeAt(0));
+  return JSON.parse(new TextDecoder().decode(bytes));
+}
+
+const DEMO_CONFIG = {
+  title: "Квиз с совой-помощницей",
+  mascotName: "Сова Соня",
+  mascotEmoji: "🦉",
+  mascotImg: "",
+  accent: "#7c5cff",
+  questions: [
+    {
+      q: "Сколько будет <b>6 × 7</b>?",
+      answers: ["36","42","48","45"],
+      correct: 1,
+      fbOk: "Точно, <b>42</b>! Ты быстро считаешь.",
+      fbBad: "Почти! Правильный ответ — <b>42</b>."
+    },
+    {
+      q: "Найди слово, в котором <b>4 слога</b>:",
+      answers: ["кот","машина","самолётик","дом"],
+      correct: 2,
+      fbOk: "Верно, в слове «самолётик» 4 слога!",
+      fbBad: "На самом деле 4 слога в слове «самолётик»."
+    },
+    {
+      q: "Какое число пропущено: 5, 10, 15, ___, 25?",
+      answers: ["18","20","22","19"],
+      correct: 1,
+      fbOk: "Умница, это счёт по 5 — значит <b>20</b>!",
+      fbBad: "Это счёт по 5, значит пропущено <b>20</b>."
+    }
+  ]
+};
+
+function loadConfig(){
+  const params = new URLSearchParams(location.search);
+  const d = params.get('d');
+  if (d){
+    try { return Object.assign({}, DEMO_CONFIG, fromBase64Url(d)); }
+    catch(e){ console.warn('Не удалось прочитать конфиг из URL, показываю демо-квиз.', e); }
+  }
+  return DEMO_CONFIG;
+}
+
+const config = loadConfig();
+document.documentElement.style.setProperty('--accent', config.accent || '#7c5cff');
+document.getElementById('quizTitle').textContent = config.title || 'Квиз';
+
+// ---- state -------------------------------------------------------------
+let idx = 0;
+let score = 0;
+let answered = false;
+const total = config.questions.length;
+
+function mascotHtml(){
+  if (config.mascotImg){
+    return `<img src="${config.mascotImg}" alt="${config.mascotName||''}">`;
+  }
+  return config.mascotEmoji || '🙂';
+}
+
+function renderQuestion(){
+  answered = false;
+  const qData = config.questions[idx];
+  document.getElementById('progressBar').style.width = (idx/total*100) + '%';
+
+  const stage = document.getElementById('stage');
+  stage.innerHTML = `
+    <div class="mascot-col">
+      <div class="mascot" id="mascot">${mascotHtml()}</div>
+      <div class="mascot-name">${config.mascotName||''}</div>
+    </div>
+    <div class="content-col">
+      <div class="bubble" id="bubble">${qData.q}</div>
+      <div class="answers" id="answers"></div>
+      <div class="next-row"><button class="next-btn" id="nextBtn">Дальше →</button></div>
+    </div>
+  `;
+
+  const answersEl = document.getElementById('answers');
+  qData.answers.forEach((text, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'answer-btn';
+    btn.innerHTML = text;
+    btn.onclick = () => selectAnswer(i);
+    answersEl.appendChild(btn);
+  });
+
+  document.getElementById('nextBtn').onclick = nextQuestion;
+}
+
+function selectAnswer(i){
+  if (answered) return;
+  answered = true;
+  const qData = config.questions[idx];
+  const buttons = document.querySelectorAll('.answer-btn');
+  const mascot = document.getElementById('mascot');
+  const bubble = document.getElementById('bubble');
+  const isCorrect = i === qData.correct;
+
+  buttons.forEach((b, bi) => {
+    b.disabled = true;
+    if (bi === qData.correct) b.classList.add('correct');
+    if (bi === i && !isCorrect) b.classList.add('wrong');
+  });
+
+  if (isCorrect){
+    score++;
+    mascot.classList.add('bounce');
+    bubble.innerHTML = qData.fbOk || 'Верно!';
+    bubble.classList.add('feedback-ok');
+  } else {
+    mascot.classList.add('shake');
+    bubble.innerHTML = qData.fbBad || 'Не совсем, но пробуем дальше!';
+    bubble.classList.add('feedback-bad');
+  }
+
+  document.getElementById('nextBtn').classList.add('show');
+}
+
+function nextQuestion(){
+  idx++;
+  if (idx >= total){
+    renderFinal();
+  } else {
+    renderQuestion();
+  }
+}
+
+function renderFinal(){
+  document.getElementById('progressBar').style.width = '100%';
+  const pct = Math.round(score/total*100);
+  let msg;
+  if (pct === 100) msg = 'Идеально! Ни одной ошибки.';
+  else if (pct >= 60) msg = 'Отличный результат, ещё немного практики!';
+  else msg = 'Хорошее начало — повтори и попробуй снова.';
+
+  document.getElementById('stage').innerHTML = `
+    <div class="final" style="width:100%;">
+      <div style="font-size:48px;">${mascotHtml()}</div>
+      <div class="score">${score} / ${total}</div>
+      <div class="msg">${msg}</div>
+      <button class="restart-btn" id="restartBtn">Попробовать ещё раз</button>
+    </div>
+  `;
+  document.getElementById('restartBtn').onclick = () => {
+    idx = 0; score = 0; renderQuestion();
+  };
+}
+
+renderQuestion();
+</script>
+</body>
+</html>
