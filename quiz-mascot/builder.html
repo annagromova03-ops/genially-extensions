@@ -155,6 +155,29 @@
     margin-top:16px;
   }
   .steps b{color:var(--pink);}
+
+  .thumb-row{display:flex;align-items:center;gap:10px;}
+  .thumb{
+    width:56px;height:56px;flex:0 0 auto;border-radius:10px;
+    background:var(--bg-input);border:1px dashed var(--line);
+    display:flex;align-items:center;justify-content:center;overflow:hidden;
+  }
+  .thumb img{width:100%;height:100%;object-fit:cover;}
+  .thumb-empty{font-size:9px;color:var(--text-dim);text-align:center;line-height:1.3;}
+  .thumb-actions{display:flex;flex-direction:column;gap:6px;flex:1;}
+  .upload-btn{
+    display:inline-block;text-align:center;cursor:pointer;
+    background:rgba(79,216,255,0.1);color:var(--blue);border:1px solid rgba(79,216,255,0.4);
+    border-radius:8px;padding:7px 12px;font-size:12px;font-weight:700;
+  }
+  .upload-btn:hover{background:rgba(79,216,255,0.2);}
+  .clear-btn{
+    align-self:flex-start;background:none;border:none;color:var(--text-dim);
+    font-size:11px;text-decoration:underline;cursor:pointer;padding:0;
+  }
+  .clear-btn:hover{color:var(--danger);}
+  .or-url{margin-top:8px;}
+  .img-size-note{font-size:11px;color:var(--success);margin-top:4px;}
 </style>
 </head>
 <body>
@@ -179,15 +202,33 @@
       </div>
     </div>
 
-    <label>Картинка маскота (ссылка на изображение, необязательно)</label>
-    <input type="text" id="f-mascotImg" placeholder="https://... (если пусто — используется эмодзи ниже)">
-    <div class="hint">Проще всего: загрузи картинку персонажа на imgbb.com или в свой GitHub-репозиторий и вставь сюда прямую ссылку на файл.</div>
+    <label>Картинка маскота</label>
+    <div class="thumb-row">
+      <div class="thumb" id="thumb-mascotImg"><span class="thumb-empty">нет фото</span></div>
+      <div class="thumb-actions">
+        <label class="upload-btn">Загрузить фото с компьютера
+          <input type="file" accept="image/*" id="file-mascotImg" hidden>
+        </label>
+        <button type="button" class="clear-btn" id="clear-mascotImg">Убрать фото</button>
+      </div>
+    </div>
+    <input class="or-url" type="text" id="f-mascotImg" placeholder="...или вставь ссылку (если пусто — используется эмодзи ниже)">
+    <div class="hint">Круглый бейдж маскота обрезает фото по центру — подойдёт обычное фото персонажа/игрушки без специальной вырезки фона.</div>
 
-    <label>Эмодзи-заглушка маскота (если картинки нет)</label>
+    <label>Эмодзи-заглушка маскота (если фото нет)</label>
     <input type="text" id="f-mascotEmoji" value="🦉">
 
-    <label>Фон страницы (ссылка на изображение, необязательно)</label>
-    <input type="text" id="f-bgImg" placeholder="https://... (если пусто — обычный градиент)">
+    <label>Фон страницы</label>
+    <div class="thumb-row">
+      <div class="thumb" id="thumb-bgImg"><span class="thumb-empty">нет фото</span></div>
+      <div class="thumb-actions">
+        <label class="upload-btn">Загрузить фото с компьютера
+          <input type="file" accept="image/*" id="file-bgImg" hidden>
+        </label>
+        <button type="button" class="clear-btn" id="clear-bgImg">Убрать фото</button>
+      </div>
+    </div>
+    <input class="or-url" type="text" id="f-bgImg" placeholder="...или вставь ссылку (если пусто — обычный градиент)">
     <div class="hint">Показывается вокруг карточки с вопросом — своя иллюстрация под тему урока вместо стандартного градиента.</div>
 
     <div id="questions"></div>
@@ -225,6 +266,75 @@ function toBase64Url(obj){
   bytes.forEach(b => binary += String.fromCharCode(b));
   const base64 = btoa(binary);
   return base64.replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+}
+
+// ---- photo upload: resize+compress in the browser, embed as a data URL ----
+function fileToResizedDataUrl(file, maxDim, quality){
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(reader.error);
+    reader.onload = () => {
+      const img = new Image();
+      img.onerror = reject;
+      img.onload = () => {
+        let { width, height } = img;
+        if (width > height && width > maxDim){ height = Math.round(height * maxDim/width); width = maxDim; }
+        else if (height > maxDim){ width = Math.round(width * maxDim/height); height = maxDim; }
+        const canvas = document.createElement('canvas');
+        canvas.width = width; canvas.height = height;
+        canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+const uploadedImages = {};
+
+function getImageValue(key){
+  return uploadedImages[key] || document.getElementById('f-'+key).value.trim();
+}
+
+function wireImageField(key, maxDim, quality){
+  const fileInput = document.getElementById('file-'+key);
+  const urlInput = document.getElementById('f-'+key);
+  const thumb = document.getElementById('thumb-'+key);
+  const clearBtn = document.getElementById('clear-'+key);
+
+  function renderThumb(sizeNote){
+    const src = getImageValue(key);
+    thumb.innerHTML = src ? `<img src="${src}">` : `<span class="thumb-empty">нет фото</span>`;
+    const existingNote = urlInput.parentElement.querySelector('.img-size-note');
+    if (existingNote) existingNote.remove();
+    if (sizeNote){
+      const note = document.createElement('div');
+      note.className = 'img-size-note';
+      note.textContent = sizeNote;
+      urlInput.insertAdjacentElement('afterend', note);
+    }
+  }
+
+  fileInput.addEventListener('change', async () => {
+    const file = fileInput.files[0];
+    if (!file) return;
+    const dataUrl = await fileToResizedDataUrl(file, maxDim, quality);
+    uploadedImages[key] = dataUrl;
+    urlInput.value = '';
+    urlInput.disabled = true;
+    renderThumb(`Фото загружено (~${Math.round(dataUrl.length/1024)} КБ)`);
+    generate();
+  });
+  clearBtn.addEventListener('click', () => {
+    uploadedImages[key] = null;
+    fileInput.value = '';
+    urlInput.disabled = false;
+    renderThumb();
+    generate();
+  });
+  urlInput.addEventListener('input', () => renderThumb());
+  renderThumb();
 }
 
 // ---- question state ----
@@ -303,9 +413,9 @@ function generate(){
   const config = {
     title: document.getElementById('f-title').value,
     mascotName: document.getElementById('f-mascotName').value,
-    mascotImg: document.getElementById('f-mascotImg').value.trim(),
+    mascotImg: getImageValue('mascotImg'),
     mascotEmoji: document.getElementById('f-mascotEmoji').value || '🙂',
-    bgImg: document.getElementById('f-bgImg').value.trim(),
+    bgImg: getImageValue('bgImg'),
     accent: document.getElementById('f-accent').value,
     questions: questions
   };
@@ -333,6 +443,8 @@ function wireCopyButton(btnId, textareaId){
 document.getElementById('genBtn').addEventListener('click', generate);
 wireCopyButton('copyLink','outLink');
 wireCopyButton('copyCode','outCode');
+wireImageField('mascotImg', 320, 0.82);
+wireImageField('bgImg', 960, 0.75);
 
 renderQuestions();
 generate();
