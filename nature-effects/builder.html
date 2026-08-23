@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Конструктор: Природные явления</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Space+Mono:wght@400;700&display=swap');
+  :root{
+    --bg-page:#0b0c1f; --bg-panel:#13152f; --bg-input:#0c0e22; --bg-terminal:#05060f;
+    --pink:#ff4fd8; --pink-dim:rgba(255,79,216,0.35);
+    --blue:#4fd8ff; --blue-dim:rgba(79,216,255,0.35);
+    --text:#eef0ff; --text-dim:#8b90b8; --danger:#ff6b81; --success:#3ecf6a; --line:#262a52;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; font-family:'Baloo 2','Trebuchet MS','Verdana',sans-serif; color:var(--text);
+    background:
+      radial-gradient(1000px 560px at -8% -12%, var(--pink-dim), transparent 60%),
+      radial-gradient(1000px 560px at 108% 112%, var(--blue-dim), transparent 60%),
+      var(--bg-page);
+    min-height:100vh;
+  }
+  header{background:rgba(255,255,255,0.03); border-bottom:1px solid var(--line); padding:18px 24px;}
+  header h1{
+    margin:0;font-size:20px;
+    background:linear-gradient(90deg,var(--pink),var(--blue));
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    display:inline-block;
+  }
+  header p{margin:4px 0 0;font-size:13px;color:var(--text-dim);}
+  .layout{display:flex; gap:24px; padding:24px; align-items:flex-start; flex-wrap:wrap;}
+  .panel{
+    background:var(--bg-panel); border:1px solid var(--line); border-radius:16px; padding:20px;
+    box-shadow:0 0 0 1px rgba(255,255,255,0.02), 0 12px 30px rgba(0,0,0,0.35);
+  }
+  .form-panel{flex:1 1 380px; min-width:300px; box-shadow:0 0 0 1px rgba(255,79,216,0.15), 0 0 30px -14px var(--pink);}
+  .preview-panel{flex:1 1 460px; min-width:320px; position:sticky; top:24px; box-shadow:0 0 0 1px rgba(79,216,255,0.15), 0 0 30px -14px var(--blue);}
+  label{display:block;font-weight:700;font-size:12px;letter-spacing:.04em;text-transform:uppercase;margin:16px 0 6px;color:var(--text-dim);}
+  label:first-child{margin-top:0;}
+  input[type=range]{width:100%;accent-color:var(--pink);}
+  .out-label{display:flex;justify-content:space-between;align-items:center;margin:16px 0 4px;}
+  .out-label label{margin:0;}
+  .copy-btn{
+    background:rgba(255,255,255,0.06);color:var(--blue);border:1px solid var(--line);border-radius:8px;
+    padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;
+  }
+  .copy-btn:hover{border-color:var(--blue);}
+  .copy-btn.copied{background:var(--success);color:#04170a;border-color:var(--success);}
+  textarea.output{
+    width:100%;height:70px;font-family:'Space Mono',monospace;font-size:12px;
+    background:var(--bg-terminal);color:#8be9fd;border:1px solid var(--line);border-radius:10px;
+    padding:9px 11px;resize:vertical;
+  }
+  .hint{font-size:12px;color:var(--text-dim);margin-top:6px;}
+  .steps{
+    font-size:13px;line-height:1.5;color:var(--text-dim);
+    background:rgba(79,216,255,0.06);border:1px solid rgba(79,216,255,0.25);
+    border-radius:12px;padding:14px 16px;margin-top:16px;
+  }
+  .steps b{color:var(--pink);}
+
+  .effect-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+  .effect-btn{
+    display:flex;flex-direction:column;align-items:center;gap:4px;
+    background:var(--bg-input);border:1px solid var(--line);border-radius:12px;
+    padding:12px 4px;cursor:pointer;color:var(--text-dim);font-size:11px;font-weight:700;
+    font-family:inherit;
+  }
+  .effect-btn .emoji{font-size:24px;}
+  .effect-btn.active{border-color:var(--pink);color:var(--text);box-shadow:0 0 0 2px rgba(255,79,216,0.25);}
+  .effect-btn:hover{border-color:var(--blue);}
+
+  .opacity-value, .density-value{color:var(--blue);font-weight:700;}
+
+  .preview-frame-wrap{
+    position:relative; height:340px; border-radius:14px; overflow:hidden;
+    border:1px solid var(--blue); box-shadow:0 0 0 1px rgba(79,216,255,0.15), 0 0 26px -10px var(--blue);
+    background:linear-gradient(180deg, #8ec9f0 0%, #cfe8f7 55%, #e8f3e0 56%, #bcdca0 100%);
+  }
+  .preview-frame-wrap iframe{position:absolute;inset:0;width:100%;height:100%;border:none;}
+  .preview-note{font-size:11px;color:var(--text-dim);margin-top:6px;text-align:center;}
+</style>
+</head>
+<body>
+<header>
+  <h1>🛠️ Конструктор: Природные явления</h1>
+  <p>Выбери явление → настрой прозрачность → вставь код в Genially и растяни на весь слайд. Фон всегда прозрачный.</p>
+</header>
+
+<div class="layout">
+  <div class="panel form-panel">
+    <label>Выбери явление природы</label>
+    <div class="effect-grid" id="effectGrid"></div>
+
+    <label>Прозрачность <span class="opacity-value" id="opacityValue">85%</span></label>
+    <input type="range" id="f-opacity" min="10" max="100" value="85">
+    <div class="hint">Меньше — эффект приглушённый и не отвлекает от контента слайда; больше — виден ярко.</div>
+
+    <div id="densityRow">
+      <label>Интенсивность <span class="density-value" id="densityValue">50</span></label>
+      <input type="range" id="f-density" min="0" max="100" value="50">
+      <div class="hint" id="densityHint">Плотность частиц / частота вспышек молнии.</div>
+    </div>
+  </div>
+
+  <div class="panel preview-panel">
+    <label style="margin-top:0;">Живое превью (фон-градиент здесь — только для примера, в Genially будет твой слайд)</label>
+    <div class="preview-frame-wrap">
+      <iframe id="previewFrame"></iframe>
+    </div>
+    <div class="preview-note">Так эффект будет выглядеть поверх любого фона — сам он прозрачный</div>
+
+    <div class="out-label"><label>Ссылка (если поле в Genially просит просто URL)</label>
+      <button class="copy-btn" id="copyLink">Копировать ссылку</button></div>
+    <textarea class="output" id="outLink" readonly></textarea>
+
+    <div class="out-label"><label>Код для вставки (если поле просит embed-код)</label>
+      <button class="copy-btn" id="copyCode">Скопировать код для Genially</button></div>
+    <textarea class="output" id="outCode" readonly></textarea>
+
+    <div class="steps">
+      <b>Как вставить в Genially:</b> «Вставить» → «Другое» → вставь ссылку или код выше → растяни рамку на весь слайд (за уголок, до самых краёв). Эффект не будет мешать нажимать на кнопки под ним — клики проходят сквозь него.
+    </div>
+  </div>
+</div>
+
+<script>
+const EFFECTS = [
+  {key:'sun', label:'Солнце', emoji:'☀️'},
+  {key:'rays', label:'Лучи солнца', emoji:'🌅'},
+  {key:'rain', label:'Дождь', emoji:'🌧️'},
+  {key:'snow', label:'Снег', emoji:'❄️'},
+  {key:'hail', label:'Град', emoji:'🧊'},
+  {key:'lightning', label:'Молния', emoji:'⚡'},
+  {key:'rainbow', label:'Радуга', emoji:'🌈'},
+  {key:'tsunami', label:'Цунами', emoji:'🌊'}
+];
+const DENSITY_TYPES = ['rain','snow','hail','lightning'];
+let selectedType = 'snow';
+
+function renderEffectGrid(){
+  const grid = document.getElementById('effectGrid');
+  grid.innerHTML = EFFECTS.map(e => `
+    <button type="button" class="effect-btn ${e.key===selectedType?'active':''}" data-key="${e.key}">
+      <span class="emoji">${e.emoji}</span>${e.label}
+    </button>`).join('');
+  grid.querySelectorAll('.effect-btn').forEach(btn=>{
+    btn.addEventListener('click', () => {
+      selectedType = btn.dataset.key;
+      renderEffectGrid();
+      updateDensityVisibility();
+      generate();
+    });
+  });
+}
+
+function updateDensityVisibility(){
+  document.getElementById('densityRow').style.display = DENSITY_TYPES.includes(selectedType) ? '' : 'none';
+  document.getElementById('densityHint').textContent = selectedType === 'lightning'
+    ? 'Выше — молния сверкает чаще.'
+    : 'Плотность частиц: больше — снега/дождя/града гуще.';
+}
+
+function engineBaseUrl(){
+  return location.href.replace(/builder\.html.*$/, 'engine.html');
+}
+
+function generate(){
+  const opacity = document.getElementById('f-opacity').value;
+  const density = document.getElementById('f-density').value;
+  document.getElementById('opacityValue').textContent = opacity + '%';
+  document.getElementById('densityValue').textContent = density;
+
+  const url = `${engineBaseUrl()}?type=${selectedType}&opacity=${opacity}&density=${density}`;
+  document.getElementById('previewFrame').src = url;
+  document.getElementById('outLink').value = url;
+  document.getElementById('outCode').value =
+    `<iframe src="${url}" width="100%" height="100%" style="border:none;position:absolute;inset:0;pointer-events:none;" title="Природное явление"></iframe>`;
+}
+
+function wireCopyButton(btnId, textareaId){
+  document.getElementById(btnId).addEventListener('click', () => {
+    const ta = document.getElementById(textareaId);
+    ta.select();
+    navigator.clipboard.writeText(ta.value).then(() => {
+      const btn = document.getElementById(btnId);
+      btn.classList.add('copied');
+      const old = btn.textContent;
+      btn.textContent = 'Скопировано!';
+      setTimeout(()=>{btn.classList.remove('copied'); btn.textContent = old;}, 1400);
+    });
+  });
+}
+
+document.getElementById('f-opacity').addEventListener('input', generate);
+document.getElementById('f-density').addEventListener('input', generate);
+wireCopyButton('copyLink','outLink');
+wireCopyButton('copyCode','outCode');
+
+renderEffectGrid();
+updateDensityVisibility();
+generate();
+</script>
+</body>
+</html>

@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Природное явление</title>
+<style>
+  html,body{margin:0;height:100%;background:transparent;overflow:hidden;}
+  #stage{position:fixed;inset:0;overflow:hidden;}
+  #canvas{position:absolute;inset:0;width:100%;height:100%;display:none;}
+
+  .rays-wrap{position:absolute;left:50%;top:36%;width:140vmax;height:140vmax;transform:translate(-50%,-50%);}
+  .ray-layer{
+    position:absolute;inset:0;border-radius:50%;
+    -webkit-mask-image:radial-gradient(circle, #000 8%, transparent 42%);
+    mask-image:radial-gradient(circle, #000 8%, transparent 42%);
+  }
+  .ray-layer.a{background:repeating-conic-gradient(from 0deg, rgba(255,232,150,0.55) 0deg 6deg, transparent 6deg 26deg); animation:spin 70s linear infinite;}
+  .ray-layer.b{background:repeating-conic-gradient(from 10deg, rgba(255,250,220,0.35) 0deg 3deg, transparent 3deg 20deg); animation:spinRev 46s linear infinite;}
+  @keyframes spin{ to{transform:rotate(360deg);} }
+  @keyframes spinRev{ to{transform:rotate(-360deg);} }
+  .sun-core{
+    position:absolute;left:50%;top:36%;width:16vmin;height:16vmin;transform:translate(-50%,-50%);border-radius:50%;
+    background:radial-gradient(circle, #fffdf3 0%, #ffe37a 45%, rgba(255,201,60,0) 74%);
+    box-shadow:0 0 7vmin 2.5vmin rgba(255,214,90,0.55);
+    animation:sunPulse 4s ease-in-out infinite;
+  }
+  @keyframes sunPulse{ 0%,100%{transform:translate(-50%,-50%) scale(1);} 50%{transform:translate(-50%,-50%) scale(1.05);} }
+
+  #tsunamiSvg path{transform-box:fill-box;}
+  #waveBack{animation:swellBack 6s ease-in-out infinite;}
+  #waveFront{animation:swellFront 4.5s ease-in-out infinite;}
+  #foam{animation:swellFront 4.5s ease-in-out infinite;}
+  @keyframes swellBack{ 0%,100%{transform:translate(0,26px);} 50%{transform:translate(-16px,-14px);} }
+  @keyframes swellFront{ 0%,100%{transform:translate(0,20px);} 50%{transform:translate(14px,-24px);} }
+</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="canvas"></canvas>
+</div>
+
+<script>
+const params = new URLSearchParams(location.search);
+const type = params.get('type') || 'snow';
+const opacityPct = Math.max(5, Math.min(100, parseInt(params.get('opacity')||'85',10)));
+const density = Math.max(0, Math.min(100, parseInt(params.get('density')||'50',10)));
+document.getElementById('stage').style.opacity = opacityPct/100;
+
+function initCanvas(){
+  const canvas = document.getElementById('canvas');
+  canvas.style.display = 'block';
+  const ctx = canvas.getContext('2d');
+  function resize(){ canvas.width = innerWidth; canvas.height = innerHeight; }
+  resize();
+  window.addEventListener('resize', resize);
+  return ctx;
+}
+
+function startSnow(){
+  const ctx = initCanvas(); const canvas = ctx.canvas;
+  const count = Math.round(15 + density*1.35);
+  const flakes = Array.from({length:count}, () => ({
+    x: Math.random()*canvas.width, y: Math.random()*canvas.height,
+    r: 1.4+Math.random()*3.2, speed: 0.35+Math.random()*1.1,
+    phase: Math.random()*Math.PI*2, alpha: 0.45+Math.random()*0.45
+  }));
+  function tick(t){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle = '#ffffff';
+    flakes.forEach(f=>{
+      f.y += f.speed;
+      f.x += Math.sin(t*0.001 + f.phase)*0.5;
+      if (f.y - f.r > canvas.height){ f.y = -f.r; f.x = Math.random()*canvas.width; }
+      if (f.x < -10) f.x = canvas.width+10;
+      if (f.x > canvas.width+10) f.x = -10;
+      ctx.globalAlpha = f.alpha;
+      ctx.beginPath(); ctx.arc(f.x, f.y, f.r, 0, Math.PI*2); ctx.fill();
+    });
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
+function startRain(){
+  const ctx = initCanvas(); const canvas = ctx.canvas;
+  const count = Math.round(30 + density*1.7);
+  const drops = Array.from({length:count}, () => ({
+    x: Math.random()*canvas.width, y: Math.random()*canvas.height,
+    len: 10+Math.random()*16, speed: 7+Math.random()*7, alpha: 0.2+Math.random()*0.35
+  }));
+  function tick(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.strokeStyle = '#cfe3ff'; ctx.lineWidth = 1.3; ctx.lineCap = 'round';
+    drops.forEach(d=>{
+      d.y += d.speed; d.x -= d.speed*0.18;
+      if (d.y - d.len > canvas.height){ d.y = -10; d.x = Math.random()*canvas.width; }
+      if (d.x < -20) d.x = canvas.width+20;
+      ctx.globalAlpha = d.alpha;
+      ctx.beginPath();
+      ctx.moveTo(d.x, d.y);
+      ctx.lineTo(d.x + d.speed*0.18, d.y - d.len);
+      ctx.stroke();
+    });
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
+function startHail(){
+  const ctx = initCanvas(); const canvas = ctx.canvas;
+  const count = Math.round(10 + density*0.55);
+  const stones = Array.from({length:count}, () => ({
+    x: Math.random()*canvas.width, y: Math.random()*canvas.height,
+    r: 2+Math.random()*2.6, speed: 9+Math.random()*6, alpha: 0.5+Math.random()*0.4
+  }));
+  function tick(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    stones.forEach(s=>{
+      s.y += s.speed; s.x -= s.speed*0.12;
+      if (s.y - s.r > canvas.height){ s.y = -10; s.x = Math.random()*canvas.width; }
+      if (s.x < -10) s.x = canvas.width+10;
+      ctx.globalAlpha = s.alpha;
+      ctx.fillStyle = '#eef3f8';
+      ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI*2); ctx.fill();
+      ctx.globalAlpha = s.alpha*0.8;
+      ctx.strokeStyle = '#aebfce'; ctx.lineWidth = 0.6; ctx.stroke();
+    });
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
+function renderSun(){
+  document.getElementById('stage').insertAdjacentHTML('beforeend',
+    `<div class="sun-core" style="width:34vmin;height:34vmin;top:42%;"></div>`);
+}
+
+function renderRays(){
+  document.getElementById('stage').insertAdjacentHTML('beforeend', `
+    <div class="rays-wrap">
+      <div class="ray-layer a"></div>
+      <div class="ray-layer b"></div>
+    </div>
+    <div class="sun-core"></div>`);
+}
+
+function startLightning(){
+  document.getElementById('stage').insertAdjacentHTML('beforeend', `
+    <div id="flashOverlay" style="position:absolute;inset:0;background:#eaf3ff;opacity:0;"></div>
+    <svg id="boltSvg" style="position:absolute;inset:0;width:100%;height:100%;opacity:0;" viewBox="0 0 100 100" preserveAspectRatio="none">
+      <path id="boltPath" fill="none" stroke="#eef6ff" stroke-width="1" stroke-linejoin="round" stroke-linecap="round"/>
+    </svg>`);
+  const flashEl = document.getElementById('flashOverlay');
+  const boltEl = document.getElementById('boltSvg');
+  const boltPath = document.getElementById('boltPath');
+
+  function randomBoltD(){
+    let x = 25+Math.random()*50, y = 0;
+    let d = `M ${x.toFixed(1)} ${y}`;
+    const steps = 6+Math.floor(Math.random()*4);
+    for (let i=0;i<steps;i++){
+      y += 62/steps;
+      x += (Math.random()*22-11);
+      d += ` L ${x.toFixed(1)} ${y.toFixed(1)}`;
+    }
+    return d;
+  }
+  function flash(){
+    boltPath.setAttribute('d', randomBoltD());
+    boltEl.style.transition = 'none'; boltEl.style.opacity = '0.95';
+    flashEl.style.transition = 'none'; flashEl.style.opacity = '0.55';
+    setTimeout(()=>{
+      boltEl.style.transition = 'opacity .15s ease'; boltEl.style.opacity = '0';
+      flashEl.style.transition = 'opacity .35s ease'; flashEl.style.opacity = '0';
+    }, 90);
+    setTimeout(()=>{
+      flashEl.style.transition = 'none'; flashEl.style.opacity = '0.22';
+      setTimeout(()=>{ flashEl.style.transition = 'opacity .3s ease'; flashEl.style.opacity = '0'; }, 70);
+    }, 260);
+    scheduleNext();
+  }
+  function scheduleNext(){
+    const base = 9000 - density*70;
+    const delay = base*0.35 + Math.random()*base*0.65;
+    setTimeout(flash, delay);
+  }
+  scheduleNext();
+}
+
+function renderRainbow(){
+  document.getElementById('stage').insertAdjacentHTML('beforeend',
+    `<svg id="rainbowSvg" viewBox="0 0 200 100" preserveAspectRatio="xMidYMax meet" style="position:absolute;inset:0;width:100%;height:100%;"></svg>`);
+  const svg = document.getElementById('rainbowSvg');
+  const colors = ['#ff5b5b','#ff9d4d','#ffe066','#8fe38f','#5bb3ff','#7a7aff','#c07aff'];
+  const cx = 100, cy = 104, rStart = 92, bandW = 6.4;
+  colors.forEach((c,i)=>{
+    const r = rStart - i*bandW;
+    const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+    path.setAttribute('d', `M ${cx-r} ${cy} A ${r} ${r} 0 0 1 ${cx+r} ${cy}`);
+    path.setAttribute('stroke', c);
+    path.setAttribute('stroke-width', bandW);
+    path.setAttribute('fill', 'none');
+    path.style.opacity = '0';
+    path.style.transition = 'opacity 1s ease';
+    svg.appendChild(path);
+    setTimeout(()=>{ path.style.opacity = '0.9'; }, 150*i);
+  });
+}
+
+function startTsunami(){
+  document.getElementById('stage').insertAdjacentHTML('beforeend', `
+    <svg id="tsunamiSvg" viewBox="0 0 400 200" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%;">
+      <path id="waveBack" d="M-50,130 C0,100 50,155 100,130 C150,105 200,155 250,130 C300,105 350,155 400,130 C420,120 450,130 450,130 L450,220 L-50,220 Z" fill="#1f6fa8" opacity="0.5"></path>
+      <path id="waveFront" d="M-50,145 C0,115 50,170 100,145 C150,120 200,170 250,145 C300,120 350,170 400,145 C420,135 450,145 450,145 L450,220 L-50,220 Z" fill="#2f8fd1" opacity="0.8"></path>
+      <path id="foam" d="M-50,145 C0,115 50,170 100,145 C150,120 200,170 250,145 C300,120 350,170 400,145 C420,135 450,145 450,145" fill="none" stroke="#eef8ff" stroke-width="4" opacity="0.85"></path>
+    </svg>`);
+}
+
+const renderers = {
+  snow: startSnow, rain: startRain, hail: startHail,
+  sun: renderSun, rays: renderRays, lightning: startLightning,
+  rainbow: renderRainbow, tsunami: startTsunami
+};
+(renderers[type] || startSnow)();
+</script>
+</body>
+</html>
