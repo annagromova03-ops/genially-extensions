@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Конструктор: Природные явления</title>
+<title>Конструктор: Праздник</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Space+Mono:wght@400;700&display=swap');
   :root{
@@ -76,37 +76,87 @@
   .preview-frame-wrap{
     position:relative; height:340px; border-radius:14px; overflow:hidden;
     border:1px solid var(--blue); box-shadow:0 0 0 1px rgba(79,216,255,0.15), 0 0 26px -10px var(--blue);
-    background:linear-gradient(180deg, #8ec9f0 0%, #cfe8f7 55%, #e8f3e0 56%, #bcdca0 100%);
+    background:#0b0c1f;
   }
-  .preview-frame-wrap iframe{position:absolute;inset:0;width:100%;height:100%;border:none;}
+  .castle-bg{position:absolute;inset:0;width:100%;height:100%;display:block;}
+  .preview-frame-wrap iframe{position:absolute;inset:0;width:100%;height:100%;border:none;z-index:1;}
   .preview-note{font-size:11px;color:var(--text-dim);margin-top:6px;text-align:center;}
 </style>
 </head>
 <body>
 <header>
-  <h1>🛠️ Конструктор: Природные явления</h1>
-  <p>Выбери явление → настрой прозрачность → вставь код в Genially и растяни на весь слайд. Фон всегда прозрачный.</p>
+  <h1>🛠️ Конструктор: Праздник</h1>
+  <p>Для момента «правильный ответ!» или конца урока. Выбери эффект → настрой → вставь код в Genially на весь слайд.</p>
 </header>
 
 <div class="layout">
   <div class="panel form-panel">
-    <label>Выбери явление природы</label>
+    <label>Выбери эффект</label>
     <div class="effect-grid" id="effectGrid"></div>
 
     <label>Прозрачность <span class="opacity-value" id="opacityValue">85%</span></label>
     <input type="range" id="f-opacity" min="10" max="100" value="85">
-    <div class="hint">Меньше — эффект приглушённый и не отвлекает от контента слайда; больше — виден ярко.</div>
+    <div class="hint">Меньше — эффект приглушённый; больше — виден ярко поверх слайда.</div>
 
-    <div id="densityRow">
-      <label>Интенсивность <span class="density-value" id="densityValue">50</span></label>
-      <input type="range" id="f-density" min="0" max="100" value="50">
-      <div class="hint" id="densityHint">Плотность частиц / частота вспышек молнии.</div>
-    </div>
+    <label>Интенсивность <span class="density-value" id="densityValue">50</span></label>
+    <input type="range" id="f-density" min="0" max="100" value="50">
+    <div class="hint" id="densityHint">Как часто/густо происходит эффект.</div>
   </div>
 
   <div class="panel preview-panel">
-    <label style="margin-top:0;">Живое превью (фон-градиент здесь — только для примера, в Genially будет твой слайд)</label>
+    <label style="margin-top:0;">Живое превью (замок — только пример фона для показа, в Genially будет твой слайд)</label>
     <div class="preview-frame-wrap">
+      <svg class="castle-bg" viewBox="0 0 400 200" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#241b3d"/>
+            <stop offset="45%" stop-color="#4a2f5e"/>
+            <stop offset="78%" stop-color="#8a4a63"/>
+            <stop offset="100%" stop-color="#d98a6b"/>
+          </linearGradient>
+          <radialGradient id="moonGlow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#fdf6e3" stop-opacity="0.55"/>
+            <stop offset="100%" stop-color="#fdf6e3" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+        <rect x="0" y="0" width="400" height="200" fill="url(#sky)"/>
+        <circle cx="300" cy="42" r="34" fill="url(#moonGlow)"/>
+        <circle cx="300" cy="42" r="15" fill="#fdf6e3"/>
+        <circle cx="40" cy="25" r="1" fill="#fff" opacity="0.8"/>
+        <circle cx="80" cy="55" r="0.8" fill="#fff" opacity="0.6"/>
+        <circle cx="130" cy="20" r="1.1" fill="#fff" opacity="0.9"/>
+        <circle cx="190" cy="45" r="0.7" fill="#fff" opacity="0.5"/>
+        <circle cx="230" cy="15" r="0.9" fill="#fff" opacity="0.7"/>
+        <circle cx="360" cy="30" r="1" fill="#fff" opacity="0.7"/>
+        <circle cx="20" cy="70" r="0.7" fill="#fff" opacity="0.5"/>
+        <path d="M0,170 Q100,150 200,163 T400,152 L400,200 L0,200 Z" fill="#120d20"/>
+        <rect x="50" y="118" width="22" height="82" fill="#171227"/>
+        <polygon points="47,118 75,118 61,92" fill="#171227"/>
+        <rect x="326" y="118" width="22" height="82" fill="#171227"/>
+        <polygon points="323,118 351,118 337,92" fill="#171227"/>
+        <rect x="108" y="72" width="34" height="128" fill="#171227"/>
+        <polygon points="103,72 143,72 123,36" fill="#171227"/>
+        <rect x="258" y="72" width="34" height="128" fill="#171227"/>
+        <polygon points="253,72 293,72 273,36" fill="#171227"/>
+        <rect x="160" y="96" width="80" height="104" fill="#1c1830"/>
+        <rect x="160" y="88" width="10" height="10" fill="#1c1830"/>
+        <rect x="178" y="88" width="10" height="10" fill="#1c1830"/>
+        <rect x="196" y="88" width="10" height="10" fill="#1c1830"/>
+        <rect x="214" y="88" width="10" height="10" fill="#1c1830"/>
+        <rect x="230" y="88" width="10" height="10" fill="#1c1830"/>
+        <line x1="123" y1="36" x2="123" y2="24" stroke="#171227" stroke-width="1.2"/>
+        <polygon points="123,24 135,28 123,32" fill="#c25d6b"/>
+        <line x1="273" y1="36" x2="273" y2="24" stroke="#171227" stroke-width="1.2"/>
+        <polygon points="273,24 285,28 273,32" fill="#c25d6b"/>
+        <path d="M188,200 L188,168 A12,12 0 0 1 212,168 L212,200 Z" fill="#0d0a17"/>
+        <rect x="118" y="100" width="6" height="9" rx="3" fill="#ffcf6b" opacity="0.9"/>
+        <rect x="126" y="130" width="6" height="9" rx="3" fill="#ffcf6b" opacity="0.8"/>
+        <rect x="268" y="100" width="6" height="9" rx="3" fill="#ffcf6b" opacity="0.85"/>
+        <rect x="276" y="130" width="6" height="9" rx="3" fill="#ffcf6b" opacity="0.7"/>
+        <rect x="178" y="115" width="7" height="10" rx="3" fill="#ffcf6b" opacity="0.9"/>
+        <rect x="200" y="140" width="7" height="10" rx="3" fill="#ffcf6b" opacity="0.85"/>
+        <rect x="222" y="115" width="7" height="10" rx="3" fill="#ffcf6b" opacity="0.8"/>
+      </svg>
       <iframe id="previewFrame"></iframe>
     </div>
     <div class="preview-note">Так эффект будет выглядеть поверх любого фона — сам он прозрачный</div>
@@ -120,31 +170,25 @@
     <textarea class="output" id="outCode" readonly></textarea>
 
     <div class="steps">
-      <b>Как вставить в Genially:</b> «Вставить» → «Другое» → вставь ссылку или код выше → растяни рамку на весь слайд (за уголок, до самых краёв). Эффект не будет мешать нажимать на кнопки под ним — клики проходят сквозь него.
+      <b>Как вставить в Genially:</b> «Вставить» → «Другое» → вставь ссылку или код выше → растяни рамку на весь слайд. Клики проходят сквозь эффект, кнопки под ним останутся рабочими.
     </div>
   </div>
 </div>
 
 <script>
 const EFFECTS = [
-  {key:'sun', label:'Солнце', emoji:'☀️'},
-  {key:'rays', label:'Лучи солнца', emoji:'🌅'},
-  {key:'rain', label:'Дождь', emoji:'🌧️'},
-  {key:'snow', label:'Снег', emoji:'❄️'},
-  {key:'hail', label:'Град', emoji:'🧊'},
-  {key:'lightning', label:'Молния', emoji:'⚡'},
-  {key:'rainbow', label:'Радуга', emoji:'🌈'},
-  {key:'tsunami', label:'Цунами', emoji:'🌊'},
-  {key:'fog', label:'Туман', emoji:'🌫️'},
-  {key:'petals', label:'Лепестки', emoji:'🌸'},
-  {key:'meteors', label:'Метеориты', emoji:'☄️'},
-  {key:'aurora', label:'Сияние', emoji:'🌌'},
-  {key:'lava', label:'Лава', emoji:'🌋'},
-  {key:'sandstorm', label:'Песчаная буря', emoji:'🏜️'},
-  {key:'leaves', label:'Осенние листья', emoji:'🍂'}
+  {key:'confetti', label:'Конфетти', emoji:'🎉'},
+  {key:'fireworks', label:'Салют', emoji:'🎆'},
+  {key:'starsup', label:'Звёзды-награды', emoji:'⭐'},
+  {key:'lights', label:'Гирлянда', emoji:'💡'}
 ];
-const DENSITY_TYPES = ['rain','snow','hail','lightning','fog','petals','meteors','lava','sandstorm','leaves'];
-let selectedType = 'snow';
+const DENSITY_HINTS = {
+  confetti: 'Сколько конфетти в каждой вспышке и как часто они падают.',
+  fireworks: 'Сколько искр в залпе и как часто взрывы.',
+  starsup: 'Как часто взлетают звёзды.',
+  lights: 'Сколько лампочек в гирлянде.'
+};
+let selectedType = 'confetti';
 
 function renderEffectGrid(){
   const grid = document.getElementById('effectGrid');
@@ -156,17 +200,10 @@ function renderEffectGrid(){
     btn.addEventListener('click', () => {
       selectedType = btn.dataset.key;
       renderEffectGrid();
-      updateDensityVisibility();
+      document.getElementById('densityHint').textContent = DENSITY_HINTS[selectedType];
       generate();
     });
   });
-}
-
-function updateDensityVisibility(){
-  document.getElementById('densityRow').style.display = DENSITY_TYPES.includes(selectedType) ? '' : 'none';
-  document.getElementById('densityHint').textContent = selectedType === 'lightning'
-    ? 'Выше — молния сверкает чаще.'
-    : 'Плотность частиц: больше — эффект гуще и заметнее.';
 }
 
 function engineBaseUrl(){
@@ -183,7 +220,7 @@ function generate(){
   document.getElementById('previewFrame').src = url;
   document.getElementById('outLink').value = url;
   document.getElementById('outCode').value =
-    `<iframe src="${url}" width="100%" height="100%" style="border:none;position:absolute;inset:0;pointer-events:none;" title="Природное явление"></iframe>`;
+    `<iframe src="${url}" width="100%" height="100%" style="border:none;position:absolute;inset:0;pointer-events:none;" title="Праздничный эффект"></iframe>`;
 }
 
 function wireCopyButton(btnId, textareaId){
@@ -206,7 +243,7 @@ wireCopyButton('copyLink','outLink');
 wireCopyButton('copyCode','outCode');
 
 renderEffectGrid();
-updateDensityVisibility();
+document.getElementById('densityHint').textContent = DENSITY_HINTS[selectedType];
 generate();
 </script>
 </body>
