@@ -9,10 +9,6 @@
   #stage{position:fixed;inset:0;overflow:hidden;}
   #canvas{position:absolute;inset:0;width:100%;height:100%;display:none;}
 
-  @keyframes glareDrift{
-    0%,100%{ transform:translate(0,0) scale(1); opacity:0.55; }
-    50%{ transform:translate(6vmin,-4vmin) scale(1.15); opacity:0.85; }
-  }
   @keyframes fogDrift{
     0%,100%{ transform:translate(0,0) scale(1); opacity:0.45; }
     50%{ transform:translate(5vmin,-3vmin) scale(1.25); opacity:0.8; }
@@ -216,19 +212,38 @@ function startBlur(){
 function startGlare(){
   const stage = document.getElementById('stage');
   const count = 3 + Math.round(density/25);
+
+  function cycleBlob(el){
+    const size = 14+Math.random()*20;
+    el.style.width = size+'vmin';
+    el.style.height = size+'vmin';
+    el.style.left = Math.random()*90+'%';
+    el.style.top = Math.random()*85+'%';
+    const fadeIn = 0.5+Math.random()*0.6;
+    const hold = 350+Math.random()*900;
+    const fadeOut = 0.6+Math.random()*0.9;
+    const peak = 0.6+Math.random()*0.35;
+    el.style.transition = `opacity ${fadeIn}s ease`;
+    el.style.opacity = peak.toFixed(2);
+    setTimeout(()=>{
+      el.style.transition = `opacity ${fadeOut}s ease`;
+      el.style.opacity = '0';
+      const gap = 300 + Math.random()*(9000 - density*60);
+      setTimeout(()=>cycleBlob(el), fadeOut*1000 + gap);
+    }, fadeIn*1000 + hold);
+  }
+
   for (let i=0;i<count;i++){
     const el = document.createElement('div');
-    const size = 14+Math.random()*18;
-    el.style.cssText = `position:absolute;width:${size}vmin;height:${size}vmin;border-radius:50%;
-      background:radial-gradient(circle, rgba(255,255,255,0.85), rgba(255,255,255,0) 70%);
-      left:${Math.random()*80}%; top:${Math.random()*75}%; mix-blend-mode:screen;
-      animation: glareDrift ${16+Math.random()*14}s ease-in-out infinite; animation-delay:-${Math.random()*10}s;`;
+    el.style.cssText = `position:absolute;border-radius:50%;opacity:0;
+      background:radial-gradient(circle, rgba(255,255,255,0.9), rgba(255,255,255,0) 70%);`;
     stage.appendChild(el);
+    setTimeout(()=>cycleBlob(el), Math.random()*3000);
   }
+
   const sweep = document.createElement('div');
   sweep.style.cssText = `position:absolute;top:-60%;left:-60%;width:35%;height:220%;
-    background:linear-gradient(75deg, transparent 40%, rgba(255,255,255,0.55) 50%, transparent 60%);
-    mix-blend-mode:screen;`;
+    background:linear-gradient(75deg, transparent 40%, rgba(255,255,255,0.55) 50%, transparent 60%);`;
   stage.appendChild(sweep);
   function doSweep(){
     sweep.style.transition='none'; sweep.style.left='-60%';
