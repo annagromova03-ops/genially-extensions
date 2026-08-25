@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Конструктор: Экранные эффекты</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Space+Mono:wght@400;700&display=swap');
+  :root{
+    --bg-page:#0b0c1f; --bg-panel:#13152f; --bg-input:#0c0e22; --bg-terminal:#05060f;
+    --pink:#ff4fd8; --pink-dim:rgba(255,79,216,0.35);
+    --blue:#4fd8ff; --blue-dim:rgba(79,216,255,0.35);
+    --text:#eef0ff; --text-dim:#8b90b8; --danger:#ff6b81; --success:#3ecf6a; --line:#262a52;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; font-family:'Baloo 2','Trebuchet MS','Verdana',sans-serif; color:var(--text);
+    background:
+      radial-gradient(1000px 560px at -8% -12%, var(--pink-dim), transparent 60%),
+      radial-gradient(1000px 560px at 108% 112%, var(--blue-dim), transparent 60%),
+      var(--bg-page);
+    min-height:100vh;
+  }
+  header{background:rgba(255,255,255,0.03); border-bottom:1px solid var(--line); padding:18px 24px;}
+  header h1{
+    margin:0;font-size:20px;
+    background:linear-gradient(90deg,var(--pink),var(--blue));
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    display:inline-block;
+  }
+  header p{margin:4px 0 0;font-size:13px;color:var(--text-dim);}
+  .layout{display:flex; gap:24px; padding:24px; align-items:flex-start; flex-wrap:wrap;}
+  .panel{
+    background:var(--bg-panel); border:1px solid var(--line); border-radius:16px; padding:20px;
+    box-shadow:0 0 0 1px rgba(255,255,255,0.02), 0 12px 30px rgba(0,0,0,0.35);
+  }
+  .form-panel{flex:1 1 380px; min-width:300px; box-shadow:0 0 0 1px rgba(255,79,216,0.15), 0 0 30px -14px var(--pink);}
+  .preview-panel{flex:1 1 460px; min-width:320px; position:sticky; top:24px; box-shadow:0 0 0 1px rgba(79,216,255,0.15), 0 0 30px -14px var(--blue);}
+  label{display:block;font-weight:700;font-size:12px;letter-spacing:.04em;text-transform:uppercase;margin:16px 0 6px;color:var(--text-dim);}
+  label:first-child{margin-top:0;}
+  input[type=range]{width:100%;accent-color:var(--pink);}
+  .out-label{display:flex;justify-content:space-between;align-items:center;margin:16px 0 4px;}
+  .out-label label{margin:0;}
+  .copy-btn{
+    background:rgba(255,255,255,0.06);color:var(--blue);border:1px solid var(--line);border-radius:8px;
+    padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;
+  }
+  .copy-btn:hover{border-color:var(--blue);}
+  .copy-btn.copied{background:var(--success);color:#04170a;border-color:var(--success);}
+  textarea.output{
+    width:100%;height:70px;font-family:'Space Mono',monospace;font-size:12px;
+    background:var(--bg-terminal);color:#8be9fd;border:1px solid var(--line);border-radius:10px;
+    padding:9px 11px;resize:vertical;
+  }
+  .hint{font-size:12px;color:var(--text-dim);margin-top:6px;}
+  .steps{
+    font-size:13px;line-height:1.5;color:var(--text-dim);
+    background:rgba(79,216,255,0.06);border:1px solid rgba(79,216,255,0.25);
+    border-radius:12px;padding:14px 16px;margin-top:16px;
+  }
+  .steps b{color:var(--pink);}
+
+  .effect-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+  .effect-btn{
+    display:flex;flex-direction:column;align-items:center;gap:4px;
+    background:var(--bg-input);border:1px solid var(--line);border-radius:12px;
+    padding:12px 4px;cursor:pointer;color:var(--text-dim);font-size:11px;font-weight:700;
+    font-family:inherit;
+  }
+  .effect-btn .emoji{font-size:24px;}
+  .effect-btn.active{border-color:var(--pink);color:var(--text);box-shadow:0 0 0 2px rgba(255,79,216,0.25);}
+  .effect-btn:hover{border-color:var(--blue);}
+
+  .opacity-value, .density-value{color:var(--blue);font-weight:700;}
+
+  .preview-frame-wrap{
+    position:relative; height:340px; border-radius:14px; overflow:hidden;
+    border:1px solid var(--blue); box-shadow:0 0 0 1px rgba(79,216,255,0.15), 0 0 26px -10px var(--blue);
+    background:#0b0c1f;
+  }
+  .castle-bg{position:absolute;inset:0;width:100%;height:100%;display:block;}
+  .preview-frame-wrap iframe{position:absolute;inset:0;width:100%;height:100%;border:none;z-index:1;}
+  .preview-note{font-size:11px;color:var(--text-dim);margin-top:6px;text-align:center;}
+</style>
+</head>
+<body>
+<header>
+  <h1>🛠️ Конструктор: Экранные эффекты</h1>
+  <p>Выбери эффект → настрой прозрачность и интенсивность → вставь код в Genially и растяни на весь слайд. Фон всегда прозрачный.</p>
+</header>
+
+<div class="layout">
+  <div class="panel form-panel">
+    <label>Выбери эффект</label>
+    <div class="effect-grid" id="effectGrid"></div>
+
+    <label>Прозрачность <span class="opacity-value" id="opacityValue">85%</span></label>
+    <input type="range" id="f-opacity" min="10" max="100" value="85">
+    <div class="hint">Меньше — эффект приглушённый; больше — виден ярко поверх слайда.</div>
+
+    <label>Интенсивность <span class="density-value" id="densityValue">50</span></label>
+    <input type="range" id="f-density" min="0" max="100" value="50">
+    <div class="hint" id="densityHint">Как часто/густо происходит эффект.</div>
+  </div>
+
+  <div class="panel preview-panel">
+    <label style="margin-top:0;">Живое превью (замок — только пример фона для показа, в Genially будет твой слайд)</label>
+    <div class="preview-frame-wrap">
+      <svg class="castle-bg" viewBox="0 0 400 200" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#241b3d"/>
+            <stop offset="45%" stop-color="#4a2f5e"/>
+            <stop offset="78%" stop-color="#8a4a63"/>
+            <stop offset="100%" stop-color="#d98a6b"/>
+          </linearGradient>
+          <radialGradient id="moonGlow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#fdf6e3" stop-opacity="0.55"/>
+            <stop offset="100%" stop-color="#fdf6e3" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+        <rect x="0" y="0" width="400" height="200" fill="url(#sky)"/>
+        <circle cx="300" cy="42" r="34" fill="url(#moonGlow)"/>
+        <circle cx="300" cy="42" r="15" fill="#fdf6e3"/>
+        <circle cx="40" cy="25" r="1" fill="#fff" opacity="0.8"/>
+        <circle cx="80" cy="55" r="0.8" fill="#fff" opacity="0.6"/>
+        <circle cx="130" cy="20" r="1.1" fill="#fff" opacity="0.9"/>
+        <circle cx="190" cy="45" r="0.7" fill="#fff" opacity="0.5"/>
+        <circle cx="230" cy="15" r="0.9" fill="#fff" opacity="0.7"/>
+        <circle cx="360" cy="30" r="1" fill="#fff" opacity="0.7"/>
+        <circle cx="20" cy="70" r="0.7" fill="#fff" opacity="0.5"/>
+        <path d="M0,170 Q100,150 200,163 T400,152 L400,200 L0,200 Z" fill="#120d20"/>
+        <rect x="50" y="118" width="22" height="82" fill="#171227"/>
+        <polygon points="47,118 75,118 61,92" fill="#171227"/>
+        <rect x="326" y="118" width="22" height="82" fill="#171227"/>
+        <polygon points="323,118 351,118 337,92" fill="#171227"/>
+        <rect x="108" y="72" width="34" height="128" fill="#171227"/>
+        <polygon points="103,72 143,72 123,36" fill="#171227"/>
+        <rect x="258" y="72" width="34" height="128" fill="#171227"/>
+        <polygon points="253,72 293,72 273,36" fill="#171227"/>
+        <rect x="160" y="96" width="80" height="104" fill="#1c1830"/>
+        <rect x="160" y="88" width="10" height="10" fill="#1c1830"/>
+        <rect x="178" y="88" width="10" height="10" fill="#1c1830"/>
+        <rect x="196" y="88" width="10" height="10" fill="#1c1830"/>
+        <rect x="214" y="88" width="10" height="10" fill="#1c1830"/>
+        <rect x="230" y="88" width="10" height="10" fill="#1c1830"/>
+        <line x1="123" y1="36" x2="123" y2="24" stroke="#171227" stroke-width="1.2"/>
+        <polygon points="123,24 135,28 123,32" fill="#c25d6b"/>
+        <line x1="273" y1="36" x2="273" y2="24" stroke="#171227" stroke-width="1.2"/>
+        <polygon points="273,24 285,28 273,32" fill="#c25d6b"/>
+        <path d="M188,200 L188,168 A12,12 0 0 1 212,168 L212,200 Z" fill="#0d0a17"/>
+        <rect x="118" y="100" width="6" height="9" rx="3" fill="#ffcf6b" opacity="0.9"/>
+        <rect x="126" y="130" width="6" height="9" rx="3" fill="#ffcf6b" opacity="0.8"/>
+        <rect x="268" y="100" width="6" height="9" rx="3" fill="#ffcf6b" opacity="0.85"/>
+        <rect x="276" y="130" width="6" height="9" rx="3" fill="#ffcf6b" opacity="0.7"/>
+        <rect x="178" y="115" width="7" height="10" rx="3" fill="#ffcf6b" opacity="0.9"/>
+        <rect x="200" y="140" width="7" height="10" rx="3" fill="#ffcf6b" opacity="0.85"/>
+        <rect x="222" y="115" width="7" height="10" rx="3" fill="#ffcf6b" opacity="0.8"/>
+      </svg>
+      <iframe id="previewFrame"></iframe>
+    </div>
+    <div class="preview-note">Так эффект будет выглядеть поверх любого фона — сам он прозрачный</div>
+
+    <div class="out-label"><label>Ссылка (если поле в Genially просит просто URL)</label>
+      <button class="copy-btn" id="copyLink">Копировать ссылку</button></div>
+    <textarea class="output" id="outLink" readonly></textarea>
+
+    <div class="out-label"><label>Код для вставки (если поле просит embed-код)</label>
+      <button class="copy-btn" id="copyCode">Скопировать код для Genially</button></div>
+    <textarea class="output" id="outCode" readonly></textarea>
+
+    <div class="steps">
+      <b>Как вставить в Genially:</b> «Вставить» → «Другое» → вставь ссылку или код выше → растяни рамку на весь слайд. Клики проходят сквозь эффект, кнопки под ним останутся рабочими.
+      <br><br>
+      <b>Про «тряску экрана»:</b> вставленный слой физически не может трясти сам слайд Genially — это технически невозможно для встроенного iframe. Вместо этого эффект имитирует удар по камере: вспышка + дрожащая тёмная рамка по краям. Смотрится похоже, но сам контент под ним не двигается.
+    </div>
+  </div>
+</div>
+
+<script>
+const EFFECTS = [
+  {key:'crack', label:'Трещины', emoji:'💥'},
+  {key:'static', label:'Помехи', emoji:'📺'},
+  {key:'shake', label:'Тряска', emoji:'💢'},
+  {key:'glare', label:'Блики', emoji:'🔆'},
+  {key:'flash', label:'Вспышки', emoji:'⚡'},
+  {key:'sparkles', label:'Звёздочки', emoji:'✨'}
+];
+const DENSITY_HINTS = {
+  crack: 'Как часто появляются новые трещины.',
+  static: 'Сила помех/шума.',
+  shake: 'Как часто происходит «удар».',
+  glare: 'Сколько бликов и как часто блеск.',
+  flash: 'Как часто сверкают вспышки.',
+  sparkles: 'Сколько звёздочек летает.'
+};
+let selectedType = 'sparkles';
+
+function renderEffectGrid(){
+  const grid = document.getElementById('effectGrid');
+  grid.innerHTML = EFFECTS.map(e => `
+    <button type="button" class="effect-btn ${e.key===selectedType?'active':''}" data-key="${e.key}">
+      <span class="emoji">${e.emoji}</span>${e.label}
+    </button>`).join('');
+  grid.querySelectorAll('.effect-btn').forEach(btn=>{
+    btn.addEventListener('click', () => {
+      selectedType = btn.dataset.key;
+      renderEffectGrid();
+      document.getElementById('densityHint').textContent = DENSITY_HINTS[selectedType];
+      generate();
+    });
+  });
+}
+
+function engineBaseUrl(){
+  return location.href.replace(/builder\.html.*$/, 'engine.html');
+}
+
+function generate(){
+  const opacity = document.getElementById('f-opacity').value;
+  const density = document.getElementById('f-density').value;
+  document.getElementById('opacityValue').textContent = opacity + '%';
+  document.getElementById('densityValue').textContent = density;
+
+  const url = `${engineBaseUrl()}?type=${selectedType}&opacity=${opacity}&density=${density}`;
+  document.getElementById('previewFrame').src = url;
+  document.getElementById('outLink').value = url;
+  document.getElementById('outCode').value =
+    `<iframe src="${url}" width="100%" height="100%" style="border:none;position:absolute;inset:0;pointer-events:none;" title="Экранный эффект"></iframe>`;
+}
+
+function wireCopyButton(btnId, textareaId){
+  document.getElementById(btnId).addEventListener('click', () => {
+    const ta = document.getElementById(textareaId);
+    ta.select();
+    navigator.clipboard.writeText(ta.value).then(() => {
+      const btn = document.getElementById(btnId);
+      btn.classList.add('copied');
+      const old = btn.textContent;
+      btn.textContent = 'Скопировано!';
+      setTimeout(()=>{btn.classList.remove('copied'); btn.textContent = old;}, 1400);
+    });
+  });
+}
+
+document.getElementById('f-opacity').addEventListener('input', generate);
+document.getElementById('f-density').addEventListener('input', generate);
+wireCopyButton('copyLink','outLink');
+wireCopyButton('copyCode','outCode');
+
+renderEffectGrid();
+document.getElementById('densityHint').textContent = DENSITY_HINTS[selectedType];
+generate();
+</script>
+</body>
+</html>
