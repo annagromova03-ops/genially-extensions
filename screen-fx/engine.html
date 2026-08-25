@@ -177,30 +177,38 @@ function startStatic(){
   requestAnimationFrame(tick);
 }
 
-// ---- 3. Размытие (сплошная нечёткость на весь экран — реальный блюр слайда позади overlay недоступен по той же причине, что и тряска) ----
+// ---- 3. Размытие (сплошная нечёткость на весь экран, как расфокусированное боке — реальный блюр слайда позади overlay недоступен по той же причине, что и тряска) ----
 function startBlur(){
   const stage = document.getElementById('stage');
+  const washStrength = 0.35 + density/100*0.35;
 
   const wash = document.createElement('div');
-  wash.style.cssText = `position:absolute;inset:0;background:rgba(255,255,255,${0.1+density/100*0.22});`;
+  wash.style.cssText = `position:absolute;inset:0;
+    background:linear-gradient(180deg,
+      rgba(150,168,185,${(washStrength*0.8).toFixed(2)}) 0%,
+      rgba(107,55,66,${washStrength.toFixed(2)}) 45%,
+      rgba(38,28,24,${(washStrength*1.1).toFixed(2)}) 100%);`;
   stage.appendChild(wash);
 
-  const cols = 4, rows = 3;
-  for (let r=0;r<rows;r++){
-    for (let c=0;c<cols;c++){
-      const el = document.createElement('div');
-      const size = 48+Math.random()*22;
-      const left = (c/(cols-1))*100 + (Math.random()*16-8);
-      const top = (r/(rows-1))*100 + (Math.random()*16-8);
-      const toneRoll = Math.random();
-      const tone = toneRoll<0.4 ? '255,255,255' : (toneRoll<0.7 ? '230,238,255' : '255,240,228');
-      el.style.cssText = `position:absolute;width:${size}vmin;height:${size}vmin;border-radius:50%;
-        left:${left}%; top:${top}%; transform:translate(-50%,-50%);
-        background:radial-gradient(circle, rgba(${tone},0.85), rgba(${tone},0) 72%);
-        filter:blur(14px);
-        animation: fogDrift ${18+Math.random()*14}s ease-in-out infinite; animation-delay:-${Math.random()*14}s;`;
-      stage.appendChild(el);
-    }
+  const palette = [
+    {color:'255,235,245', big:true},
+    {color:'232,140,190', big:false},
+    {color:'212,165,116', big:false},
+    {color:'120,90,170', big:false},
+    {color:'230,90,150', big:false}
+  ];
+  const count = 5 + Math.round(density/30);
+  for (let i=0;i<count;i++){
+    const p = palette[i % palette.length];
+    const el = document.createElement('div');
+    const size = p.big ? 58+Math.random()*16 : 32+Math.random()*20;
+    const left = Math.random()*100, top = Math.random()*100;
+    el.style.cssText = `position:absolute;width:${size}vmin;height:${size}vmin;border-radius:50%;
+      left:${left}%; top:${top}%; transform:translate(-50%,-50%);
+      background:radial-gradient(circle, rgba(${p.color},${p.big?0.95:0.8}), rgba(${p.color},0) 75%);
+      filter:blur(${p.big?26:20}px);
+      animation: fogDrift ${18+Math.random()*16}s ease-in-out infinite; animation-delay:-${Math.random()*14}s;`;
+    stage.appendChild(el);
   }
 }
 
