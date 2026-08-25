@@ -47,39 +47,86 @@ function startCrack(){
   document.getElementById('stage').insertAdjacentHTML('beforeend',
     `<svg id="crackSvg" viewBox="0 0 100 100" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%;"></svg>`);
   const svg = document.getElementById('crackSvg');
-  const maxLines = 45;
+  const maxSpawns = 8;
+  let spawnCount = 0;
+
+  function makeCrackPath(d, width, opacity){
+    const path = document.createElementNS(svgNS,'path');
+    path.setAttribute('d', d);
+    path.setAttribute('stroke', '#f2f7ff');
+    path.setAttribute('stroke-width', width);
+    path.setAttribute('fill', 'none');
+    path.setAttribute('stroke-linecap', 'round');
+    path.setAttribute('stroke-linejoin', 'round');
+    path.style.opacity = opacity;
+    path.style.filter = 'drop-shadow(0 0 1px rgba(255,255,255,0.9))';
+    svg.appendChild(path);
+    const len = path.getTotalLength();
+    path.style.strokeDasharray = len;
+    path.style.strokeDashoffset = len;
+    requestAnimationFrame(()=>{
+      path.style.transition = `stroke-dashoffset ${0.2+Math.random()*0.25}s ease-out`;
+      path.style.strokeDashoffset = '0';
+    });
+    return path;
+  }
 
   function spawnCrack(){
+    spawnCount++;
     const cx = 15+Math.random()*70, cy = 15+Math.random()*70;
-    const mainLines = 5+Math.floor(Math.random()*3);
+
+    // концентрические кольца напряжения вокруг точки удара
+    const ringCount = 1+Math.floor(Math.random()*2);
+    for (let ri=0; ri<ringCount; ri++){
+      const baseR = 3 + ri*3.2 + Math.random()*1.2;
+      const pts = 9+Math.floor(Math.random()*4);
+      let d = '';
+      for (let p=0; p<=pts; p++){
+        const ang = (Math.PI*2/pts)*p;
+        const rr = baseR * (0.75+Math.random()*0.5);
+        d += (p===0?'M':'L') + ` ${(cx+Math.cos(ang)*rr).toFixed(1)} ${(cy+Math.sin(ang)*rr).toFixed(1)} `;
+      }
+      makeCrackPath(d, 0.35, 0.55);
+    }
+
+    // основные лучи с ответвлениями и утолщением у центра
+    const mainLines = 6+Math.floor(Math.random()*3);
     for (let i=0;i<mainLines;i++){
-      const angle = (Math.PI*2/mainLines)*i + Math.random()*0.5;
-      const segs = 3+Math.floor(Math.random()*3);
-      const segLen = (18+Math.random()*20)/segs;
+      const angle = (Math.PI*2/mainLines)*i + Math.random()*0.4;
+      const segs = 4+Math.floor(Math.random()*3);
+      const segLen = (20+Math.random()*26)/segs;
       let x=cx, y=cy, a=angle;
       let d = `M ${x.toFixed(1)} ${y.toFixed(1)}`;
+      const points = [{x,y}];
       for (let s=0;s<segs;s++){
-        a += (Math.random()*0.5-0.25);
+        a += (Math.random()*0.55-0.275);
         x += Math.cos(a)*segLen; y += Math.sin(a)*segLen;
         d += ` L ${x.toFixed(1)} ${y.toFixed(1)}`;
+        points.push({x,y});
       }
-      const path = document.createElementNS(svgNS,'path');
-      path.setAttribute('d', d);
-      path.setAttribute('stroke', '#f2f7ff');
-      path.setAttribute('stroke-width', '0.55');
-      path.setAttribute('fill', 'none');
-      path.setAttribute('stroke-linecap', 'round');
-      path.setAttribute('stroke-linejoin', 'round');
-      path.style.filter = 'drop-shadow(0 0 1.2px rgba(255,255,255,0.95))';
-      svg.appendChild(path);
-      const len = path.getTotalLength();
-      path.style.strokeDasharray = len;
-      path.style.strokeDashoffset = len;
-      requestAnimationFrame(()=>{
-        path.style.transition = `stroke-dashoffset ${0.25+Math.random()*0.3}s ease-out`;
-        path.style.strokeDashoffset = '0';
-      });
+      makeCrackPath(d, 0.5, 0.95);
+
+      const coreEnd = Math.min(2, points.length-1);
+      let coreD = `M ${points[0].x.toFixed(1)} ${points[0].y.toFixed(1)}`;
+      for (let k=1;k<=coreEnd;k++) coreD += ` L ${points[k].x.toFixed(1)} ${points[k].y.toFixed(1)}`;
+      makeCrackPath(coreD, 1.1, 0.5);
+
+      if (Math.random() < 0.55 && points.length > 2){
+        const bi = 1+Math.floor(Math.random()*(points.length-2));
+        let bx = points[bi].x, by = points[bi].y;
+        let ba = a + (Math.random()<0.5?1:-1)*(0.6+Math.random()*0.5);
+        let bd = `M ${bx.toFixed(1)} ${by.toFixed(1)}`;
+        const bsegs = 2+Math.floor(Math.random()*2);
+        const bsegLen = (10+Math.random()*10)/bsegs;
+        for (let s=0;s<bsegs;s++){
+          ba += (Math.random()*0.5-0.25);
+          bx += Math.cos(ba)*bsegLen; by += Math.sin(ba)*bsegLen;
+          bd += ` L ${bx.toFixed(1)} ${by.toFixed(1)}`;
+        }
+        makeCrackPath(bd, 0.35, 0.7);
+      }
     }
+
     const impact = document.createElementNS(svgNS,'circle');
     impact.setAttribute('cx',cx); impact.setAttribute('cy',cy); impact.setAttribute('r','1.2');
     impact.setAttribute('fill','#fff');
@@ -91,7 +138,7 @@ function startCrack(){
   }
   spawnCrack();
   (function loop(){
-    if (svg.querySelectorAll('path').length >= maxLines) return;
+    if (spawnCount >= maxSpawns) return;
     const base = 10000 - density*65;
     setTimeout(()=>{ spawnCrack(); loop(); }, base*0.5+Math.random()*base*0.5);
   })();
@@ -130,19 +177,30 @@ function startStatic(){
   requestAnimationFrame(tick);
 }
 
-// ---- 3. Расплытие (туман/дымка — реальный блюр слайда позади overlay недоступен по той же причине, что и тряска) ----
+// ---- 3. Размытие (сплошная нечёткость на весь экран — реальный блюр слайда позади overlay недоступен по той же причине, что и тряска) ----
 function startBlur(){
   const stage = document.getElementById('stage');
-  const count = 4 + Math.round(density/20);
-  for (let i=0;i<count;i++){
-    const el = document.createElement('div');
-    const size = 42+Math.random()*38;
-    el.style.cssText = `position:absolute;width:${size}vmin;height:${size}vmin;border-radius:50%;
-      left:${Math.random()*70-10}%; top:${Math.random()*70-10}%;
-      background:radial-gradient(circle, rgba(255,255,255,0.9), rgba(255,255,255,0) 70%);
-      filter:blur(18px);
-      animation: fogDrift ${20+Math.random()*16}s ease-in-out infinite; animation-delay:-${Math.random()*14}s;`;
-    stage.appendChild(el);
+
+  const wash = document.createElement('div');
+  wash.style.cssText = `position:absolute;inset:0;background:rgba(255,255,255,${0.1+density/100*0.22});`;
+  stage.appendChild(wash);
+
+  const cols = 4, rows = 3;
+  for (let r=0;r<rows;r++){
+    for (let c=0;c<cols;c++){
+      const el = document.createElement('div');
+      const size = 48+Math.random()*22;
+      const left = (c/(cols-1))*100 + (Math.random()*16-8);
+      const top = (r/(rows-1))*100 + (Math.random()*16-8);
+      const toneRoll = Math.random();
+      const tone = toneRoll<0.4 ? '255,255,255' : (toneRoll<0.7 ? '230,238,255' : '255,240,228');
+      el.style.cssText = `position:absolute;width:${size}vmin;height:${size}vmin;border-radius:50%;
+        left:${left}%; top:${top}%; transform:translate(-50%,-50%);
+        background:radial-gradient(circle, rgba(${tone},0.85), rgba(${tone},0) 72%);
+        filter:blur(14px);
+        animation: fogDrift ${18+Math.random()*14}s ease-in-out infinite; animation-delay:-${Math.random()*14}s;`;
+      stage.appendChild(el);
+    }
   }
 }
 
