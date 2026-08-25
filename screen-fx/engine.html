@@ -13,6 +13,10 @@
     0%,100%{ transform:translate(0,0) scale(1); opacity:0.55; }
     50%{ transform:translate(6vmin,-4vmin) scale(1.15); opacity:0.85; }
   }
+  @keyframes fogDrift{
+    0%,100%{ transform:translate(0,0) scale(1); opacity:0.45; }
+    50%{ transform:translate(5vmin,-3vmin) scale(1.25); opacity:0.8; }
+  }
 </style>
 </head>
 <body>
@@ -43,10 +47,10 @@ function startCrack(){
   document.getElementById('stage').insertAdjacentHTML('beforeend',
     `<svg id="crackSvg" viewBox="0 0 100 100" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%;"></svg>`);
   const svg = document.getElementById('crackSvg');
+  const maxLines = 45;
 
   function spawnCrack(){
-    svg.innerHTML = '';
-    const cx = 25+Math.random()*50, cy = 25+Math.random()*50;
+    const cx = 15+Math.random()*70, cy = 15+Math.random()*70;
     const mainLines = 5+Math.floor(Math.random()*3);
     for (let i=0;i<mainLines;i++){
       const angle = (Math.PI*2/mainLines)*i + Math.random()*0.5;
@@ -83,9 +87,11 @@ function startCrack(){
     impact.style.transition = 'opacity .6s ease, r .6s ease';
     svg.appendChild(impact);
     requestAnimationFrame(()=>{ impact.style.opacity='0'; impact.setAttribute('r','6'); });
+    setTimeout(()=>impact.remove(), 700);
   }
   spawnCrack();
   (function loop(){
+    if (svg.querySelectorAll('path').length >= maxLines) return;
     const base = 10000 - density*65;
     setTimeout(()=>{ spawnCrack(); loop(); }, base*0.5+Math.random()*base*0.5);
   })();
@@ -124,33 +130,20 @@ function startStatic(){
   requestAnimationFrame(tick);
 }
 
-// ---- 3. Тряска экрана (визуальный аналог удара камеры — сам слайд снаружи overlay не двигаем) ----
-function startShake(){
-  document.getElementById('stage').insertAdjacentHTML('beforeend', `
-    <div id="vignette" style="position:absolute;inset:-30px;"></div>
-    <div id="impactFlash" style="position:absolute;inset:0;background:radial-gradient(circle, rgba(255,255,255,0.55), transparent 60%);opacity:0;"></div>`);
-  const vignette = document.getElementById('vignette');
-  const flash = document.getElementById('impactFlash');
-
-  function jitter(frames, maxFrames){
-    const mag = (1 - frames/maxFrames) * 16;
-    const dx = (Math.random()*2-1)*mag, dy=(Math.random()*2-1)*mag;
-    vignette.style.transform = `translate(${dx}px, ${dy}px)`;
-    vignette.style.boxShadow = `inset 0 0 ${40+mag*3}px ${10+mag}px rgba(8,8,20,${0.2+(mag/16)*0.35})`;
-    if (frames < maxFrames) requestAnimationFrame(()=>jitter(frames+1, maxFrames));
-    else { vignette.style.transform=''; vignette.style.boxShadow='none'; }
+// ---- 3. Расплытие (туман/дымка — реальный блюр слайда позади overlay недоступен по той же причине, что и тряска) ----
+function startBlur(){
+  const stage = document.getElementById('stage');
+  const count = 4 + Math.round(density/20);
+  for (let i=0;i<count;i++){
+    const el = document.createElement('div');
+    const size = 42+Math.random()*38;
+    el.style.cssText = `position:absolute;width:${size}vmin;height:${size}vmin;border-radius:50%;
+      left:${Math.random()*70-10}%; top:${Math.random()*70-10}%;
+      background:radial-gradient(circle, rgba(255,255,255,0.9), rgba(255,255,255,0) 70%);
+      filter:blur(18px);
+      animation: fogDrift ${20+Math.random()*16}s ease-in-out infinite; animation-delay:-${Math.random()*14}s;`;
+    stage.appendChild(el);
   }
-  function burst(){
-    flash.style.transition='none'; flash.style.opacity='0.85';
-    setTimeout(()=>{ flash.style.transition='opacity .4s ease'; flash.style.opacity='0'; }, 60);
-    jitter(0, 16);
-    scheduleNext();
-  }
-  function scheduleNext(){
-    const base = 9000 - density*65;
-    setTimeout(burst, base*0.4+Math.random()*base*0.6);
-  }
-  scheduleNext();
 }
 
 // ---- 4. Блики ----
@@ -237,7 +230,7 @@ function startSparkles(){
 }
 
 const renderers = {
-  crack: startCrack, static: startStatic, shake: startShake,
+  crack: startCrack, static: startStatic, blur: startBlur,
   glare: startGlare, flash: startFlash, sparkles: startSparkles
 };
 (renderers[type] || startSparkles)();
