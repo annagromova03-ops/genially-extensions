@@ -112,6 +112,8 @@ const DEMO_CONFIG = {
   textColor: "#3a3244",
   borderWidth: 5,
   sizeScale: 100,
+  finalEmoji: "🎉",
+  finalMessage: "Все задания решены!",
   tasks: [
     { task: "5 + 3", answers: ["8", "восемь"] },
     { task: "9 − 4", answers: ["5"] },
@@ -218,8 +220,8 @@ function renderFinal(){
   const finalView = document.getElementById('finalView');
   finalView.classList.remove('hidden');
   finalView.innerHTML = `
-    <div style="font-size:44px;">🎉</div>
-    <div class="msg">Все задания решены!</div>
+    <div style="font-size:44px;">${config.finalEmoji || '🎉'}</div>
+    <div class="msg">${config.finalMessage || 'Все задания решены!'}</div>
     <button class="restart-btn" id="restartBtn">Попробовать ещё раз</button>`;
   document.getElementById('restartBtn').onclick = () => {
     idx = 0;
