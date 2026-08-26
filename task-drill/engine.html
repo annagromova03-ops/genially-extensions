@@ -11,37 +11,34 @@
     --user-bg: #fff4e0;
     --user-border: #7c5cff;
     --user-text: #3a3244;
-    --bg-1: #ffe9c7;
-    --bg-2: #ffd1e8;
   }
   *{box-sizing:border-box;}
   html,body{
-    margin:0; height:100%;
+    margin:0; width:100%; height:100%;
     font-family:'Baloo 2','Trebuchet MS','Verdana',sans-serif;
-    background:linear-gradient(135deg,var(--bg-1),var(--bg-2));
+    background:transparent;
   }
-  #app{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:clamp(10px,3vw,28px);}
+  #app{width:100%;height:100%;display:flex;align-items:center;justify-content:center;padding:clamp(3px,2vh,18px) clamp(4px,2.5vw,18px);}
   .card{
-    width:100%; max-width:640px; background:#fffdf9; border-radius:28px;
-    box-shadow:0 18px 40px rgba(80,40,20,0.18); padding:clamp(18px,4vw,36px);
+    width:100%; max-width:640px; padding:clamp(4px,2vh,22px) clamp(6px,2.5vw,22px);
   }
-  .top-row{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px;}
-  .title{font-weight:800;font-size:clamp(17px,3vw,22px);color:#4a3b2a;}
-  .progress-text{font-weight:700;font-size:13px;color:#9a8a70;white-space:nowrap;}
-  .progress-wrap{background:#f0e6d8;border-radius:20px;height:14px;overflow:hidden;margin-bottom:28px;box-shadow:inset 0 2px 4px rgba(0,0,0,0.08);}
+  .top-row{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:clamp(3px,1.5vh,14px);}
+  .title{font-weight:800;font-size:clamp(12px,2.6vh,22px);color:#3a3244;text-shadow:0 1px 3px rgba(255,255,255,0.6), 0 1px 8px rgba(0,0,0,0.12);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .progress-text{font-weight:700;font-size:clamp(9px,1.8vh,13px);color:#3a3244;white-space:nowrap;text-shadow:0 1px 3px rgba(255,255,255,0.6);}
+  .progress-wrap{background:rgba(255,255,255,0.55);border-radius:20px;height:clamp(5px,1.4vh,12px);overflow:hidden;margin-bottom:clamp(5px,2vh,24px);box-shadow:0 0 0 1px rgba(0,0,0,0.06), inset 0 2px 4px rgba(0,0,0,0.08);}
   .progress-bar{height:100%;border-radius:20px;background:var(--accent);width:0%;transition:width .5s ease;}
 
-  .screen-wrap{display:flex;justify-content:center;margin-bottom:26px;}
+  .screen-wrap{display:flex;justify-content:center;margin-bottom:clamp(5px,2.2vh,26px);min-height:0;}
   .screen{
     display:flex;align-items:center;justify-content:center;text-align:center;
     background-color:var(--user-bg); border-style:solid; border-color:var(--user-border);
-    font-weight:800; color:var(--user-text); font-size:clamp(18px,3.6vw,26px); line-height:1.25;
+    font-weight:800; color:var(--user-text); font-size:clamp(11px,3.4vh,26px); line-height:1.25;
     box-shadow:0 10px 26px rgba(0,0,0,0.15);
   }
-  .screen.shape-rect{ width:100%; max-width:520px; min-height:150px; border-radius:22px; padding:20px 30px; }
-  .screen.shape-square{ width:min(76%,300px); aspect-ratio:1/1; border-radius:22px; padding:18px; }
-  .screen.shape-oval{ width:100%; max-width:520px; min-height:170px; border-radius:50%; padding:26px 48px; }
-  .screen.shape-circle{ width:min(72%,290px); aspect-ratio:1/1; border-radius:50%; padding:20px; }
+  .screen.shape-rect{ width:100%; max-width:520px; min-height:clamp(46px,20vh,150px); border-radius:clamp(10px,3vh,22px); padding:clamp(6px,2.2vh,20px) clamp(8px,3vw,30px); }
+  .screen.shape-square{ width:min(70%,300px); aspect-ratio:1/1; border-radius:clamp(10px,3vh,22px); padding:clamp(6px,2vh,18px); }
+  .screen.shape-oval{ width:100%; max-width:520px; min-height:clamp(50px,22vh,170px); border-radius:50%; padding:clamp(8px,2.6vh,26px) clamp(14px,4.5vw,48px); }
+  .screen.shape-circle{ width:min(64%,290px); aspect-ratio:1/1; border-radius:50%; padding:clamp(6px,2vh,20px); }
 
   @keyframes flickerRed{
     0%,100%{ background-color:var(--user-bg); border-color:var(--user-border); }
@@ -51,25 +48,28 @@
   .screen.wrong{ animation:flickerRed 1.4s ease-in-out; }
   .screen.correct{ background-color:#3ecf6a !important; border-color:#2a9c4d !important; color:#fff; }
 
-  .answer-row{display:flex;gap:10px;}
+  .answer-row{display:flex;gap:clamp(5px,1.5vw,10px);}
   #answerInput{
-    flex:1; padding:13px 16px; border:2px solid #ece3d3; border-radius:14px;
-    font-family:inherit; font-size:16px; min-width:0;
+    flex:1; padding:clamp(5px,1.8vh,13px) clamp(7px,2vw,16px); border:2px solid rgba(0,0,0,0.12); border-radius:14px;
+    font-family:inherit; font-size:clamp(12px,2.6vh,16px); min-width:0; background:rgba(255,255,255,0.92);
+    box-shadow:0 4px 12px rgba(0,0,0,0.08);
   }
   #answerInput:focus{outline:none;border-color:var(--accent);}
   #submitBtn{
     background:var(--accent); color:#fff; border:none; border-radius:14px;
-    padding:13px 22px; font-weight:700; font-family:inherit; font-size:16px; cursor:pointer;
+    padding:clamp(5px,1.8vh,13px) clamp(10px,2.5vw,22px); font-weight:700; font-family:inherit;
+    font-size:clamp(12px,2.6vh,16px); cursor:pointer; white-space:nowrap;
     transition:filter .15s;
   }
   #submitBtn:hover{filter:brightness(1.08);}
   #submitBtn:disabled{opacity:.5;cursor:default;}
 
   .final{text-align:center;}
-  .final .msg{font-size:clamp(18px,3.4vw,24px);font-weight:800;color:#4a3b2a;margin:14px 0 20px;}
+  .final .msg{font-size:clamp(18px,3.4vw,24px);font-weight:800;color:#3a3244;margin:14px 0 20px;text-shadow:0 1px 3px rgba(255,255,255,0.6);}
   .restart-btn{
-    background:#fff;border:2px solid var(--accent);color:var(--accent);border-radius:999px;
+    background:rgba(255,255,255,0.92);border:2px solid var(--accent);color:var(--accent);border-radius:999px;
     padding:12px 26px;font-family:inherit;font-weight:700;font-size:15px;cursor:pointer;
+    box-shadow:0 4px 12px rgba(0,0,0,0.1);
   }
   .restart-btn:hover{background:var(--accent);color:#fff;}
   .hidden{display:none !important;}
@@ -112,10 +112,10 @@ const DEMO_CONFIG = {
   textColor: "#3a3244",
   borderWidth: 5,
   tasks: [
-    { task: "5 + 3", answer: "8" },
-    { task: "9 − 4", answer: "5" },
-    { task: "6 × 2", answer: "12" },
-    { task: "Столица России", answer: "Москва" }
+    { task: "5 + 3", answers: ["8", "восемь"] },
+    { task: "9 − 4", answers: ["5"] },
+    { task: "6 × 2", answers: ["12"] },
+    { task: "Столица России", answers: ["Москва"] }
   ]
 };
 
@@ -156,14 +156,20 @@ function renderTask(){
 
 function normalize(s){ return (s||'').toString().trim().toLowerCase(); }
 
+function acceptedAnswers(taskData){
+  if (Array.isArray(taskData.answers)) return taskData.answers;
+  if (taskData.answer != null) return [taskData.answer];
+  return [];
+}
+
 function checkAnswer(){
   const input = document.getElementById('answerInput');
   if (input.disabled) return;
   const given = normalize(input.value);
   if (!given) return;
-  const correct = normalize(config.tasks[idx].answer);
+  const accepted = acceptedAnswers(config.tasks[idx]).map(normalize);
 
-  if (given === correct){
+  if (accepted.includes(given)){
     input.disabled = true;
     document.getElementById('submitBtn').disabled = true;
     screenEl.classList.remove('wrong');

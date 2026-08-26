@@ -116,6 +116,30 @@
   .swatch-circle{width:24px;height:24px;border-radius:50%;}
 
   .borderWidth-value{color:var(--blue);font-weight:700;}
+
+  .answers-list{display:flex;flex-direction:column;gap:6px;}
+  .answer-row-mini{display:flex;gap:6px;align-items:center;}
+  .answer-row-mini input{flex:1;}
+  .remove-answer{
+    flex:0 0 auto;background:rgba(255,107,129,0.12);color:var(--danger);border:1px solid rgba(255,107,129,0.35);
+    border-radius:8px;width:30px;height:30px;font-size:14px;font-weight:700;cursor:pointer;line-height:1;
+  }
+  .remove-answer:hover{background:rgba(255,107,129,0.22);}
+  .add-answer{
+    margin-top:6px;background:transparent;border:1px dashed var(--line);color:var(--text-dim);
+    border-radius:8px;padding:6px 10px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;
+  }
+  .add-answer:hover{border-color:var(--blue);color:var(--blue);}
+
+  .bulk-box{
+    background:rgba(255,255,255,0.02); border:1px dashed var(--line); border-radius:14px; padding:14px;
+  }
+  .bulk-box textarea{height:80px;font-family:'Space Mono',monospace;font-size:12px;}
+  .bulk-btn{
+    margin-top:8px;background:rgba(79,216,255,0.1);color:var(--blue);border:1px solid rgba(79,216,255,0.4);
+    border-radius:999px;padding:9px 18px;font-family:inherit;font-weight:700;font-size:13px;cursor:pointer;
+  }
+  .bulk-btn:hover{background:rgba(79,216,255,0.2);}
 </style>
 </head>
 <body>
@@ -150,6 +174,13 @@
     <label>Толщина контура <span class="borderWidth-value" id="borderWidthValue">5px</span></label>
     <input type="range" id="f-borderWidth" min="0" max="14" value="5">
 
+    <label>Быстрый ввод (вставь из буфера обмена)</label>
+    <div class="bulk-box">
+      <textarea id="bulkInput" rows="3" placeholder="5 + 3 - 8, восемь&#10;9 − 4 - 5&#10;Столица России - Москва"></textarea>
+      <div class="hint">Каждое задание с новой строки: <b>задание - ответ</b>. Если верных ответов несколько — перечисли через запятую. Добавится к уже существующим заданиям, не заменит их.</div>
+      <button type="button" class="bulk-btn" id="bulkAddBtn">Разобрать и добавить</button>
+    </div>
+
     <div id="tasks"></div>
     <button class="add-q" id="addQ">+ Добавить задание</button>
     <br>
@@ -161,7 +192,7 @@
     <div class="preview-frame-wrap">
       <iframe id="previewFrame"></iframe>
     </div>
-    <div class="hint">Проверка ответа не различает БОЛЬШИЕ/маленькие буквы и лишние пробелы по краям.</div>
+    <div class="hint">Проверка ответа не различает БОЛЬШИЕ/маленькие буквы и лишние пробелы по краям. Засчитается любой из указанных вариантов ответа.</div>
 
     <div class="out-label"><label>Ссылка (если поле в Genially просит просто URL)</label>
       <button class="copy-btn" id="copyLink">Копировать ссылку</button></div>
@@ -196,10 +227,10 @@ const SHAPES = [
 let selectedShape = 'rect';
 
 let tasks = [
-  { task: "5 + 3", answer: "8" },
-  { task: "9 − 4", answer: "5" },
-  { task: "6 × 2", answer: "12" },
-  { task: "Столица России", answer: "Москва" }
+  { task: "5 + 3", answers: ["8", "восемь"] },
+  { task: "9 − 4", answers: ["5"] },
+  { task: "6 × 2", answers: ["12"] },
+  { task: "Столица России", answers: ["Москва"] }
 ];
 
 function renderShapeGrid(){
@@ -228,8 +259,15 @@ function renderTasks(){
       <h3>Задание ${i+1}</h3>
       <label>Задание / пример (можно &lt;b&gt;жирным&lt;/b&gt;)</label>
       <textarea data-field="task" data-i="${i}" rows="2">${t.task}</textarea>
-      <label>Правильный ответ</label>
-      <input type="text" data-field="answer" data-i="${i}" value="${t.answer.replace(/"/g,'&quot;')}">
+      <label>Правильные варианты ответа (засчитается любой)</label>
+      <div class="answers-list" data-qi="${i}">
+        ${t.answers.map((a,ai)=>`
+          <div class="answer-row-mini">
+            <input type="text" data-field="answer" data-i="${i}" data-ai="${ai}" value="${a.replace(/"/g,'&quot;')}">
+            ${t.answers.length>1 ? `<button type="button" class="remove-answer" data-i="${i}" data-ai="${ai}">×</button>` : ''}
+          </div>`).join('')}
+      </div>
+      <button type="button" class="add-answer" data-i="${i}">+ Ещё вариант ответа</button>
     `;
     wrap.appendChild(block);
   });
@@ -238,7 +276,15 @@ function renderTasks(){
     tasks[+e.target.dataset.i].task = e.target.value;
   }));
   wrap.querySelectorAll('[data-field="answer"]').forEach(el=>el.addEventListener('input', e=>{
-    tasks[+e.target.dataset.i].answer = e.target.value;
+    tasks[+e.target.dataset.i].answers[+e.target.dataset.ai] = e.target.value;
+  }));
+  wrap.querySelectorAll('.remove-answer').forEach(el=>el.addEventListener('click', e=>{
+    tasks[+e.target.dataset.i].answers.splice(+e.target.dataset.ai, 1);
+    renderTasks();
+  }));
+  wrap.querySelectorAll('.add-answer').forEach(el=>el.addEventListener('click', e=>{
+    tasks[+e.target.dataset.i].answers.push('');
+    renderTasks();
   }));
   wrap.querySelectorAll('.remove-q').forEach(el=>el.addEventListener('click', e=>{
     tasks.splice(+e.target.dataset.i, 1);
@@ -247,8 +293,25 @@ function renderTasks(){
 }
 
 document.getElementById('addQ').addEventListener('click', () => {
-  tasks.push({ task: "Новое задание?", answer: "" });
+  tasks.push({ task: "Новое задание?", answers: [""] });
   renderTasks();
+});
+
+document.getElementById('bulkAddBtn').addEventListener('click', () => {
+  const raw = document.getElementById('bulkInput').value;
+  const lines = raw.split('\n').map(l=>l.trim()).filter(Boolean);
+  lines.forEach(line => {
+    const cut = Math.max(line.lastIndexOf(' - '), line.lastIndexOf(' — '));
+    if (cut < 0) return;
+    const taskPart = line.slice(0, cut).trim();
+    const answerPart = line.slice(cut + 3).trim();
+    if (!taskPart || !answerPart) return;
+    const answers = answerPart.split(',').map(a=>a.trim()).filter(Boolean);
+    if (answers.length) tasks.push({ task: taskPart, answers });
+  });
+  document.getElementById('bulkInput').value = '';
+  renderTasks();
+  generate();
 });
 
 function engineBaseUrl(){
