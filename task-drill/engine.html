@@ -111,6 +111,7 @@ const DEMO_CONFIG = {
   borderColor: "#7c5cff",
   textColor: "#3a3244",
   borderWidth: 5,
+  sizeScale: 100,
   tasks: [
     { task: "5 + 3", answers: ["8", "восемь"] },
     { task: "9 − 4", answers: ["5"] },
@@ -137,8 +138,29 @@ document.documentElement.style.setProperty('--user-text', config.textColor || '#
 document.getElementById('quizTitle').textContent = config.title || 'Задания';
 
 const screenEl = document.getElementById('screen');
-screenEl.className = 'screen shape-' + (config.shape || 'rect');
+const shape = config.shape || 'rect';
+screenEl.className = 'screen shape-' + shape;
 screenEl.style.borderWidth = (config.borderWidth != null ? config.borderWidth : 5) + 'px';
+
+const sizeScale = Math.max(0.6, Math.min(1.8, (config.sizeScale || 100) / 100));
+const SHAPE_SIZE = {
+  rect:   { maxW:520, minH:[46,20,150], pad:[[6,2.2,20],[8,3,30]] },
+  oval:   { maxW:520, minH:[50,22,170], pad:[[8,2.6,26],[14,4.5,48]] },
+  square: { widthCapPct:70, widthCapPx:300, pad:[[6,2,18],[6,2,18]] },
+  circle: { widthCapPct:64, widthCapPx:290, pad:[[6,2,20],[6,2,20]] }
+};
+function scClamp(triplet, unit){
+  return `clamp(${(triplet[0]*sizeScale).toFixed(1)}px, ${(triplet[1]*sizeScale).toFixed(2)}${unit}, ${(triplet[2]*sizeScale).toFixed(1)}px)`;
+}
+const sizeCfg = SHAPE_SIZE[shape] || SHAPE_SIZE.rect;
+screenEl.style.fontSize = scClamp([11,3.4,26], 'vh');
+screenEl.style.padding = scClamp(sizeCfg.pad[0],'vh') + ' ' + scClamp(sizeCfg.pad[1],'vw');
+if (sizeCfg.maxW){
+  screenEl.style.maxWidth = (sizeCfg.maxW*sizeScale).toFixed(1) + 'px';
+  screenEl.style.minHeight = scClamp(sizeCfg.minH, 'vh');
+} else {
+  screenEl.style.width = `min(${sizeCfg.widthCapPct}%, ${(sizeCfg.widthCapPx*sizeScale).toFixed(1)}px)`;
+}
 
 let idx = 0;
 const total = config.tasks.length;
