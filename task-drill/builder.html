@@ -141,6 +141,10 @@
         <label>Цвет контура</label>
         <input type="color" id="f-borderColor" value="#7c5cff">
       </div>
+      <div>
+        <label>Цвет шрифта</label>
+        <input type="color" id="f-textColor" value="#3a3244">
+      </div>
     </div>
 
     <label>Толщина контура <span class="borderWidth-value" id="borderWidthValue">5px</span></label>
@@ -260,6 +264,7 @@ function generate(){
     shape: selectedShape,
     screenColor: document.getElementById('f-screenColor').value,
     borderColor: document.getElementById('f-borderColor').value,
+    textColor: document.getElementById('f-textColor').value,
     borderWidth: parseInt(borderWidth, 10),
     tasks: tasks
   };
@@ -287,6 +292,7 @@ function wireCopyButton(btnId, textareaId){
 document.getElementById('f-title').addEventListener('input', generate);
 document.getElementById('f-screenColor').addEventListener('input', generate);
 document.getElementById('f-borderColor').addEventListener('input', generate);
+document.getElementById('f-textColor').addEventListener('input', generate);
 document.getElementById('f-borderWidth').addEventListener('input', generate);
 document.getElementById('genBtn').addEventListener('click', generate);
 wireCopyButton('copyLink','outLink');
