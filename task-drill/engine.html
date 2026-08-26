@@ -166,6 +166,7 @@ if (sizeCfg.maxW){
 
 let idx = 0;
 const total = config.tasks.length;
+let isFirstRender = true;
 
 function renderTask(){
   document.getElementById('progressBar').style.width = (idx/total*100) + '%';
@@ -175,7 +176,12 @@ function renderTask(){
   input.value = '';
   input.disabled = false;
   document.getElementById('submitBtn').disabled = false;
-  input.focus();
+  // Skip autofocus on the very first render: this page reloads on every
+  // keystroke in the builder's live preview, and focusing here would steal
+  // keyboard focus away from whatever field is being typed into there.
+  // Real students still get autofocus on every task after the first.
+  if (!isFirstRender) input.focus();
+  isFirstRender = false;
 }
 
 function normalize(s){ return (s||'').toString().trim().toLowerCase(); }
