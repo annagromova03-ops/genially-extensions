@@ -391,13 +391,19 @@ function wireCopyButton(btnId, textareaId){
   });
 }
 
-document.getElementById('f-title').addEventListener('input', generate);
-document.getElementById('f-screenColor').addEventListener('input', generate);
-document.getElementById('f-borderColor').addEventListener('input', generate);
-document.getElementById('f-textColor').addEventListener('input', generate);
-document.getElementById('f-borderWidth').addEventListener('input', generate);
-document.getElementById('f-sizeScale').addEventListener('input', generate);
-document.getElementById('f-finalMessage').addEventListener('input', generate);
+let generateTimer = null;
+function scheduleGenerate(){
+  clearTimeout(generateTimer);
+  generateTimer = setTimeout(generate, 500);
+}
+
+document.getElementById('f-title').addEventListener('input', scheduleGenerate);
+document.getElementById('f-screenColor').addEventListener('input', scheduleGenerate);
+document.getElementById('f-borderColor').addEventListener('input', scheduleGenerate);
+document.getElementById('f-textColor').addEventListener('input', scheduleGenerate);
+document.getElementById('f-borderWidth').addEventListener('input', scheduleGenerate);
+document.getElementById('f-sizeScale').addEventListener('input', scheduleGenerate);
+document.getElementById('f-finalMessage').addEventListener('input', scheduleGenerate);
 document.getElementById('genBtn').addEventListener('click', generate);
 wireCopyButton('copyLink','outLink');
 wireCopyButton('copyCode','outCode');
