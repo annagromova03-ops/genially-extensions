@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Пейзажное явление</title>
+<style>
+  html,body{margin:0;height:100%;background:transparent;overflow:hidden;}
+  #stage{position:fixed;inset:0;overflow:hidden;}
+  #canvas{position:absolute;inset:0;width:100%;height:100%;display:none;}
+
+  @keyframes driftSlow{
+    0%,100%{ transform:translate(0,0) scale(1); opacity:0.5; }
+    50%{ transform:translate(4vw,-1vh) scale(1.1); opacity:0.85; }
+  }
+  @keyframes auroraWave{
+    0%,100%{ transform:translateX(0) skewX(-8deg) scaleY(1); opacity:0.7; }
+    50%{ transform:translateX(12vw) skewX(6deg) scaleY(1.15); opacity:1; }
+  }
+</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="canvas"></canvas>
+</div>
+
+<script>
+const params = new URLSearchParams(location.search);
+const type = params.get('type') || 'fog';
+const opacityPct = Math.max(5, Math.min(100, parseInt(params.get('opacity')||'85',10)));
+const density = Math.max(0, Math.min(100, parseInt(params.get('density')||'50',10)));
+document.getElementById('stage').style.opacity = opacityPct/100;
+
+function initCanvas(){
+  const canvas = document.getElementById('canvas');
+  canvas.style.display = 'block';
+  const ctx = canvas.getContext('2d');
+  function resize(){ canvas.width = innerWidth; canvas.height = innerHeight; }
+  resize();
+  window.addEventListener('resize', resize);
+  return ctx;
+}
+
+function startFog(){
+  const stage = document.getElementById('stage');
+  const count = 5 + Math.round(density/25);
+  for (let i=0;i<count;i++){
+    const el = document.createElement('div');
+    const w = 50+Math.random()*40, h = w*0.35;
+    el.style.cssText = `position:absolute;width:${w}vmin;height:${h}vmin;border-radius:50%;
+      left:${Math.random()*90-10}%; top:${68+Math.random()*35}%;
+      background:radial-gradient(ellipse, rgba(230,235,240,0.6), rgba(230,235,240,0) 70%);
+      filter:blur(10px);
+      animation: driftSlow ${24+Math.random()*18}s ease-in-out infinite; animation-delay:-${Math.random()*20}s;`;
+    stage.appendChild(el);
+  }
+}
+
+function startPetals(){
+  const ctx = initCanvas(); const canvas = ctx.canvas;
+  const count = Math.round(12 + density*0.7);
+  const petals = Array.from({length:count}, () => ({
+    x: Math.random()*canvas.width, y: Math.random()*canvas.height,
+    size: 5+Math.random()*5, speed: 0.5+Math.random()*0.9,
+    phase: Math.random()*Math.PI*2, rot: Math.random()*Math.PI*2, rotSpeed:(Math.random()*2-1)*0.02,
+    hue: Math.random()<0.5?'255,200,215':'255,235,240'
+  }));
+  function tick(t){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    petals.forEach(p=>{
+      p.y += p.speed; p.x += Math.sin(t*0.001+p.phase)*0.8; p.rot += p.rotSpeed;
+      if (p.y - p.size > canvas.height){ p.y = -p.size; p.x = Math.random()*canvas.width; }
+      ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rot);
+      ctx.fillStyle = `rgba(${p.hue},0.8)`;
+      ctx.beginPath(); ctx.ellipse(0,0,p.size,p.size*0.55,0,0,Math.PI*2); ctx.fill();
+      ctx.restore();
+    });
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
+function startMeteors(){
+  const ctx = initCanvas(); const canvas = ctx.canvas;
+  let meteors = [];
+  function spawn(){
+    meteors.push({
+      x: Math.random()*canvas.width*0.7 + canvas.width*0.2, y: -20,
+      vx: 3+Math.random()*2, vy: 5+Math.random()*3, len: 60+Math.random()*40
+    });
+    setTimeout(spawn, (500 - density*3) + Math.random()*(1800-density*10));
+  }
+  spawn();
+  function tick(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    meteors = meteors.filter(m=> m.y < canvas.height+60 && m.x < canvas.width+60);
+    meteors.forEach(m=>{
+      m.x += m.vx; m.y += m.vy;
+      const mag = Math.hypot(m.vx,m.vy);
+      const tx = m.x-m.vx/mag*m.len, ty = m.y-m.vy/mag*m.len;
+      const grad = ctx.createLinearGradient(m.x, m.y, tx, ty);
+      grad.addColorStop(0,'rgba(255,255,255,0.95)');
+      grad.addColorStop(1,'rgba(255,255,255,0)');
+      ctx.strokeStyle = grad; ctx.lineWidth=2; ctx.lineCap='round';
+      ctx.beginPath(); ctx.moveTo(m.x,m.y); ctx.lineTo(tx,ty); ctx.stroke();
+    });
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
+function startAurora(){
+  const stage = document.getElementById('stage');
+  const colors = ['rgba(90,255,180,0.35)','rgba(120,200,255,0.3)','rgba(190,120,255,0.3)'];
+  colors.forEach((c,i)=>{
+    const el = document.createElement('div');
+    el.style.cssText = `position:absolute;left:${-10+i*10}%;top:-10%;width:60%;height:75%;
+      background:linear-gradient(180deg, ${c}, transparent 70%);
+      filter:blur(20px); transform-origin:top center;
+      animation: auroraWave ${14+i*4}s ease-in-out infinite; animation-delay:-${i*3}s;`;
+    stage.appendChild(el);
+  });
+}
+
+function startLava(){
+  const ctx = initCanvas(); const canvas = ctx.canvas;
+  const count = Math.round(15+density*0.9);
+  const embers = Array.from({length:count},()=>({
+    x:Math.random()*canvas.width, y:canvas.height+Math.random()*100,
+    r:1.5+Math.random()*2.5, speed:0.6+Math.random()*1.4, drift:(Math.random()*2-1)*0.4,
+    life:Math.random()
+  }));
+  function tick(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    const glowH = canvas.height*0.15;
+    const glow = ctx.createLinearGradient(0,canvas.height,0,canvas.height-glowH);
+    glow.addColorStop(0,'rgba(255,120,40,0.35)'); glow.addColorStop(1,'rgba(255,120,40,0)');
+    ctx.fillStyle=glow; ctx.fillRect(0,canvas.height-glowH,canvas.width,glowH);
+    embers.forEach(e=>{
+      e.y -= e.speed; e.x += e.drift; e.life -= 0.004;
+      if (e.y < -10 || e.life<=0){ e.y=canvas.height+10; e.x=Math.random()*canvas.width; e.life=1; }
+      ctx.globalAlpha = Math.max(0,e.life);
+      ctx.fillStyle = Math.random()<0.5 ? '#ff8a3d':'#ffce54';
+      ctx.beginPath(); ctx.arc(e.x,e.y,e.r,0,Math.PI*2); ctx.fill();
+    });
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
+function startSandstorm(){
+  const ctx = initCanvas(); const canvas = ctx.canvas;
+  const count = Math.round(40+density*1.6);
+  const grains = Array.from({length:count},()=>({
+    x:Math.random()*canvas.width, y:Math.random()*canvas.height,
+    speed:3+Math.random()*5, size:0.8+Math.random()*1.8, phase:Math.random()*Math.PI*2
+  }));
+  function tick(t){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.globalAlpha=1; ctx.fillStyle='rgba(210,175,120,0.06)'; ctx.fillRect(0,0,canvas.width,canvas.height);
+    grains.forEach(g=>{
+      g.x += g.speed; g.y += Math.sin(t*0.002+g.phase)*0.6;
+      if (g.x > canvas.width+10) g.x = -10;
+      ctx.globalAlpha = 0.35+Math.random()*0.3;
+      ctx.fillStyle = '#d9b878';
+      ctx.fillRect(g.x,g.y,g.size*3,g.size);
+    });
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
+function startLeaves(){
+  const ctx = initCanvas(); const canvas = ctx.canvas;
+  const count = Math.round(12+density*0.7);
+  const colors = ['#d9772e','#c9432f','#e0a52e','#9c5a26'];
+  const leaves = Array.from({length:count},()=>({
+    x:Math.random()*canvas.width, y:Math.random()*canvas.height,
+    size:6+Math.random()*6, speed:0.6+Math.random()*1, phase:Math.random()*Math.PI*2,
+    rot:Math.random()*Math.PI*2, rotSpeed:(Math.random()*2-1)*0.03,
+    color: colors[Math.floor(Math.random()*colors.length)]
+  }));
+  function tick(t){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    leaves.forEach(l=>{
+      l.y += l.speed; l.x += Math.sin(t*0.0012+l.phase)*1.1; l.rot += l.rotSpeed;
+      if (l.y - l.size > canvas.height){ l.y=-l.size; l.x=Math.random()*canvas.width; }
+      ctx.save(); ctx.translate(l.x,l.y); ctx.rotate(l.rot);
+      ctx.fillStyle = l.color;
+      ctx.beginPath(); ctx.ellipse(0,0,l.size,l.size*0.6,0,0,Math.PI*2); ctx.fill();
+      ctx.restore();
+    });
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
+const renderers = {
+  fog: startFog, petals: startPetals, meteors: startMeteors,
+  aurora: startAurora, lava: startLava, sandstorm: startSandstorm, leaves: startLeaves
+};
+(renderers[type] || startFog)();
+</script>
+</body>
+</html>
