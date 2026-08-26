@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Задания с ответом</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap');
+  :root{
+    --accent: #7c5cff;
+    --user-bg: #fff4e0;
+    --user-border: #7c5cff;
+    --bg-1: #ffe9c7;
+    --bg-2: #ffd1e8;
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0; height:100%;
+    font-family:'Baloo 2','Trebuchet MS','Verdana',sans-serif;
+    background:linear-gradient(135deg,var(--bg-1),var(--bg-2));
+  }
+  #app{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:clamp(10px,3vw,28px);}
+  .card{
+    width:100%; max-width:640px; background:#fffdf9; border-radius:28px;
+    box-shadow:0 18px 40px rgba(80,40,20,0.18); padding:clamp(18px,4vw,36px);
+  }
+  .top-row{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px;}
+  .title{font-weight:800;font-size:clamp(17px,3vw,22px);color:#4a3b2a;}
+  .progress-text{font-weight:700;font-size:13px;color:#9a8a70;white-space:nowrap;}
+  .progress-wrap{background:#f0e6d8;border-radius:20px;height:14px;overflow:hidden;margin-bottom:28px;box-shadow:inset 0 2px 4px rgba(0,0,0,0.08);}
+  .progress-bar{height:100%;border-radius:20px;background:var(--accent);width:0%;transition:width .5s ease;}
+
+  .screen-wrap{display:flex;justify-content:center;margin-bottom:26px;}
+  .screen{
+    display:flex;align-items:center;justify-content:center;text-align:center;
+    background-color:var(--user-bg); border-style:solid; border-color:var(--user-border);
+    font-weight:800; color:#3a3244; font-size:clamp(18px,3.6vw,26px); line-height:1.25;
+    box-shadow:0 10px 26px rgba(0,0,0,0.15);
+  }
+  .screen.shape-rect{ width:100%; max-width:520px; min-height:150px; border-radius:22px; padding:20px 30px; }
+  .screen.shape-square{ width:min(76%,300px); aspect-ratio:1/1; border-radius:22px; padding:18px; }
+  .screen.shape-oval{ width:100%; max-width:520px; min-height:170px; border-radius:50%; padding:26px 48px; }
+  .screen.shape-circle{ width:min(72%,290px); aspect-ratio:1/1; border-radius:50%; padding:20px; }
+
+  @keyframes flickerRed{
+    0%,100%{ background-color:var(--user-bg); border-color:var(--user-border); }
+    20%,50%,80%{ background-color:#ffd7db; border-color:#e63950; }
+    35%,65%{ background-color:var(--user-bg); border-color:var(--user-border); }
+  }
+  .screen.wrong{ animation:flickerRed 1.4s ease-in-out; }
+  .screen.correct{ background-color:#3ecf6a !important; border-color:#2a9c4d !important; color:#fff; }
+
+  .answer-row{display:flex;gap:10px;}
+  #answerInput{
+    flex:1; padding:13px 16px; border:2px solid #ece3d3; border-radius:14px;
+    font-family:inherit; font-size:16px; min-width:0;
+  }
+  #answerInput:focus{outline:none;border-color:var(--accent);}
+  #submitBtn{
+    background:var(--accent); color:#fff; border:none; border-radius:14px;
+    padding:13px 22px; font-weight:700; font-family:inherit; font-size:16px; cursor:pointer;
+    transition:filter .15s;
+  }
+  #submitBtn:hover{filter:brightness(1.08);}
+  #submitBtn:disabled{opacity:.5;cursor:default;}
+
+  .final{text-align:center;}
+  .final .msg{font-size:clamp(18px,3.4vw,24px);font-weight:800;color:#4a3b2a;margin:14px 0 20px;}
+  .restart-btn{
+    background:#fff;border:2px solid var(--accent);color:var(--accent);border-radius:999px;
+    padding:12px 26px;font-family:inherit;font-weight:700;font-size:15px;cursor:pointer;
+  }
+  .restart-btn:hover{background:var(--accent);color:#fff;}
+  .hidden{display:none !important;}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="card">
+    <div class="top-row">
+      <div class="title" id="quizTitle"></div>
+      <div class="progress-text" id="progressText"></div>
+    </div>
+    <div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div>
+
+    <div id="taskView">
+      <div class="screen-wrap"><div class="screen" id="screen"><span id="taskText"></span></div></div>
+      <div class="answer-row">
+        <input type="text" id="answerInput" placeholder="Впиши ответ..." autocomplete="off">
+        <button id="submitBtn">Ответить</button>
+      </div>
+    </div>
+    <div id="finalView" class="final hidden"></div>
+  </div>
+</div>
+
+<script>
+function fromBase64Url(str){
+  let base64 = str.replace(/-/g,'+').replace(/_/g,'/');
+  while (base64.length % 4) base64 += '=';
+  const binary = atob(base64);
+  const bytes = Uint8Array.from(binary, c => c.charCodeAt(0));
+  return JSON.parse(new TextDecoder().decode(bytes));
+}
+
+const DEMO_CONFIG = {
+  title: "Быстрый счёт",
+  shape: "rect",
+  screenColor: "#fff4e0",
+  borderColor: "#7c5cff",
+  borderWidth: 5,
+  tasks: [
+    { task: "5 + 3", answer: "8" },
+    { task: "9 − 4", answer: "5" },
+    { task: "6 × 2", answer: "12" },
+    { task: "Столица России", answer: "Москва" }
+  ]
+};
+
+function loadConfig(){
+  const params = new URLSearchParams(location.search);
+  const d = params.get('d');
+  if (d){
+    try { return Object.assign({}, DEMO_CONFIG, fromBase64Url(d)); }
+    catch(e){ console.warn('Не удалось прочитать конфиг из URL, показываю демо.', e); }
+  }
+  return DEMO_CONFIG;
+}
+
+const config = loadConfig();
+document.documentElement.style.setProperty('--accent', config.borderColor || '#7c5cff');
+document.documentElement.style.setProperty('--user-bg', config.screenColor || '#fff4e0');
+document.documentElement.style.setProperty('--user-border', config.borderColor || '#7c5cff');
+document.getElementById('quizTitle').textContent = config.title || 'Задания';
+
+const screenEl = document.getElementById('screen');
+screenEl.className = 'screen shape-' + (config.shape || 'rect');
+screenEl.style.borderWidth = (config.borderWidth != null ? config.borderWidth : 5) + 'px';
+
+let idx = 0;
+const total = config.tasks.length;
+
+function renderTask(){
+  document.getElementById('progressBar').style.width = (idx/total*100) + '%';
+  document.getElementById('progressText').textContent = (idx+1) + ' / ' + total;
+  document.getElementById('taskText').innerHTML = config.tasks[idx].task;
+  const input = document.getElementById('answerInput');
+  input.value = '';
+  input.disabled = false;
+  document.getElementById('submitBtn').disabled = false;
+  input.focus();
+}
+
+function normalize(s){ return (s||'').toString().trim().toLowerCase(); }
+
+function checkAnswer(){
+  const input = document.getElementById('answerInput');
+  if (input.disabled) return;
+  const given = normalize(input.value);
+  if (!given) return;
+  const correct = normalize(config.tasks[idx].answer);
+
+  if (given === correct){
+    input.disabled = true;
+    document.getElementById('submitBtn').disabled = true;
+    screenEl.classList.remove('wrong');
+    screenEl.classList.add('correct');
+    setTimeout(()=>{
+      idx++;
+      screenEl.classList.remove('correct');
+      if (idx >= total) renderFinal(); else renderTask();
+    }, 900);
+  } else {
+    screenEl.classList.remove('wrong');
+    void screenEl.offsetWidth;
+    screenEl.classList.add('wrong');
+    setTimeout(()=>screenEl.classList.remove('wrong'), 1400);
+  }
+}
+
+document.getElementById('submitBtn').addEventListener('click', checkAnswer);
+document.getElementById('answerInput').addEventListener('keydown', e => { if (e.key === 'Enter') checkAnswer(); });
+
+function renderFinal(){
+  document.getElementById('progressBar').style.width = '100%';
+  document.getElementById('taskView').classList.add('hidden');
+  const finalView = document.getElementById('finalView');
+  finalView.classList.remove('hidden');
+  finalView.innerHTML = `
+    <div style="font-size:44px;">🎉</div>
+    <div class="msg">Все задания решены!</div>
+    <button class="restart-btn" id="restartBtn">Попробовать ещё раз</button>`;
+  document.getElementById('restartBtn').onclick = () => {
+    idx = 0;
+    finalView.classList.add('hidden');
+    document.getElementById('taskView').classList.remove('hidden');
+    renderTask();
+  };
+}
+
+renderTask();
+</script>
+</body>
+</html>

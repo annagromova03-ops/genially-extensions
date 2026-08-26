@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Конструктор: Задания с ответом</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Space+Mono:wght@400;700&display=swap');
+  :root{
+    --bg-page:#0b0c1f; --bg-panel:#13152f; --bg-input:#0c0e22; --bg-terminal:#05060f;
+    --pink:#ff4fd8; --pink-dim:rgba(255,79,216,0.35);
+    --blue:#4fd8ff; --blue-dim:rgba(79,216,255,0.35);
+    --text:#eef0ff; --text-dim:#8b90b8; --danger:#ff6b81; --success:#3ecf6a; --line:#262a52;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; font-family:'Baloo 2','Trebuchet MS','Verdana',sans-serif; color:var(--text);
+    background:
+      radial-gradient(1000px 560px at -8% -12%, var(--pink-dim), transparent 60%),
+      radial-gradient(1000px 560px at 108% 112%, var(--blue-dim), transparent 60%),
+      var(--bg-page);
+    min-height:100vh;
+  }
+  header{background:rgba(255,255,255,0.03); border-bottom:1px solid var(--line); padding:18px 24px;}
+  header h1{
+    margin:0;font-size:20px;
+    background:linear-gradient(90deg,var(--pink),var(--blue));
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    display:inline-block;
+  }
+  header p{margin:4px 0 0;font-size:13px;color:var(--text-dim);}
+  .layout{display:flex; gap:24px; padding:24px; align-items:flex-start; flex-wrap:wrap;}
+  .panel{
+    background:var(--bg-panel); border:1px solid var(--line); border-radius:16px; padding:20px;
+    box-shadow:0 0 0 1px rgba(255,255,255,0.02), 0 12px 30px rgba(0,0,0,0.35);
+  }
+  .form-panel{flex:1 1 420px; min-width:320px; box-shadow:0 0 0 1px rgba(255,79,216,0.15), 0 0 30px -14px var(--pink);}
+  .preview-panel{flex:1 1 420px; min-width:320px; position:sticky; top:24px; box-shadow:0 0 0 1px rgba(79,216,255,0.15), 0 0 30px -14px var(--blue);}
+  label{display:block;font-weight:700;font-size:12px;letter-spacing:.04em;text-transform:uppercase;margin:16px 0 6px;color:var(--text-dim);}
+  label:first-child{margin-top:0;}
+  input[type=text], input[type=number], textarea{
+    width:100%; padding:9px 11px; background:var(--bg-input); border:1px solid var(--line);
+    border-radius:10px; color:var(--text); font-family:inherit; font-size:14px; resize:vertical;
+    transition:border-color .15s, box-shadow .15s;
+  }
+  input[type=text]:focus, textarea:focus{
+    outline:none; border-color:var(--pink); box-shadow:0 0 0 3px rgba(255,79,216,0.18), 0 0 16px -4px var(--pink);
+  }
+  input[type=text]::placeholder, textarea::placeholder{color:#565b8a;}
+  input[type=color]{width:52px;height:36px;border:1px solid var(--line);border-radius:8px;cursor:pointer;vertical-align:middle;background:var(--bg-input);}
+  input[type=range]{width:100%;accent-color:var(--pink);}
+  .row{display:flex;gap:12px;}
+  .row > div{flex:1;}
+  .question-block{
+    background:rgba(255,255,255,0.02); border:1px solid var(--line); border-radius:14px;
+    padding:14px; margin-top:16px; position:relative;
+  }
+  .question-block h3{margin:0 0 8px;font-size:13px;letter-spacing:.03em;text-transform:uppercase;color:var(--blue);}
+  .remove-q{
+    position:absolute;top:10px;right:10px;
+    background:rgba(255,107,129,0.12);color:var(--danger);border:1px solid rgba(255,107,129,0.35);
+    border-radius:8px;padding:4px 10px;font-size:12px;font-weight:700;cursor:pointer;
+  }
+  .remove-q:hover{background:rgba(255,107,129,0.22);}
+  .add-q, .generate-btn{
+    display:inline-block; margin-top:16px; border:none; border-radius:999px;
+    padding:11px 22px; font-family:inherit; font-weight:700; font-size:14px; cursor:pointer;
+  }
+  .add-q{background:transparent;border:1px solid var(--blue);color:var(--blue);}
+  .add-q:hover{background:rgba(79,216,255,0.12);}
+  .generate-btn{
+    width:100%;margin-top:20px;font-size:16px;padding:14px;color:#0b0c1f;
+    background:linear-gradient(90deg,var(--pink),var(--blue));
+    box-shadow:0 0 24px -6px var(--pink), 0 0 34px -10px var(--blue);
+  }
+  .generate-btn:hover{filter:brightness(1.08);}
+  .hint{font-size:12px;color:var(--text-dim);margin-top:5px;}
+  .preview-frame-wrap{
+    border:1px solid var(--blue); border-radius:14px; padding:10px;
+    background:var(--bg-terminal); box-shadow:0 0 0 1px rgba(79,216,255,0.15), 0 0 26px -10px var(--blue);
+  }
+  .preview-frame-wrap iframe{ width:100%; height:520px; border:none; border-radius:10px; background:#fff; }
+  .out-label{display:flex;justify-content:space-between;align-items:center;margin:16px 0 4px;}
+  .out-label label{margin:0;}
+  .copy-btn{
+    background:rgba(255,255,255,0.06);color:var(--blue);border:1px solid var(--line);border-radius:8px;
+    padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;
+  }
+  .copy-btn:hover{border-color:var(--blue);}
+  .copy-btn.copied{background:var(--success);color:#04170a;border-color:var(--success);}
+  textarea.output{
+    width:100%;height:70px;font-family:'Space Mono',monospace;font-size:12px;
+    background:var(--bg-terminal);color:#8be9fd;border:1px solid var(--line);border-radius:10px;
+    padding:9px 11px;resize:vertical;
+  }
+  .steps{
+    font-size:13px;line-height:1.5;color:var(--text-dim);
+    background:rgba(79,216,255,0.06);border:1px solid rgba(79,216,255,0.25);
+    border-radius:12px;padding:14px 16px;margin-top:16px;
+  }
+  .steps b{color:var(--pink);}
+
+  .shape-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+  .shape-btn{
+    display:flex;flex-direction:column;align-items:center;gap:6px;
+    background:var(--bg-input);border:1px solid var(--line);border-radius:12px;
+    padding:12px 4px;cursor:pointer;color:var(--text-dim);font-size:11px;font-weight:700;
+    font-family:inherit;
+  }
+  .shape-btn.active{border-color:var(--pink);color:var(--text);box-shadow:0 0 0 2px rgba(255,79,216,0.25);}
+  .shape-btn:hover{border-color:var(--blue);}
+  .shape-swatch{display:block;width:34px;height:24px;background:var(--blue);border:2px solid var(--pink);}
+  .swatch-rect{border-radius:5px;}
+  .swatch-square{width:24px;height:24px;border-radius:5px;}
+  .swatch-oval{border-radius:50%;}
+  .swatch-circle{width:24px;height:24px;border-radius:50%;}
+
+  .borderWidth-value{color:var(--blue);font-weight:700;}
+</style>
+</head>
+<body>
+<header>
+  <h1>🛠️ Конструктор: Задания с ответом</h1>
+  <p>Задание → ответ вписывается в поле → верно светится зелёным и идёт дальше, неверно мерцает красным и остаётся то же задание.</p>
+</header>
+
+<div class="layout">
+  <div class="panel form-panel">
+    <label>Название</label>
+    <input type="text" id="f-title" value="Быстрый счёт">
+
+    <label>Форма экрана</label>
+    <div class="shape-grid" id="shapeGrid"></div>
+
+    <div class="row">
+      <div>
+        <label>Цвет экрана внутри</label>
+        <input type="color" id="f-screenColor" value="#fff4e0">
+      </div>
+      <div>
+        <label>Цвет контура</label>
+        <input type="color" id="f-borderColor" value="#7c5cff">
+      </div>
+    </div>
+
+    <label>Толщина контура <span class="borderWidth-value" id="borderWidthValue">5px</span></label>
+    <input type="range" id="f-borderWidth" min="0" max="14" value="5">
+
+    <div id="tasks"></div>
+    <button class="add-q" id="addQ">+ Добавить задание</button>
+    <br>
+    <button class="generate-btn" id="genBtn">Сгенерировать / обновить превью</button>
+  </div>
+
+  <div class="panel preview-panel">
+    <label style="margin-top:0;">Живое превью</label>
+    <div class="preview-frame-wrap">
+      <iframe id="previewFrame"></iframe>
+    </div>
+    <div class="hint">Проверка ответа не различает БОЛЬШИЕ/маленькие буквы и лишние пробелы по краям.</div>
+
+    <div class="out-label"><label>Ссылка (если поле в Genially просит просто URL)</label>
+      <button class="copy-btn" id="copyLink">Копировать ссылку</button></div>
+    <textarea class="output" id="outLink" readonly></textarea>
+
+    <div class="out-label"><label>Код для вставки (если поле просит embed-код)</label>
+      <button class="copy-btn" id="copyCode">Скопировать код для Genially</button></div>
+    <textarea class="output" id="outCode" readonly></textarea>
+
+    <div class="steps">
+      <b>Как вставить в Genially:</b> открой свой проект → «Вставить» → «Другое» → вставь ссылку или код выше → «Вставить».
+    </div>
+  </div>
+</div>
+
+<script>
+function toBase64Url(obj){
+  const json = JSON.stringify(obj);
+  const bytes = new TextEncoder().encode(json);
+  let binary = '';
+  bytes.forEach(b => binary += String.fromCharCode(b));
+  const base64 = btoa(binary);
+  return base64.replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+}
+
+const SHAPES = [
+  {key:'rect', label:'Прямоугольный'},
+  {key:'square', label:'Квадратный'},
+  {key:'oval', label:'Овальный'},
+  {key:'circle', label:'Круглый'}
+];
+let selectedShape = 'rect';
+
+let tasks = [
+  { task: "5 + 3", answer: "8" },
+  { task: "9 − 4", answer: "5" },
+  { task: "6 × 2", answer: "12" },
+  { task: "Столица России", answer: "Москва" }
+];
+
+function renderShapeGrid(){
+  const grid = document.getElementById('shapeGrid');
+  grid.innerHTML = SHAPES.map(s => `
+    <button type="button" class="shape-btn ${s.key===selectedShape?'active':''}" data-key="${s.key}">
+      <span class="shape-swatch swatch-${s.key}"></span>${s.label}
+    </button>`).join('');
+  grid.querySelectorAll('.shape-btn').forEach(btn=>{
+    btn.addEventListener('click', () => {
+      selectedShape = btn.dataset.key;
+      renderShapeGrid();
+      generate();
+    });
+  });
+}
+
+function renderTasks(){
+  const wrap = document.getElementById('tasks');
+  wrap.innerHTML = '';
+  tasks.forEach((t, i) => {
+    const block = document.createElement('div');
+    block.className = 'question-block';
+    block.innerHTML = `
+      <button class="remove-q" data-i="${i}">Удалить</button>
+      <h3>Задание ${i+1}</h3>
+      <label>Задание / пример (можно &lt;b&gt;жирным&lt;/b&gt;)</label>
+      <textarea data-field="task" data-i="${i}" rows="2">${t.task}</textarea>
+      <label>Правильный ответ</label>
+      <input type="text" data-field="answer" data-i="${i}" value="${t.answer.replace(/"/g,'&quot;')}">
+    `;
+    wrap.appendChild(block);
+  });
+
+  wrap.querySelectorAll('[data-field="task"]').forEach(el=>el.addEventListener('input', e=>{
+    tasks[+e.target.dataset.i].task = e.target.value;
+  }));
+  wrap.querySelectorAll('[data-field="answer"]').forEach(el=>el.addEventListener('input', e=>{
+    tasks[+e.target.dataset.i].answer = e.target.value;
+  }));
+  wrap.querySelectorAll('.remove-q').forEach(el=>el.addEventListener('click', e=>{
+    tasks.splice(+e.target.dataset.i, 1);
+    renderTasks();
+  }));
+}
+
+document.getElementById('addQ').addEventListener('click', () => {
+  tasks.push({ task: "Новое задание?", answer: "" });
+  renderTasks();
+});
+
+function engineBaseUrl(){
+  return location.href.replace(/builder\.html.*$/, 'engine.html');
+}
+
+function generate(){
+  const borderWidth = document.getElementById('f-borderWidth').value;
+  document.getElementById('borderWidthValue').textContent = borderWidth + 'px';
+
+  const config = {
+    title: document.getElementById('f-title').value,
+    shape: selectedShape,
+    screenColor: document.getElementById('f-screenColor').value,
+    borderColor: document.getElementById('f-borderColor').value,
+    borderWidth: parseInt(borderWidth, 10),
+    tasks: tasks
+  };
+  const url = engineBaseUrl() + '?d=' + toBase64Url(config);
+  document.getElementById('previewFrame').src = url;
+  document.getElementById('outLink').value = url;
+  document.getElementById('outCode').value =
+    `<iframe src="${url}" width="700" height="520" style="border:none;max-width:100%;" title="${config.title}"></iframe>`;
+}
+
+function wireCopyButton(btnId, textareaId){
+  document.getElementById(btnId).addEventListener('click', () => {
+    const ta = document.getElementById(textareaId);
+    ta.select();
+    navigator.clipboard.writeText(ta.value).then(() => {
+      const btn = document.getElementById(btnId);
+      btn.classList.add('copied');
+      const old = btn.textContent;
+      btn.textContent = 'Скопировано!';
+      setTimeout(()=>{btn.classList.remove('copied'); btn.textContent = old;}, 1400);
+    });
+  });
+}
+
+document.getElementById('f-title').addEventListener('input', generate);
+document.getElementById('f-screenColor').addEventListener('input', generate);
+document.getElementById('f-borderColor').addEventListener('input', generate);
+document.getElementById('f-borderWidth').addEventListener('input', generate);
+document.getElementById('genBtn').addEventListener('click', generate);
+wireCopyButton('copyLink','outLink');
+wireCopyButton('copyCode','outCode');
+
+renderShapeGrid();
+renderTasks();
+generate();
+</script>
+</body>
+</html>
