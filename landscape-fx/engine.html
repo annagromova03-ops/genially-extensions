@@ -43,16 +43,21 @@ function initCanvas(){
 
 function startFog(){
   const stage = document.getElementById('stage');
-  const count = 5 + Math.round(density/25);
-  for (let i=0;i<count;i++){
-    const el = document.createElement('div');
-    const w = 50+Math.random()*40, h = w*0.35;
-    el.style.cssText = `position:absolute;width:${w}vmin;height:${h}vmin;border-radius:50%;
-      left:${Math.random()*90-10}%; top:${68+Math.random()*35}%;
-      background:radial-gradient(ellipse, rgba(230,235,240,0.6), rgba(230,235,240,0) 70%);
-      filter:blur(10px);
-      animation: driftSlow ${24+Math.random()*18}s ease-in-out infinite; animation-delay:-${Math.random()*20}s;`;
-    stage.appendChild(el);
+  const alpha = 0.4 + density/100*0.4;
+  const cols = 4, rows = 3;
+  for (let r=0;r<rows;r++){
+    for (let c=0;c<cols;c++){
+      const el = document.createElement('div');
+      const w = 55+Math.random()*35, h = w*0.6;
+      const left = (c/(cols-1))*100 + (Math.random()*20-10);
+      const top = (r/(rows-1))*100 + (Math.random()*20-10);
+      el.style.cssText = `position:absolute;width:${w}vmin;height:${h}vmin;border-radius:50%;
+        left:${left}%; top:${top}%; transform:translate(-50%,-50%);
+        background:radial-gradient(ellipse, rgba(235,238,242,${alpha.toFixed(2)}), rgba(235,238,242,0) 70%);
+        filter:blur(12px);
+        animation: driftSlow ${22+Math.random()*16}s ease-in-out infinite; animation-delay:-${Math.random()*18}s;`;
+      stage.appendChild(el);
+    }
   }
 }
 
