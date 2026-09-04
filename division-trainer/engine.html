@@ -192,7 +192,7 @@ function renderDivision(layout, revealed){
 }
 
 function generate(divisorDigits){
-  const dividendLen = Math.random() < 0.5 ? 3 : 4;
+  const dividendLen = Math.random() < 0.5 ? 4 : 5;
   const picked = pickDivisorAndQuotient(divisorDigits, dividendLen);
   const layout = buildDivisionLayout(String(picked.dividend), picked.divisor);
   renderDivision(layout, false);
