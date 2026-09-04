@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Деление в столбик</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Space+Mono:wght@700&display=swap');
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0; min-height:100%;
+    font-family:'Baloo 2','Trebuchet MS','Verdana',sans-serif;
+    background:linear-gradient(135deg,#ffe9c7,#ffd1e8);
+  }
+  #app{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:clamp(10px,3vw,28px);}
+  .card{
+    width:100%; max-width:520px; background:#fffdf9; border-radius:28px;
+    box-shadow:0 18px 40px rgba(80,40,20,0.18); padding:clamp(18px,4vw,32px);
+    text-align:center;
+  }
+  .title{font-weight:800;font-size:clamp(18px,3.4vw,24px);color:#4a3b2a;margin-bottom:6px;}
+  .subtitle{font-size:13px;color:#9a8a70;margin-bottom:18px;}
+
+  .division-area{
+    display:flex; justify-content:center; align-items:flex-start; gap:16px;
+    margin:22px 0 28px; font-family:'Space Mono',monospace;
+    overflow-x:auto; padding-bottom:4px;
+  }
+  .left-grid{display:grid; font-size:clamp(18px,4.2vw,27px); font-weight:700; color:#3a3244;}
+  .cell{display:flex;align-items:center;justify-content:center;min-width:1.1em;padding:1px 3px;}
+  .cell.sign{color:#c0324a;}
+  .cell.final{color:#7c5cff;}
+  .line{border-top:3px solid #3a3244; align-self:start; margin-top:0.62em; border-radius:2px;}
+
+  .right-box{
+    display:flex; flex-direction:column; align-items:flex-start;
+    border-left:3px solid #3a3244; padding-left:16px; padding-top:2px; margin-top:0.05em;
+  }
+  .divisor{font-size:clamp(18px,4.2vw,27px); font-weight:700; color:#3a3244; padding-bottom:8px; white-space:nowrap;}
+  .quotient-line{border-top:3px solid #3a3244; width:100%; min-width:2.6em;}
+  .quotient{font-size:clamp(18px,4.2vw,27px); font-weight:800; color:#7c5cff; padding-top:6px; white-space:nowrap;}
+  .remainder-note{font-size:12px; color:#9a8a70; margin-top:-18px; margin-bottom:18px;}
+
+  .controls{display:flex; gap:10px; flex-wrap:wrap; justify-content:center;}
+  button{
+    background:#7c5cff; color:#fff; border:none; border-radius:999px;
+    padding:13px 18px; font-family:inherit; font-weight:700; font-size:13px; cursor:pointer;
+    box-shadow:0 8px 16px rgba(124,92,255,0.3); transition:transform .1s, background .15s;
+    flex:1 1 190px;
+  }
+  button:hover{background:#5f3fe0; transform:translateY(-1px);}
+  button:active{transform:translateY(0);}
+  button.alt{background:#ff9d4d; box-shadow:0 8px 16px rgba(255,157,77,0.35);}
+  button.alt:hover{background:#e8822f;}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="card">
+    <div class="title">📐 Деление в столбик</div>
+    <div class="subtitle">Нажми на кнопку — сгенерируется новый пример</div>
+
+    <div class="division-area" id="divisionArea">
+      <div class="left-grid" id="leftGrid"></div>
+      <div class="right-box">
+        <div class="divisor" id="divisorEl"></div>
+        <div class="quotient-line"></div>
+        <div class="quotient" id="quotientEl"></div>
+      </div>
+    </div>
+    <div class="remainder-note" id="remainderNote"></div>
+
+    <div class="controls">
+      <button id="gen2">Сгенерировать деление на двузначное</button>
+      <button class="alt" id="gen3">Сгенерировать деление на трёхзначное</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function randInt(min, max){ return Math.floor(Math.random()*(max-min+1))+min; }
+
+function buildDivisionLayout(dividendStr, divisor){
+  const digits = dividendStr.split('').map(Number);
+  const n = digits.length;
+  let k = 1, windowVal = digits[0];
+  while (windowVal < divisor && k < n){ windowVal = windowVal*10 + digits[k]; k++; }
+  let rightEdge = k - 1;
+  let current = windowVal;
+  let nextIdx = k;
+  const quotientDigits = [];
+  const rows = [];
+  while (true){
+    const q = Math.floor(current / divisor);
+    quotientDigits.push(q);
+    const product = q * divisor;
+    rows.push({ type:'subtract', rightEdge, text:String(product) });
+    const remainder = current - product;
+    if (nextIdx < n){
+      const combined = remainder*10 + digits[nextIdx];
+      rightEdge = nextIdx;
+      rows.push({ type:'value', rightEdge, text:String(combined) });
+      current = combined;
+      nextIdx++;
+    } else {
+      rows.push({ type:'value', rightEdge, text:String(remainder), isFinal:true });
+      return { dividend:dividendStr, divisor, quotient:quotientDigits.join(''), finalRemainder:remainder, rows, n };
+    }
+  }
+}
+
+function addCell(container, row, col, text, cls){
+  const el = document.createElement('div');
+  el.className = 'cell' + (cls ? ' '+cls : '');
+  el.style.gridRow = row;
+  el.style.gridColumn = col;
+  el.textContent = text;
+  container.appendChild(el);
+}
+function addLine(container, row, colStart, colEnd){
+  const el = document.createElement('div');
+  el.className = 'line';
+  el.style.gridRow = row;
+  el.style.gridColumn = `${colStart} / ${colEnd+1}`;
+  container.appendChild(el);
+}
+
+function renderDivision(layout){
+  const grid = document.getElementById('leftGrid');
+  grid.innerHTML = '';
+  grid.style.gridTemplateColumns = `1.1em repeat(${layout.n}, 1.1em)`;
+
+  let row = 1;
+  layout.dividend.split('').forEach((d,i)=> addCell(grid, row, i+2, d));
+  row++;
+
+  layout.rows.forEach(r=>{
+    const len = r.text.length;
+    const startCol = (r.rightEdge - len + 1) + 2;
+    if (r.type === 'subtract'){
+      addCell(grid, row, startCol-1, '−', 'sign');
+      r.text.split('').forEach((d,i)=> addCell(grid, row, startCol+i, d));
+      row++;
+      addLine(grid, row, startCol-1, startCol+len-1);
+      row++;
+    } else {
+      r.text.split('').forEach((d,i)=> addCell(grid, row, startCol+i, d, r.isFinal ? 'final' : ''));
+      row++;
+    }
+  });
+  grid.style.gridTemplateRows = `repeat(${row-1}, 1.5em)`;
+
+  document.getElementById('divisorEl').textContent = layout.divisor;
+  document.getElementById('quotientEl').textContent = layout.quotient;
+  const note = document.getElementById('remainderNote');
+  note.textContent = layout.finalRemainder > 0 ? `(остаток ${layout.finalRemainder})` : '';
+}
+
+function generate(divisorDigits){
+  const divisor = divisorDigits === 2 ? randInt(10,99) : randInt(100,999);
+  let dividendLen = Math.random() < 0.5 ? 3 : 4;
+  let dividend;
+  let tries = 0;
+  do {
+    const min = Math.pow(10, dividendLen-1);
+    const max = Math.pow(10, dividendLen) - 1;
+    dividend = randInt(min, max);
+    tries++;
+    if (tries > 25){ dividendLen = 4; }
+  } while (dividend <= divisor && tries <= 40);
+  if (dividend <= divisor){ dividend = divisor + randInt(1, 500); }
+
+  const layout = buildDivisionLayout(String(dividend), divisor);
+  renderDivision(layout);
+}
+
+document.getElementById('gen2').addEventListener('click', () => generate(2));
+document.getElementById('gen3').addEventListener('click', () => generate(3));
+
+generate(2);
+</script>
+</body>
+</html>
