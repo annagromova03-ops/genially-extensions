@@ -23,7 +23,7 @@
 
   .division-area{
     display:flex; justify-content:center; align-items:flex-start; gap:16px;
-    margin:22px 0 28px; font-family:'Space Mono',monospace;
+    margin:22px 0 20px; font-family:'Space Mono',monospace;
     overflow-x:auto; padding-bottom:4px;
   }
   .left-grid{display:grid; font-size:clamp(18px,4.2vw,27px); font-weight:700; color:#3a3244;}
@@ -38,8 +38,17 @@
   }
   .divisor{font-size:clamp(18px,4.2vw,27px); font-weight:700; color:#3a3244; padding-bottom:8px; white-space:nowrap;}
   .quotient-line{border-top:3px solid #3a3244; width:100%; min-width:2.6em;}
-  .quotient{font-size:clamp(18px,4.2vw,27px); font-weight:800; color:#7c5cff; padding-top:6px; white-space:nowrap;}
-  .remainder-note{font-size:12px; color:#9a8a70; margin-top:-18px; margin-bottom:18px;}
+  .quotient{font-size:clamp(18px,4.2vw,27px); font-weight:800; color:#7c5cff; padding-top:6px; white-space:nowrap; min-height:1.2em;}
+
+  .reveal-btn{
+    display:inline-block; margin:0 0 20px; background:#fff; color:#7c5cff;
+    border:2px solid #7c5cff; border-radius:999px; padding:10px 20px;
+    font-family:inherit; font-weight:700; font-size:13px; cursor:pointer;
+    transition:background .15s, color .15s, transform .1s;
+  }
+  .reveal-btn:hover{background:#7c5cff; color:#fff;}
+  .reveal-btn:active{transform:translateY(1px);}
+  .reveal-btn.is-revealed{background:#f1edff; color:#5f3fe0; border-color:#c9b8ff;}
 
   .controls{display:flex; gap:10px; flex-wrap:wrap; justify-content:center;}
   button{
@@ -58,7 +67,7 @@
 <div id="app">
   <div class="card">
     <div class="title">📐 Деление в столбик</div>
-    <div class="subtitle">Нажми на кнопку — сгенерируется новый пример</div>
+    <div class="subtitle">Реши пример сам, потом нажми «Показать решение», чтобы проверить себя</div>
 
     <div class="division-area" id="divisionArea">
       <div class="left-grid" id="leftGrid"></div>
@@ -68,7 +77,8 @@
         <div class="quotient" id="quotientEl"></div>
       </div>
     </div>
-    <div class="remainder-note" id="remainderNote"></div>
+
+    <button class="reveal-btn" id="revealBtn">Показать решение</button>
 
     <div class="controls">
       <button id="gen2">Сгенерировать деление на двузначное</button>
@@ -79,6 +89,23 @@
 
 <script>
 function randInt(min, max){ return Math.floor(Math.random()*(max-min+1))+min; }
+
+function pickDivisorAndQuotient(divisorDigits, dividendLen){
+  const dMin = divisorDigits === 2 ? 10 : 100;
+  const dMax = divisorDigits === 2 ? 99 : 999;
+  const vMin = Math.pow(10, dividendLen - 1);
+  const vMax = Math.pow(10, dividendLen) - 1;
+
+  const candidates = [];
+  for (let divisor = dMin; divisor <= dMax; divisor++){
+    const minQ = Math.max(2, Math.ceil(vMin / divisor));
+    const maxQ = Math.floor(vMax / divisor);
+    if (maxQ >= minQ) candidates.push([divisor, minQ, maxQ]);
+  }
+  const [divisor, minQ, maxQ] = candidates[randInt(0, candidates.length - 1)];
+  const quotient = randInt(minQ, maxQ);
+  return { divisor, quotient, dividend: divisor * quotient };
+}
 
 function buildDivisionLayout(dividendStr, divisor){
   const digits = dividendStr.split('').map(Number);
@@ -104,7 +131,7 @@ function buildDivisionLayout(dividendStr, divisor){
       nextIdx++;
     } else {
       rows.push({ type:'value', rightEdge, text:String(remainder), isFinal:true });
-      return { dividend:dividendStr, divisor, quotient:quotientDigits.join(''), finalRemainder:remainder, rows, n };
+      return { dividend:dividendStr, divisor, quotient:quotientDigits.join(''), rows, n };
     }
   }
 }
@@ -125,7 +152,10 @@ function addLine(container, row, colStart, colEnd){
   container.appendChild(el);
 }
 
-function renderDivision(layout){
+let currentLayout = null;
+
+function renderDivision(layout, revealed){
+  currentLayout = layout;
   const grid = document.getElementById('leftGrid');
   grid.innerHTML = '';
   grid.style.gridTemplateColumns = `1.1em repeat(${layout.n}, 1.1em)`;
@@ -134,48 +164,45 @@ function renderDivision(layout){
   layout.dividend.split('').forEach((d,i)=> addCell(grid, row, i+2, d));
   row++;
 
-  layout.rows.forEach(r=>{
-    const len = r.text.length;
-    const startCol = (r.rightEdge - len + 1) + 2;
-    if (r.type === 'subtract'){
-      addCell(grid, row, startCol-1, '−', 'sign');
-      r.text.split('').forEach((d,i)=> addCell(grid, row, startCol+i, d));
-      row++;
-      addLine(grid, row, startCol-1, startCol+len-1);
-      row++;
-    } else {
-      r.text.split('').forEach((d,i)=> addCell(grid, row, startCol+i, d, r.isFinal ? 'final' : ''));
-      row++;
-    }
-  });
+  if (revealed){
+    layout.rows.forEach(r=>{
+      const len = r.text.length;
+      const startCol = (r.rightEdge - len + 1) + 2;
+      if (r.type === 'subtract'){
+        addCell(grid, row, startCol-1, '−', 'sign');
+        r.text.split('').forEach((d,i)=> addCell(grid, row, startCol+i, d));
+        row++;
+        addLine(grid, row, startCol-1, startCol+len-1);
+        row++;
+      } else {
+        r.text.split('').forEach((d,i)=> addCell(grid, row, startCol+i, d, r.isFinal ? 'final' : ''));
+        row++;
+      }
+    });
+  }
   grid.style.gridTemplateRows = `repeat(${row-1}, 1.5em)`;
 
   document.getElementById('divisorEl').textContent = layout.divisor;
-  document.getElementById('quotientEl').textContent = layout.quotient;
-  const note = document.getElementById('remainderNote');
-  note.textContent = layout.finalRemainder > 0 ? `(остаток ${layout.finalRemainder})` : '';
+  document.getElementById('quotientEl').textContent = revealed ? layout.quotient : '';
+
+  const btn = document.getElementById('revealBtn');
+  btn.textContent = revealed ? 'Скрыть решение' : 'Показать решение';
+  btn.classList.toggle('is-revealed', revealed);
+  btn.dataset.revealed = revealed ? '1' : '0';
 }
 
 function generate(divisorDigits){
-  const divisor = divisorDigits === 2 ? randInt(10,99) : randInt(100,999);
-  let dividendLen = Math.random() < 0.5 ? 3 : 4;
-  let dividend;
-  let tries = 0;
-  do {
-    const min = Math.pow(10, dividendLen-1);
-    const max = Math.pow(10, dividendLen) - 1;
-    dividend = randInt(min, max);
-    tries++;
-    if (tries > 25){ dividendLen = 4; }
-  } while (dividend <= divisor && tries <= 40);
-  if (dividend <= divisor){ dividend = divisor + randInt(1, 500); }
-
-  const layout = buildDivisionLayout(String(dividend), divisor);
-  renderDivision(layout);
+  const dividendLen = Math.random() < 0.5 ? 3 : 4;
+  const picked = pickDivisorAndQuotient(divisorDigits, dividendLen);
+  const layout = buildDivisionLayout(String(picked.dividend), picked.divisor);
+  renderDivision(layout, false);
 }
 
 document.getElementById('gen2').addEventListener('click', () => generate(2));
 document.getElementById('gen3').addEventListener('click', () => generate(3));
+document.getElementById('revealBtn').addEventListener('click', () => {
+  renderDivision(currentLayout, document.getElementById('revealBtn').dataset.revealed !== '1');
+});
 
 generate(2);
 </script>
