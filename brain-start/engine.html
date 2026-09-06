@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Мозговой старт</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&display=swap');
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0; min-height:100%;
+    font-family:'Baloo 2','Trebuchet MS','Verdana',sans-serif;
+    background:linear-gradient(135deg,#ffe9c7,#ffd1e8);
+    color:#4a3b2a;
+  }
+  #app{min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:clamp(10px,3vw,26px);}
+  .header-bar{font-weight:800;font-size:clamp(18px,3vw,22px);margin-bottom:14px;text-align:center;}
+
+  .stage{width:100%;display:flex;justify-content:center;}
+  .screen{display:none;width:100%;}
+  .screen.active{display:flex;justify-content:center;}
+  .card{
+    width:100%; max-width:720px; background:#fffdf9; border-radius:28px;
+    box-shadow:0 18px 40px rgba(80,40,20,0.18); padding:clamp(18px,4vw,32px);
+  }
+
+  .section-title{font-weight:800;font-size:15px;color:#4a3b2a;margin:18px 0 10px;}
+  .section-title:first-child{margin-top:0;}
+  .hint{font-size:12px;color:#9a8a70;margin:-6px 0 12px;}
+
+  .skills-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;}
+  .skill-card{
+    display:flex;align-items:center;gap:8px;padding:12px 14px;border-radius:16px;
+    border:2.5px solid #f0e6d8;background:#fffaf3;cursor:pointer;
+    font-weight:700;font-size:13.5px;transition:transform .1s, border-color .15s, background .15s;
+    user-select:none;
+  }
+  .skill-card:hover{transform:translateY(-1px);}
+  .skill-card .ic{font-size:20px;}
+  .skill-card.selected{border-color:var(--sc); background:var(--scbg);}
+
+  .chip-group{display:flex;flex-wrap:wrap;gap:8px;}
+  .chip{
+    border:2.5px solid #f0e6d8;background:#fffaf3;border-radius:999px;padding:8px 16px;
+    font-family:inherit;font-weight:700;font-size:13px;color:#4a3b2a;cursor:pointer;
+    transition:border-color .15s, background .15s, color .15s;
+  }
+  .chip.selected{border-color:#7c5cff;background:#7c5cff;color:#fff;}
+
+  .topic-row{display:flex;flex-direction:column;gap:8px;margin-bottom:6px;}
+  .radio-opt{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:700;cursor:pointer;}
+  .radio-opt input{width:17px;height:17px;accent-color:#7c5cff;cursor:pointer;}
+  .topic-input{
+    width:100%;border:2.5px solid #f0e6d8;border-radius:14px;padding:12px 14px;
+    font-family:inherit;font-size:14px;color:#4a3b2a;background:#fffaf3;margin-top:4px;
+  }
+  .topic-input:disabled{opacity:.5;}
+  .topic-input:focus{outline:none;border-color:#7c5cff;}
+
+  button{font-family:inherit;cursor:pointer;border:none;}
+  .primary-btn{
+    background:#7c5cff;color:#fff;border-radius:999px;padding:15px 24px;font-weight:800;font-size:15px;
+    box-shadow:0 8px 16px rgba(124,92,255,0.32);transition:transform .1s, background .15s;width:100%;margin-top:22px;
+  }
+  .primary-btn:hover{background:#5f3fe0;transform:translateY(-1px);}
+  .primary-btn:active{transform:translateY(0);}
+  .secondary-btn{
+    background:#fff;color:#7c5cff;border:2.5px solid #7c5cff;border-radius:999px;padding:10px 18px;
+    font-weight:700;font-size:13px;transition:background .15s,color .15s;
+  }
+  .secondary-btn:hover{background:#7c5cff;color:#fff;}
+  .ghost-btn{background:transparent;color:#9a8a70;border:2px solid #f0e6d8;border-radius:999px;padding:8px 14px;font-weight:700;font-size:12.5px;}
+  .ghost-btn:hover{border-color:#c9b8ff;color:#7c5cff;}
+  .shake{animation:shakeAnim .4s;}
+  @keyframes shakeAnim{0%,100%{transform:translateX(0);}20%{transform:translateX(-6px);}40%{transform:translateX(6px);}60%{transform:translateX(-4px);}80%{transform:translateX(4px);}}
+  .warn-msg{color:#d94f4f;font-size:12.5px;font-weight:700;margin-top:8px;text-align:center;display:none;}
+
+  .review-header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:16px;}
+  .review-header h2{font-size:17px;margin:0;}
+  .review-actions{display:flex;gap:8px;flex-wrap:wrap;}
+  .review-list{display:flex;flex-direction:column;gap:10px;}
+  .review-row{
+    display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:16px;
+    background:#fffaf3;border:2px solid #f0e6d8;
+  }
+  .review-row .ric{font-size:20px;flex:0 0 auto;}
+  .review-row .rtext{flex:1;min-width:0;}
+  .review-row .rmech{font-weight:800;font-size:13px;}
+  .review-row .rprompt{font-size:11.5px;color:#9a8a70;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .row-btn{background:#fff;border:2px solid #f0e6d8;border-radius:10px;width:32px;height:32px;font-size:14px;flex:0 0 auto;}
+  .row-btn:hover{border-color:#7c5cff;}
+  .add-row-btn{align-self:flex-start;margin-top:4px;}
+
+  .progress-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px;}
+  .progress-label{font-weight:800;font-size:14px;}
+  .timer-chip{font-size:12px;font-weight:700;color:#9a8a70;background:#fffaf3;border-radius:999px;padding:5px 12px;}
+  .progress-dots{display:flex;gap:6px;flex-wrap:wrap;}
+  .dot{width:10px;height:10px;border-radius:50%;background:#f0e6d8;}
+  .dot.done{background:#7c5cff;}
+  .dot.current{background:#ff9d4d;}
+
+  .task-card{background:#fffaf3;border-radius:20px;padding:clamp(16px,4vw,26px);text-align:center;min-height:220px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;}
+  .task-prompt{font-weight:800;font-size:clamp(15px,2.6vw,19px);line-height:1.4;}
+  .task-prompt.big{font-size:clamp(16px,3vw,21px);}
+  .task-subprompt{font-weight:700;font-size:14px;color:#7c5cff;}
+  .task-status{font-weight:800;font-size:14px;min-height:20px;}
+  .task-status.ok{color:#3aa15c;}
+  .task-status.retry{color:#d94f4f;}
+
+  .options-grid{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;}
+  .options-grid.emoji-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(58px,1fr));max-width:520px;}
+  .options-grid.big-grid{grid-template-columns:repeat(auto-fill,minmax(48px,1fr));}
+  .option-btn{
+    background:#fff;border:2.5px solid #f0e6d8;border-radius:14px;padding:12px 16px;
+    font-family:inherit;font-weight:700;font-size:15px;min-width:48px;transition:transform .1s, border-color .15s, background .15s;
+  }
+  .options-grid.emoji-grid .option-btn, .options-grid.big-grid .option-btn{font-size:24px;padding:10px 6px;aspect-ratio:1;}
+  .option-btn:hover{transform:translateY(-1px);border-color:#c9b8ff;}
+  .option-btn.correct{background:#e5f7ea;border-color:#3aa15c;}
+  .option-btn.wrong{background:#ffe9e9;border-color:#d94f4f;}
+  .option-btn.picked{background:#efe9ff;border-color:#7c5cff;color:#7c5cff;}
+  .option-btn.flash{background:#7c5cff;border-color:#7c5cff;color:#fff;transform:scale(1.08);}
+  .preview-grid{max-width:420px;}
+
+  .flash-stage{width:140px;height:140px;border-radius:24px;background:#fff;border:2.5px solid #f0e6d8;display:flex;align-items:center;justify-content:center;}
+  .flash-symbol{font-size:56px;transition:transform .15s;}
+  .flash-symbol.hit{transform:scale(1.2);}
+  .respond-btn{background:#7c5cff;color:#fff;border-color:#7c5cff;font-size:16px;padding:14px 30px;}
+  .respond-btn:hover{background:#5f3fe0;}
+  .start-btn{background:#ff9d4d;color:#fff;border-color:#ff9d4d;font-size:14px;}
+  .timer-display{font-weight:800;font-size:22px;color:#7c5cff;}
+
+  .play-controls{display:flex;justify-content:space-between;align-items:center;margin-top:18px;flex-wrap:wrap;gap:10px;}
+  .next-btn{background:#7c5cff;color:#fff;border-radius:999px;padding:13px 26px;font-weight:800;font-size:14px;box-shadow:0 8px 16px rgba(124,92,255,0.3);}
+  .next-btn:hover{background:#5f3fe0;}
+
+  .results-wrap{text-align:center;}
+  .results-title{font-weight:800;font-size:20px;margin-bottom:6px;}
+  .results-emoji{font-size:44px;margin-bottom:8px;}
+  .results-stats{display:flex;justify-content:center;gap:24px;margin:18px 0 6px;flex-wrap:wrap;}
+  .stat{background:#fffaf3;border-radius:16px;padding:14px 22px;min-width:120px;}
+  .stat .num{font-weight:800;font-size:20px;color:#7c5cff;}
+  .stat .lbl{font-size:11.5px;color:#9a8a70;font-weight:700;margin-top:2px;}
+
+  .brand-badge{
+    position:fixed;left:14px;bottom:14px;display:flex;align-items:center;gap:8px;
+    background:#fffdf9;border-radius:999px;padding:6px 14px 6px 6px;box-shadow:0 6px 16px rgba(80,40,20,0.15);
+    font-size:11.5px;font-weight:700;color:#9a8a70;
+  }
+  .brand-badge img{width:28px;height:28px;border-radius:50%;object-fit:cover;}
+
+  @media (max-width:520px){ .brand-badge{position:static;margin-top:20px;justify-content:center;} }
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="header-bar">🧠 МОЗГОВОЙ СТАРТ</div>
+
+  <div class="stage">
+
+    <div id="screen-params" class="screen active">
+      <div class="card">
+        <div class="section-title" style="margin-top:0;font-size:16px;">Выберите, что будем тренировать сегодня</div>
+
+        <div class="section-title">Когнитивный навык</div>
+        <div class="skills-grid" id="skillsGrid"></div>
+
+        <div class="section-title">Класс</div>
+        <div class="chip-group" id="gradeChips"></div>
+
+        <div class="section-title">Количество заданий</div>
+        <div class="chip-group" id="countChips"></div>
+
+        <div class="section-title">Сложность</div>
+        <div class="chip-group" id="diffChips"></div>
+
+        <div class="section-title">Продолжительность</div>
+        <div class="chip-group" id="durationChips"></div>
+
+        <div class="section-title">Тема урока</div>
+        <div class="topic-row">
+          <label class="radio-opt"><input type="radio" name="topicMode" value="0" checked> Независимая когнитивная разминка</label>
+          <label class="radio-opt"><input type="radio" name="topicMode" value="1"> Разминка по теме урока</label>
+        </div>
+        <input type="text" id="topicInput" class="topic-input" placeholder="Например: умножение и деление, однокоренные слова, части растений" disabled>
+
+        <button class="primary-btn" id="createBtn">✨ СОЗДАТЬ РАЗМИНКУ</button>
+        <div class="warn-msg" id="warnMsg">Выберите хотя бы один навык 🙂</div>
+
+        <div class="brand-badge"><img src="../assets/avatar.jpg" alt="Уроки-приключения"><span>Уроки-приключения</span></div>
+      </div>
+    </div>
+
+    <div id="screen-review" class="screen">
+      <div class="card">
+        <div class="review-header">
+          <h2>Ваша разминка готова</h2>
+          <div class="review-actions">
+            <button class="ghost-btn" id="editParamsBtn">⚙️ Изменить параметры</button>
+            <button class="ghost-btn" id="reshuffleBtn">🔄 Другой набор</button>
+          </div>
+        </div>
+        <div class="review-list" id="reviewList"></div>
+        <button class="secondary-btn add-row-btn" id="addTaskBtn">+ Добавить задание</button>
+        <button class="primary-btn" id="startPlayBtn">▶️ Начать разминку!</button>
+      </div>
+    </div>
+
+    <div id="screen-play" class="screen">
+      <div class="card">
+        <div class="progress-row">
+          <div class="progress-label" id="progressLabel">Задание 1 из 5</div>
+          <div class="timer-chip" id="timerChip">00:00</div>
+        </div>
+        <div class="progress-dots" id="progressDots"></div>
+        <div class="task-card" id="taskContainer" style="margin-top:14px;"></div>
+        <div class="play-controls">
+          <button class="ghost-btn" id="replaceTaskBtn">🔄 ЗАМЕНИТЬ ЭТО ЗАДАНИЕ</button>
+          <button class="next-btn" id="nextBtn">ДАЛЬШЕ →</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="screen-results" class="screen">
+      <div class="card results-wrap">
+        <div class="results-emoji">🎉</div>
+        <div class="results-title">РАЗМИНКА ЗАВЕРШЕНА!</div>
+        <div class="results-stats">
+          <div class="stat"><div class="num" id="resDone">5 из 5</div><div class="lbl">ВЫПОЛНЕНО</div></div>
+          <div class="stat"><div class="num" id="resTime">04:32</div><div class="lbl">ВРЕМЯ</div></div>
+        </div>
+        <button class="primary-btn" id="newWarmupBtn">🔄 НОВАЯ РАЗМИНКА</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+/* ===== helpers ===== */
+function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+function pickN(arr,n){ const c=arr.slice(); const out=[]; for(let i=0;i<n&&c.length;i++){ const idx=Math.floor(Math.random()*c.length); out.push(c.splice(idx,1)[0]); } return out; }
+function shuffle(arr){ const a=arr.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+function el(cls,text){ const d=document.createElement('div'); d.className=cls; if(text!==undefined) d.textContent=text; return d; }
+function formatSec(s){ s=Math.max(0,Math.round(s)); const m=Math.floor(s/60), ss=s%60; return m+':'+String(ss).padStart(2,'0'); }
+
+/* ===== content banks ===== */
+const EMOJI_POOL = ['🍎','🍌','🍇','🍓','🍊','🍉','🥕','🌽','🍄','🌸','🌻','🌈','⭐','🌙','🌞','🐱','🐶','🐰','🐻','🦊','🐼','🐸','🐧','🚗','🚌','🚂','🚀','🎲','🎈','🎁'];
+const CONFUSABLE_PAIRS = [['б','д'],['п','т'],['ш','щ'],['е','ё'],['з','э'],['6','9'],['3','8'],['М','Н']];
+const WORD_BANK = {
+  'Животные': ['кот','собака','слон','жираф','заяц','волк','лиса','медведь','ёж','белка','тигр','лев'],
+  'Фрукты': ['яблоко','груша','банан','апельсин','слива','персик','лимон','ананас'],
+  'Овощи': ['морковь','капуста','огурец','помидор','картофель','свёкла','лук','перец'],
+  'Мебель': ['стол','стул','шкаф','диван','кровать','полка'],
+  'Транспорт': ['машина','автобус','поезд','самолёт','велосипед','корабль'],
+  'Посуда': ['тарелка','чашка','ложка','вилка','кастрюля','сковорода'],
+  'Одежда': ['шапка','куртка','футболка','брюки','платье','носки'],
+  'Школа': ['ручка','тетрадь','пенал','линейка','учебник','доска'],
+  'Природа': ['дерево','река','гора','облако','солнце','трава','цветок','лист'],
+  'Профессии': ['врач','учитель','повар','пилот','пожарный','художник'],
+};
+const SENTENCE_STARTERS = [
+  'Если бы у меня был свой дракон, я бы...',
+  'Самое интересное место, где я хотел(а) бы побывать — это...',
+  'Однажды утром я проснулся(-ась) и увидел(а)...',
+  'Мой любимый герой из мультфильма умеет...',
+  'Если бы я мог(ла) стать невидимым(ой) на один день, я бы...',
+  'В моём рюкзаке лежит волшебный предмет, который...',
+  'Лучший подарок, который я получал(а) — это...',
+  'Если бы животные умели говорить, первое, что я бы спросил(а) у кота — это...',
+  'Однажды я нашёл(нашла) на улице загадочную коробку, в ней было...',
+  'Мой идеальный выходной день выглядит так...',
+  'Если бы я был(а) волшебником, первое заклинание, которое я бы выучил(а) — это...',
+  'На необитаемом острове я бы обязательно взял(а) с собой...',
+];
+const CAUSE_EFFECT_PROMPTS = [
+  'Что произойдёт, если весь снег в мире вдруг растает за один день?',
+  'Что произойдёт, если люди перестанут пользоваться телефонами на неделю?',
+  'Что произойдёт, если все часы в городе остановятся?',
+  'Что произойдёт, если дождь будет идти без остановки целый месяц?',
+  'Что произойдёт, если в школе отменят все перемены?',
+  'Что произойдёт, если у всех животных в лесу вдруг пропадёт голос?',
+  'Что произойдёт, если человек перестанет спать совсем?',
+  'Что произойдёт, если деревья начнут расти в сто раз быстрее?',
+  'Что произойдёт, если все дороги вдруг станут скользкими, как лёд?',
+  'Что произойдёт, если солнце будет светить только по ночам?',
+  'Что произойдёт, если книги начнут читаться сами вслух?',
+  'Что произойдёт, если люди научатся дышать под водой?',
+];
+const NAMES = ['Петя','Маша','Саша','Аня','Дима','Катя','Вова','Лиза'];
+
+const TOPIC_RULES = [
+  { kw:['однокорен','родственн'], name:'Однокоренные слова', words:['лес','лесник','лесной','вода','водяной','водный','дом','домик','домашний','снег','снежок','снежный','гриб','грибник','грибной'] },
+  { kw:['растени','дерев','цвет','куст','ботаник'], name:'Части растений', words:['корень','стебель','лист','цветок','плод','семя','ветка','почка'] },
+  { kw:['умнож','делен'], name:'Умножение и деление', mathMode:'multiply' },
+  { kw:['слож','вычит','прибав','отним'], name:'Сложение и вычитание', mathMode:'addsub' },
+  { kw:['часть речи','части речи','существительн','прилагательн','глагол'], name:'Части речи', words:['стол','бежит','красивый','быстро','дом','читает','весёлый','громко'] },
+  { kw:['гласн','согласн'], name:'Звуки и буквы', words:['а','о','у','и','э','б','в','г','д','ж'] },
+  { kw:['времена года','сезон'], name:'Времена года', words:['зима','весна','лето','осень','снег','листопад','капель','жара'] },
+  { kw:['животн','звер'], name:'Животные', words:WORD_BANK['Животные'] },
+  { kw:['синоним','антоним'], name:'Синонимы и антонимы', words:['большой','маленький','весёлый','грустный','быстрый','медленный','горячий','холодный'] },
+];
+function matchTopic(text){
+  if (!text) return null;
+  const t = text.toLowerCase();
+  for (const rule of TOPIC_RULES){ if (rule.kw.some(k=>t.includes(k))) return rule; }
+  return null;
+}
+function pickCategoryWords(topicCtx){
+  if (topicCtx && topicCtx.words && topicCtx.words.length>=4) return { name: topicCtx.name, words: topicCtx.words };
+  const names = Object.keys(WORD_BANK);
+  const name = pick(names);
+  return { name, words: WORD_BANK[name] };
+}
+
+/* ===== grade/difficulty scaling (rows = grade 1..4, cols = легко/средне/сложно) ===== */
+const SEQ_LEN = [[2,3,3],[3,3,4],[3,4,5],[4,5,6]];
+const GRID_N = [[6,8,9],[8,9,12],[9,12,12],[12,12,16]];
+const NUM_MAX = [[10,10,20],[20,50,50],[50,100,100],[100,500,1000]];
+const PATTERN_STEP_MAX = [[2,3,3],[3,4,5],[4,5,8],[5,8,10]];
+
+/* ===== skills ===== */
+const SKILLS = {
+  memory:    { label:'ПАМЯТЬ',            icon:'🧠', color:'#7c5cff', bg:'#efe9ff' },
+  attention: { label:'ВНИМАНИЕ',          icon:'👁️', color:'#2fb8a6', bg:'#e2f7f3' },
+  reaction:  { label:'БЫСТРОТА РЕАКЦИИ',  icon:'⚡', color:'#ff9d4d', bg:'#fff1e2' },
+  speech:    { label:'РЕЧЬ',              icon:'💬', color:'#ff6f91', bg:'#ffe7ee' },
+  logic:     { label:'ЛОГИКА',            icon:'🧩', color:'#4d96ff', bg:'#e7f0ff' },
+  thinking:  { label:'МЫШЛЕНИЕ',          icon:'💡', color:'#ffb703', bg:'#fff6e0' },
+};
+
+/* ===== mechanics ===== */
+const MECH_MEMORY_ORDER = { label:'Запомни порядок', generate({grade,diffIdx}){
+  const len = SEQ_LEN[grade-1][diffIdx];
+  const gridSize = Math.max(len+3,6);
+  const chosen = pickN(EMOJI_POOL, gridSize);
+  const sequence = shuffle(chosen.map((_,i)=>i)).slice(0,len);
+  return { pattern:'sequence', mechanicLabel:this.label, prompt:'Запомни порядок, в котором загорятся картинки', items:chosen, sequence };
+}};
+const MECH_MEMORY_MISSING = { label:'Что исчезло?', generate({grade,diffIdx}){
+  const n = Math.min(3+diffIdx+Math.floor(grade/2), 7);
+  const chosen = pickN(EMOJI_POOL, n);
+  const missingIdx = randInt(0, chosen.length-1);
+  const opts = shuffle(chosen.map((e,i)=>({label:e,i})));
+  return { pattern:'choose', mechanicLabel:this.label, prompt:'Запомни все картинки',
+    preReveal:{ items:chosen, durationMs: 1600 + chosen.length*250 }, afterPrompt:'Какой картинки не стало?',
+    optionsType:'emoji', options:opts.map(o=>o.label), correctIndex: opts.findIndex(o=>o.i===missingIdx) };
+}};
+
+const MECH_ATTENTION_FINDALL = { label:'Найди все одинаковые', generate({grade,diffIdx}){
+  const gridN = GRID_N[grade-1][diffIdx];
+  const target = pick(EMOJI_POOL);
+  const distractors = EMOJI_POOL.filter(e=>e!==target);
+  const targetCount = Math.max(3, Math.floor(gridN/3));
+  const cells=[];
+  for(let i=0;i<targetCount;i++) cells.push({label:target,isTarget:true});
+  while(cells.length<gridN) cells.push({label:pick(distractors),isTarget:false});
+  return { pattern:'findAll', mechanicLabel:this.label, prompt:`Найди и нажми на все ${target}`, items:shuffle(cells), targetCount };
+}};
+const MECH_ATTENTION_ODD = { label:'Найди отличие среди похожих', generate({grade,diffIdx}){
+  let [common,odd] = pick(CONFUSABLE_PAIRS);
+  if (Math.random()<0.5){ const t=common; common=odd; odd=t; }
+  const gridN = Math.min(GRID_N[grade-1][diffIdx],16);
+  const oddPos = randInt(0,gridN-1);
+  const items=[];
+  for(let i=0;i<gridN;i++) items.push({label: i===oddPos?odd:common, isTarget:i===oddPos});
+  return { pattern:'findAll', mechanicLabel:this.label, prompt:`Найди «${odd}», спрятанную среди «${common}»`, items, targetCount:1, big:true };
+}};
+
+function buildFlashTask(mode,grade,diffIdx){
+  const count = 6+diffIdx*2;
+  const target = pick(EMOJI_POOL);
+  const stop = mode==='gonogo' ? pick(EMOJI_POOL.filter(e=>e!==target)) : null;
+  const others = EMOJI_POOL.filter(e=>e!==target && e!==stop);
+  const symbols=[];
+  for(let i=0;i<count;i++){
+    if (mode==='gonogo'){ const isStop=Math.random()<0.3; symbols.push({sym:isStop?stop:pick([target,...others]), isTarget:!isStop}); }
+    else { const isTarget=Math.random()<0.4; symbols.push({sym:isTarget?target:pick(others), isTarget}); }
+  }
+  const interval = Math.max(1400 - grade*100 - diffIdx*150, 700);
+  return { pattern:'flash', mechanicLabel: mode==='gonogo'?'Стоп-сигнал':'Нажми, когда увидишь нужный символ',
+    prompt: mode==='gonogo' ? `Нажимай «Да!» на каждый символ, кроме ${stop} — на него нажимать нельзя!` : `Нажимай «Есть!», как только увидишь ${target}`,
+    mode, target, stop, symbols, intervalMs:interval };
+}
+const MECH_REACTION_GO = { label:'Нажми, когда увидишь нужный символ', generate:({grade,diffIdx})=>buildFlashTask('go',grade,diffIdx) };
+const MECH_REACTION_GONOGO = { label:'Стоп-сигнал', generate:({grade,diffIdx})=>buildFlashTask('gonogo',grade,diffIdx) };
+
+const MECH_SPEECH_CONTINUE = { label:'Продолжи фразу', generate(){ return { pattern:'prompt', mechanicLabel:this.label, prompt: pick(SENTENCE_STARTERS) }; } };
+const MECH_SPEECH_NAME_MANY = { label:'Назови как можно больше', generate({topicCtx}){
+  const {name} = pickCategoryWords(topicCtx);
+  return { pattern:'prompt', mechanicLabel:this.label, prompt:`Назови как можно больше слов на тему «${name}»`, timerSeconds:20 };
+}};
+
+const MECH_LOGIC_ODDONE = { label:'Что лишнее?', generate({topicCtx}){
+  const names = Object.keys(WORD_BANK);
+  const mainCat = pickCategoryWords(topicCtx);
+  const otherName = pick(names.filter(n=>n!==mainCat.name)) || names[0];
+  const three = pickN(mainCat.words,3);
+  const odd = pick(WORD_BANK[otherName]);
+  const options = shuffle([...three, odd]);
+  return { pattern:'choose', mechanicLabel:this.label, prompt:'Найди лишнее слово', optionsType:'text', options, correctIndex:options.indexOf(odd) };
+}};
+const MECH_LOGIC_PATTERN = { label:'Продолжи закономерность', generate({grade,diffIdx,topicCtx}){
+  if (Math.random()<0.5){
+    let step, start;
+    if (topicCtx && topicCtx.mathMode==='multiply'){ step = randInt(2, Math.min(9, 2+diffIdx*3)); start = step; }
+    else { step = randInt(1, PATTERN_STEP_MAX[grade-1][diffIdx]); start = randInt(1,10); }
+    const seq=[0,1,2,3].map(i=>start+step*i);
+    const correct = start+step*4;
+    let d1 = correct+step, d2 = Math.max(1, correct-step);
+    if (d2===d1) d2 = correct+step*2;
+    const options = shuffle([correct,d1,d2]).map(String);
+    return { pattern:'choose', mechanicLabel:this.label, prompt:`Продолжи ряд: ${seq.join(', ')}, ...?`, optionsType:'text', options, correctIndex: options.indexOf(String(correct)) };
+  } else {
+    const cyc = pickN(EMOJI_POOL, randInt(2,3));
+    const seq=[0,1,2,3,4].map(i=>cyc[i%cyc.length]);
+    const correct = cyc[5%cyc.length];
+    const distractors = EMOJI_POOL.filter(e=>!cyc.includes(e));
+    const options = shuffle([correct, ...pickN(distractors,2)]);
+    return { pattern:'choose', mechanicLabel:this.label, prompt:`Продолжи ряд: ${seq.join(' ')} ...?`, optionsType:'emoji', options, correctIndex:options.indexOf(correct) };
+  }
+}};
+
+const MECH_THINKING_WHATIF = { label:'Что произойдёт, если…?', generate(){ return { pattern:'prompt', mechanicLabel:this.label, prompt: pick(CAUSE_EFFECT_PROMPTS) }; } };
+const MECH_THINKING_COMPARE = { label:'Сравни и сделай вывод', generate({grade,diffIdx}){
+  const max = NUM_MAX[grade-1][diffIdx];
+  let a=randInt(1,max), b=randInt(1,max);
+  while(b===a) b=randInt(1,max);
+  const [n1,n2] = pickN(NAMES,2);
+  const question = Math.random()<0.5 ? 'больше' : 'меньше';
+  const n1Wins = (question==='больше') === (a>b);
+  const correctName = n1Wins ? n1 : n2;
+  return { pattern:'choose', mechanicLabel:this.label, prompt:`У ${n1} — ${a} очков, у ${n2} — ${b} очков. У кого очков ${question}?`,
+    optionsType:'text', options:[n1,n2], correctIndex:[n1,n2].indexOf(correctName) };
+}};
+
+const MECHANICS_BY_SKILL = {
+  memory:[MECH_MEMORY_ORDER, MECH_MEMORY_MISSING],
+  attention:[MECH_ATTENTION_FINDALL, MECH_ATTENTION_ODD],
+  reaction:[MECH_REACTION_GO, MECH_REACTION_GONOGO],
+  speech:[MECH_SPEECH_CONTINUE, MECH_SPEECH_NAME_MANY],
+  logic:[MECH_LOGIC_ODDONE, MECH_LOGIC_PATTERN],
+  thinking:[MECH_THINKING_WHATIF, MECH_THINKING_COMPARE],
+};
+
+function genOne(skill, mi, grade, diffIdx, topicCtx){
+  const mech = MECHANICS_BY_SKILL[skill][mi];
+  return Object.assign(mech.generate({grade,diffIdx,topicCtx}), { skill, mi });
+}
+function assembleWarmup(skills, grade, diffIdx, count, topicCtx){
+  const cursor={};
+  const plan=[];
+  for(let i=0;i<count;i++){
+    const skill = skills[i % skills.length];
+    const mechs = MECHANICS_BY_SKILL[skill];
+    const mi = (cursor[skill]||0) % mechs.length;
+    cursor[skill]=mi+1;
+    plan.push(genOne(skill, mi, grade, diffIdx, topicCtx));
+  }
+  return plan;
+}
+
+/* ===== pattern renderers ===== */
+function renderChoose(container, task, done){
+  container.innerHTML='';
+  container.appendChild(el('task-prompt', task.prompt));
+  const statusEl = el('task-status','');
+
+  function showOptions(){
+    if (task.afterPrompt) container.appendChild(el('task-subprompt', task.afterPrompt));
+    const grid = el('options-grid'+(task.optionsType==='emoji'?' emoji-grid':''));
+    task.options.forEach((opt,i)=>{
+      const b=document.createElement('button');
+      b.className='option-btn'; b.textContent=opt;
+      b.addEventListener('click', ()=>{
+        if (i===task.correctIndex){
+          b.classList.add('correct');
+          statusEl.textContent='Верно! 🎉'; statusEl.className='task-status ok';
+          done(true);
+        } else {
+          b.classList.add('wrong');
+          setTimeout(()=>b.classList.remove('wrong'),500);
+          statusEl.textContent='Попробуй ещё!'; statusEl.className='task-status retry';
+        }
+      });
+      grid.appendChild(b);
+    });
+    container.appendChild(grid);
+    container.appendChild(statusEl);
+  }
+
+  if (task.preReveal){
+    const memGrid = el('options-grid emoji-grid preview-grid');
+    task.preReveal.items.forEach(e=>memGrid.appendChild(el('option-btn',e)));
+    container.appendChild(memGrid);
+    container.appendChild(el('task-subprompt','Запоминай...'));
+    setTimeout(()=>{
+      container.innerHTML='';
+      container.appendChild(el('task-prompt', task.afterPrompt || task.prompt));
+      showOptions();
+    }, task.preReveal.durationMs);
+  } else {
+    showOptions();
+  }
+}
+
+function renderFindAll(container, task, done){
+  container.innerHTML='';
+  container.appendChild(el('task-prompt', task.prompt));
+  const grid = el('options-grid emoji-grid'+(task.big?' big-grid':''));
+  const statusEl = el('task-status','');
+  let found=0;
+  task.items.forEach(item=>{
+    const b=document.createElement('button');
+    b.className='option-btn'; b.textContent=item.label;
+    b.addEventListener('click', ()=>{
+      if (b.classList.contains('correct')) return;
+      if (item.isTarget){
+        b.classList.add('correct'); found++;
+        if (found>=task.targetCount){ statusEl.textContent='Верно! 🎉'; statusEl.className='task-status ok'; done(true); }
+      } else {
+        b.classList.add('wrong');
+        setTimeout(()=>b.classList.remove('wrong'),400);
+        if (found<task.targetCount){ statusEl.textContent='Попробуй ещё!'; statusEl.className='task-status retry'; }
+      }
+    });
+    grid.appendChild(b);
+  });
+  container.appendChild(grid);
+  container.appendChild(statusEl);
+}
+
+function renderSequence(container, task, done){
+  container.innerHTML='';
+  container.appendChild(el('task-prompt', task.prompt));
+  const grid = el('options-grid emoji-grid');
+  const cells = task.items.map(e=>{ const b=document.createElement('button'); b.className='option-btn'; b.textContent=e; grid.appendChild(b); return b; });
+  container.appendChild(grid);
+  const statusEl = el('task-status','Смотри внимательно...');
+  container.appendChild(statusEl);
+
+  let step=0;
+  function flashNext(){
+    if (step>0) cells[task.sequence[step-1]].classList.remove('flash');
+    if (step>=task.sequence.length){ statusEl.textContent='Повтори этот порядок по памяти'; enableRecall(); return; }
+    cells[task.sequence[step]].classList.add('flash');
+    step++;
+    setTimeout(flashNext,700);
+  }
+  setTimeout(flashNext,500);
+
+  function enableRecall(){
+    let expectPos=0;
+    cells.forEach((b,i)=>{
+      b.addEventListener('click', ()=>{
+        if (b.classList.contains('picked')) return;
+        if (i===task.sequence[expectPos]){
+          b.classList.add('picked'); b.textContent=String(expectPos+1); expectPos++;
+          if (expectPos>=task.sequence.length){ statusEl.textContent='Верно! 🎉'; statusEl.className='task-status ok'; done(true); }
+        } else {
+          b.classList.add('wrong');
+          setTimeout(()=>b.classList.remove('wrong'),400);
+          cells.forEach((c,ci)=>{ c.classList.remove('picked'); c.textContent=task.items[ci]; });
+          expectPos=0;
+          statusEl.textContent='Попробуй ещё!'; statusEl.className='task-status retry';
+        }
+      });
+    });
+  }
+}
+
+function renderFlash(container, task, done){
+  container.innerHTML='';
+  container.appendChild(el('task-prompt', task.prompt));
+  const stage = el('flash-stage');
+  const flashEl = el('flash-symbol','');
+  stage.appendChild(flashEl);
+  container.appendChild(stage);
+  const respBtn = document.createElement('button');
+  respBtn.className='option-btn respond-btn';
+  respBtn.textContent = task.mode==='gonogo' ? 'ДА!' : 'ЕСТЬ!';
+  respBtn.style.display='none';
+  container.appendChild(respBtn);
+  const statusEl = el('task-status','Нажми «Начать», когда будешь готов(а)');
+  container.appendChild(statusEl);
+  const startBtn = document.createElement('button');
+  startBtn.className='option-btn start-btn';
+  startBtn.textContent='▶️ Начать';
+  container.appendChild(startBtn);
+
+  let hits=0, reactionTimes=[];
+  let waiting=false, currentIsTarget=false, flashStart=0;
+
+  startBtn.addEventListener('click', ()=>{
+    startBtn.remove();
+    respBtn.style.display='inline-block';
+    statusEl.textContent='Приготовься...';
+    setTimeout(()=>runSeq(0),700);
+  });
+  respBtn.addEventListener('click', ()=>{
+    if (!waiting) return;
+    waiting=false;
+    if (currentIsTarget){ hits++; reactionTimes.push(performance.now()-flashStart); flashEl.classList.add('hit'); }
+    setTimeout(()=>flashEl.classList.remove('hit'),300);
+  });
+  function runSeq(idx){
+    if (idx>=task.symbols.length){ finish(); return; }
+    const item = task.symbols[idx];
+    currentIsTarget = item.isTarget;
+    flashEl.textContent = item.sym;
+    flashStart = performance.now();
+    waiting = true;
+    setTimeout(()=>{
+      waiting=false;
+      flashEl.textContent='';
+      setTimeout(()=>runSeq(idx+1),250);
+    }, task.intervalMs);
+  }
+  function finish(){
+    const total = task.symbols.filter(s=>s.isTarget).length;
+    const avg = reactionTimes.length ? (reactionTimes.reduce((a,b)=>a+b,0)/reactionTimes.length/1000).toFixed(2) : null;
+    statusEl.className='task-status ok';
+    statusEl.textContent = `Готово! Замечено: ${hits} из ${total}` + (avg?`. Твоё время реакции: ${avg} сек`:'');
+    respBtn.style.display='none';
+    done(true);
+  }
+}
+
+function renderPrompt(container, task, done){
+  container.innerHTML='';
+  container.appendChild(el('task-prompt big', task.prompt));
+  let secondsLeft = task.timerSeconds || 0;
+  let timerEl = null;
+  if (task.timerSeconds){ timerEl = el('timer-display', formatSec(secondsLeft)); container.appendChild(timerEl); }
+  const doneBtn = document.createElement('button');
+  doneBtn.className='option-btn'; doneBtn.textContent='Готово!';
+  container.appendChild(doneBtn);
+  let handle=null;
+  if (task.timerSeconds){
+    handle = setInterval(()=>{
+      secondsLeft--;
+      if (secondsLeft<=0){ timerEl.textContent='Время вышло!'; clearInterval(handle); }
+      else timerEl.textContent = formatSec(secondsLeft);
+    },1000);
+  }
+  doneBtn.addEventListener('click', ()=>{
+    if (handle) clearInterval(handle);
+    doneBtn.disabled=true;
+    done(true);
+  });
+}
+
+function renderTask(container, task, done){
+  ({choose:renderChoose, findAll:renderFindAll, sequence:renderSequence, flash:renderFlash, prompt:renderPrompt})[task.pattern](container, task, done);
+}
+
+/* ===== state & screens ===== */
+const state = { skills:[], grade:3, diffIdx:1, count:5, durationMin:5, topicMode:false, topicText:'', topicCtx:null, plan:[], currentIdx:0, completedFlags:[], playStart:0, timerHandle:null };
+
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+/* skill picker */
+const skillsGrid = document.getElementById('skillsGrid');
+Object.entries(SKILLS).forEach(([key,s])=>{
+  const card = document.createElement('div');
+  card.className='skill-card';
+  card.style.setProperty('--sc', s.color);
+  card.style.setProperty('--scbg', s.bg);
+  card.innerHTML = '';
+  const ic = el('ic'); ic.textContent = s.icon;
+  const lb = el('lb'); lb.textContent = s.label; lb.style.fontSize='12.5px';
+  card.appendChild(ic); card.appendChild(lb);
+  card.addEventListener('click', ()=>{
+    const idx = state.skills.indexOf(key);
+    if (idx>=0){ state.skills.splice(idx,1); card.classList.remove('selected'); }
+    else { state.skills.push(key); card.classList.add('selected'); }
+  });
+  skillsGrid.appendChild(card);
+});
+
+/* chip groups */
+function buildChips(containerId, values, defaultValue, onSelect){
+  const cont = document.getElementById(containerId);
+  values.forEach(v=>{
+    const b=document.createElement('button');
+    b.className='chip'+(v===defaultValue?' selected':'');
+    b.textContent = typeof v==='object' ? v.label : v;
+    b.addEventListener('click', ()=>{
+      cont.querySelectorAll('.chip').forEach(c=>c.classList.remove('selected'));
+      b.classList.add('selected');
+      onSelect(typeof v==='object' ? v.value : v);
+    });
+    cont.appendChild(b);
+  });
+}
+buildChips('gradeChips', [{label:'1 класс',value:1},{label:'2 класс',value:2},{label:'3 класс',value:3},{label:'4 класс',value:4}], 3, v=>state.grade=v);
+buildChips('countChips', [3,5,7,10], 5, v=>state.count=v);
+buildChips('diffChips', [{label:'Легко',value:0},{label:'Средне',value:1},{label:'Сложно',value:2}], 1, v=>state.diffIdx=v);
+buildChips('durationChips', [{label:'3 минуты',value:3},{label:'5 минут',value:5},{label:'7 минут',value:7},{label:'10 минут',value:10}], 5, v=>state.durationMin=v);
+
+/* topic toggle */
+const topicInput = document.getElementById('topicInput');
+document.querySelectorAll('input[name="topicMode"]').forEach(r=>{
+  r.addEventListener('change', ()=>{
+    state.topicMode = r.value==='1' && r.checked;
+    topicInput.disabled = !state.topicMode;
+  });
+});
+topicInput.addEventListener('input', ()=> state.topicText = topicInput.value);
+
+/* create warm-up */
+document.getElementById('createBtn').addEventListener('click', ()=>{
+  if (state.skills.length===0){
+    const warn = document.getElementById('warnMsg');
+    warn.style.display='block';
+    warn.parentElement.classList.add('shake');
+    setTimeout(()=>warn.parentElement.classList.remove('shake'),400);
+    return;
+  }
+  document.getElementById('warnMsg').style.display='none';
+  state.topicCtx = state.topicMode ? matchTopic(state.topicText) : null;
+  state.plan = assembleWarmup(state.skills, state.grade, state.diffIdx, state.count, state.topicCtx);
+  state.completedFlags = state.plan.map(()=>false);
+  renderReview();
+  showScreen('screen-review');
+});
+
+/* review screen */
+function renderReview(){
+  const list = document.getElementById('reviewList');
+  list.innerHTML='';
+  state.plan.forEach((task,i)=>{
+    const s = SKILLS[task.skill];
+    const row = el('review-row');
+    const ic = el('ric', s.icon);
+    const textWrap = el('rtext');
+    textWrap.appendChild(el('rmech', task.mechanicLabel));
+    textWrap.appendChild(el('rprompt', task.prompt));
+    const replaceBtn = document.createElement('button');
+    replaceBtn.className='row-btn'; replaceBtn.textContent='🔄';
+    replaceBtn.addEventListener('click', ()=>{
+      state.plan[i] = genOne(task.skill, task.mi, state.grade, state.diffIdx, state.topicCtx);
+      renderReview();
+    });
+    const removeBtn = document.createElement('button');
+    removeBtn.className='row-btn'; removeBtn.textContent='✕';
+    removeBtn.addEventListener('click', ()=>{
+      state.plan.splice(i,1);
+      state.completedFlags.splice(i,1);
+      renderReview();
+    });
+    row.appendChild(ic); row.appendChild(textWrap); row.appendChild(replaceBtn); row.appendChild(removeBtn);
+    list.appendChild(row);
+  });
+}
+document.getElementById('editParamsBtn').addEventListener('click', ()=> showScreen('screen-params'));
+document.getElementById('reshuffleBtn').addEventListener('click', ()=>{
+  state.plan = assembleWarmup(state.skills, state.grade, state.diffIdx, state.plan.length || state.count, state.topicCtx);
+  state.completedFlags = state.plan.map(()=>false);
+  renderReview();
+});
+document.getElementById('addTaskBtn').addEventListener('click', ()=>{
+  const skill = pick(state.skills);
+  const mechs = MECHANICS_BY_SKILL[skill];
+  const mi = randInt(0, mechs.length-1);
+  state.plan.push(genOne(skill, mi, state.grade, state.diffIdx, state.topicCtx));
+  state.completedFlags.push(false);
+  renderReview();
+});
+document.getElementById('startPlayBtn').addEventListener('click', ()=>{
+  if (state.plan.length===0) return;
+  state.currentIdx=0;
+  startPlayTimer();
+  renderCurrentTask();
+  showScreen('screen-play');
+});
+
+/* play screen */
+let taskCompletedThisRound=false;
+function renderProgressDots(){
+  const dots = document.getElementById('progressDots');
+  dots.innerHTML='';
+  state.plan.forEach((_,i)=>{
+    const d = el('dot'+(i<state.currentIdx?' done':i===state.currentIdx?' current':''));
+    dots.appendChild(d);
+  });
+}
+function renderCurrentTask(){
+  taskCompletedThisRound=false;
+  document.getElementById('progressLabel').textContent = `Задание ${state.currentIdx+1} из ${state.plan.length}`;
+  renderProgressDots();
+  renderTask(document.getElementById('taskContainer'), state.plan[state.currentIdx], (ok)=>{ taskCompletedThisRound=!!ok; });
+}
+function startPlayTimer(){
+  state.playStart = performance.now();
+  clearInterval(state.timerHandle);
+  updateTimerChip();
+  state.timerHandle = setInterval(updateTimerChip, 1000);
+}
+function updateTimerChip(){
+  const elapsed = (performance.now()-state.playStart)/1000;
+  document.getElementById('timerChip').textContent = formatSec(elapsed) + ' / цель ' + state.durationMin + ' мин';
+}
+document.getElementById('nextBtn').addEventListener('click', ()=>{
+  state.completedFlags[state.currentIdx] = taskCompletedThisRound;
+  state.currentIdx++;
+  if (state.currentIdx>=state.plan.length){ finishPlay(); }
+  else { renderCurrentTask(); }
+});
+document.getElementById('replaceTaskBtn').addEventListener('click', ()=>{
+  const t = state.plan[state.currentIdx];
+  state.plan[state.currentIdx] = genOne(t.skill, t.mi, state.grade, state.diffIdx, state.topicCtx);
+  renderCurrentTask();
+});
+
+/* results screen */
+function finishPlay(){
+  clearInterval(state.timerHandle);
+  const elapsedSec = (performance.now()-state.playStart)/1000;
+  const doneCount = state.completedFlags.filter(Boolean).length;
+  document.getElementById('resDone').textContent = `${doneCount} из ${state.plan.length}`;
+  document.getElementById('resTime').textContent = formatSec(elapsedSec);
+  showScreen('screen-results');
+}
+document.getElementById('newWarmupBtn').addEventListener('click', ()=> showScreen('screen-params'));
+</script>
+</body>
+</html>
