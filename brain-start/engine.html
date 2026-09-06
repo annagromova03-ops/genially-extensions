@@ -110,6 +110,8 @@
   .options-grid{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;}
   .options-grid.emoji-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(58px,1fr));max-width:520px;}
   .options-grid.big-grid{grid-template-columns:repeat(auto-fill,minmax(48px,1fr));}
+  .options-grid.word-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));max-width:560px;}
+  .options-grid.word-grid .option-btn{font-size:13px;padding:10px 8px;aspect-ratio:auto;min-height:44px;}
   .option-btn{
     background:#fff;border:2.5px solid #f0e6d8;border-radius:14px;padding:12px 16px;
     font-family:inherit;font-weight:700;font-size:15px;min-width:48px;transition:transform .1s, border-color .15s, background .15s;
@@ -247,7 +249,11 @@ function formatSec(s){ s=Math.max(0,Math.round(s)); const m=Math.floor(s/60), ss
 
 /* ===== content banks ===== */
 const EMOJI_POOL = ['🍎','🍌','🍇','🍓','🍊','🍉','🥕','🌽','🍄','🌸','🌻','🌈','⭐','🌙','🌞','🐱','🐶','🐰','🐻','🦊','🐼','🐸','🐧','🚗','🚌','🚂','🚀','🎲','🎈','🎁'];
-const CONFUSABLE_PAIRS = [['б','д'],['п','т'],['ш','щ'],['е','ё'],['з','э'],['6','9'],['3','8'],['М','Н']];
+const CONFUSABLE_BY_DIFF = [
+  [['6','9'],['3','8']],
+  [['6','9'],['3','8'],['М','Н'],['з','э']],
+  [['б','д'],['п','т'],['ш','щ'],['е','ё']],
+];
 const WORD_BANK = {
   'Животные': ['кот','собака','слон','жираф','заяц','волк','лиса','медведь','ёж','белка','тигр','лев'],
   'Фрукты': ['яблоко','груша','банан','апельсин','слива','персик','лимон','ананас'],
@@ -260,33 +266,55 @@ const WORD_BANK = {
   'Природа': ['дерево','река','гора','облако','солнце','трава','цветок','лист'],
   'Профессии': ['врач','учитель','повар','пилот','пожарный','художник'],
 };
-const SENTENCE_STARTERS = [
-  'Если бы у меня был свой дракон, я бы...',
-  'Самое интересное место, где я хотел(а) бы побывать — это...',
-  'Однажды утром я проснулся(-ась) и увидел(а)...',
-  'Мой любимый герой из мультфильма умеет...',
-  'Если бы я мог(ла) стать невидимым(ой) на один день, я бы...',
-  'В моём рюкзаке лежит волшебный предмет, который...',
-  'Лучший подарок, который я получал(а) — это...',
-  'Если бы животные умели говорить, первое, что я бы спросил(а) у кота — это...',
-  'Однажды я нашёл(нашла) на улице загадочную коробку, в ней было...',
-  'Мой идеальный выходной день выглядит так...',
-  'Если бы я был(а) волшебником, первое заклинание, которое я бы выучил(а) — это...',
-  'На необитаемом острове я бы обязательно взял(а) с собой...',
+const WORD_CLUSTERS = { 'Животные':'A', 'Природа':'A', 'Фрукты':'B', 'Овощи':'B', 'Мебель':'C', 'Посуда':'C', 'Одежда':'C', 'Школа':'D', 'Профессии':'D' };
+const SENTENCE_STARTERS_BY_DIFF = [
+  [
+    'Если бы у меня был свой щенок, я бы назвал(а) его...',
+    'Моя любимая игрушка умеет...',
+    'Летом я больше всего люблю...',
+    'Если бы я мог(ла) съесть что угодно на завтрак, я бы выбрал(а)...',
+    'Если бы у меня был день без школы, я бы...',
+    'Мой любимый мультфильм — это... потому что...',
+  ],
+  [
+    'Если бы у меня был свой дракон, я бы...',
+    'Однажды утром я проснулся(-ась) и увидел(а)...',
+    'Мой любимый герой из мультфильма умеет...',
+    'Лучший подарок, который я получал(а) — это...',
+    'В моём рюкзаке лежит волшебный предмет, который...',
+    'Мой идеальный выходной день выглядит так...',
+  ],
+  [
+    'Если бы я мог(ла) стать невидимым(ой) на один день, я бы...',
+    'Если бы животные умели говорить, первое, что я бы спросил(а) у кота — это...',
+    'Однажды я нашёл(нашла) на улице загадочную коробку, в ней было...',
+    'Если бы я был(а) волшебником, первое заклинание, которое я бы выучил(а) — это...',
+    'На необитаемом острове я бы обязательно взял(а) с собой... и вот почему',
+    'Если бы я мог(ла) поговорить с собой в будущем, я бы спросил(а)...',
+  ],
 ];
-const CAUSE_EFFECT_PROMPTS = [
-  'Что произойдёт, если весь снег в мире вдруг растает за один день?',
-  'Что произойдёт, если люди перестанут пользоваться телефонами на неделю?',
-  'Что произойдёт, если все часы в городе остановятся?',
-  'Что произойдёт, если дождь будет идти без остановки целый месяц?',
-  'Что произойдёт, если в школе отменят все перемены?',
-  'Что произойдёт, если у всех животных в лесу вдруг пропадёт голос?',
-  'Что произойдёт, если человек перестанет спать совсем?',
-  'Что произойдёт, если деревья начнут расти в сто раз быстрее?',
-  'Что произойдёт, если все дороги вдруг станут скользкими, как лёд?',
-  'Что произойдёт, если солнце будет светить только по ночам?',
-  'Что произойдёт, если книги начнут читаться сами вслух?',
-  'Что произойдёт, если люди научатся дышать под водой?',
+const CAUSE_EFFECT_BY_DIFF = [
+  [
+    'Что произойдёт, если пойдёт сильный дождь, а зонта нет?',
+    'Что произойдёт, если забыть полить цветок надолго?',
+    'Что произойдёт, если весь снег в мире вдруг растает за один день?',
+    'Что произойдёт, если проспать и опоздать в школу?',
+  ],
+  [
+    'Что произойдёт, если люди перестанут пользоваться телефонами на неделю?',
+    'Что произойдёт, если все часы в городе остановятся?',
+    'Что произойдёт, если дождь будет идти без остановки целый месяц?',
+    'Что произойдёт, если в школе отменят все перемены?',
+    'Что произойдёт, если у всех животных в лесу вдруг пропадёт голос?',
+  ],
+  [
+    'Что произойдёт, если человек перестанет спать совсем?',
+    'Что произойдёт, если деревья начнут расти в сто раз быстрее?',
+    'Что произойдёт, если все дороги вдруг станут скользкими, как лёд?',
+    'Что произойдёт, если солнце будет светить только по ночам?',
+    'Что произойдёт, если книги начнут читаться сами вслух?',
+    'Что произойдёт, если люди научатся дышать под водой?',
+  ],
 ];
 const NAMES = ['Петя','Маша','Саша','Аня','Дима','Катя','Вова','Лиза'];
 
@@ -315,10 +343,10 @@ function pickCategoryWords(topicCtx){
 }
 
 /* ===== grade/difficulty scaling (rows = grade 1..4, cols = легко/средне/сложно) ===== */
-const SEQ_LEN = [[2,3,3],[3,3,4],[3,4,5],[4,5,6]];
-const GRID_N = [[6,8,9],[8,9,12],[9,12,12],[12,12,16]];
-const NUM_MAX = [[10,10,20],[20,50,50],[50,100,100],[100,500,1000]];
-const PATTERN_STEP_MAX = [[2,3,3],[3,4,5],[4,5,8],[5,8,10]];
+const SEQ_LEN = [[2,3,4],[3,4,5],[4,5,6],[5,6,7]];
+const GRID_N = [[6,8,10],[8,10,12],[10,12,14],[12,14,16]];
+const NUM_MAX = [[10,20,50],[20,50,100],[50,100,500],[100,500,1000]];
+const PATTERN_STEP_MAX = [[2,3,4],[3,4,6],[4,6,8],[5,8,10]];
 
 /* ===== skills ===== */
 const SKILLS = {
@@ -331,35 +359,40 @@ const SKILLS = {
 };
 
 /* ===== mechanics ===== */
-const MECH_MEMORY_ORDER = { label:'Запомни порядок', generate({grade,diffIdx}){
+const MECH_MEMORY_ORDER = { label:'Запомни порядок', generate({grade,diffIdx,topicCtx}){
   const len = SEQ_LEN[grade-1][diffIdx];
   const gridSize = Math.max(len+3,6);
-  const chosen = pickN(EMOJI_POOL, gridSize);
+  const isWord = !!(topicCtx && topicCtx.words && topicCtx.words.length>=gridSize);
+  const chosen = isWord ? pickN(topicCtx.words, gridSize) : pickN(EMOJI_POOL, gridSize);
   const sequence = shuffle(chosen.map((_,i)=>i)).slice(0,len);
-  return { pattern:'sequence', mechanicLabel:this.label, prompt:'Запомни порядок, в котором загорятся картинки', items:chosen, sequence };
+  return { pattern:'sequence', mechanicLabel:this.label, isWord,
+    prompt: isWord?'Запомни порядок, в котором появятся слова':'Запомни порядок, в котором загорятся картинки', items:chosen, sequence };
 }};
-const MECH_MEMORY_MISSING = { label:'Что исчезло?', generate({grade,diffIdx}){
+const MECH_MEMORY_MISSING = { label:'Что исчезло?', generate({grade,diffIdx,topicCtx}){
   const n = Math.min(3+diffIdx+Math.floor(grade/2), 7);
-  const chosen = pickN(EMOJI_POOL, n);
+  const isWord = !!(topicCtx && topicCtx.words && topicCtx.words.length>=n);
+  const chosen = isWord ? pickN(topicCtx.words, n) : pickN(EMOJI_POOL, n);
   const missingIdx = randInt(0, chosen.length-1);
   const opts = shuffle(chosen.map((e,i)=>({label:e,i})));
-  return { pattern:'choose', mechanicLabel:this.label, prompt:'Запомни все картинки',
-    preReveal:{ items:chosen, durationMs: 1600 + chosen.length*250 }, afterPrompt:'Какой картинки не стало?',
-    optionsType:'emoji', options:opts.map(o=>o.label), correctIndex: opts.findIndex(o=>o.i===missingIdx) };
+  return { pattern:'choose', mechanicLabel:this.label, prompt: isWord?'Запомни все слова':'Запомни все картинки',
+    preReveal:{ items:chosen, durationMs: 1600 + chosen.length*250, isWord }, afterPrompt: isWord?'Какого слова не стало?':'Какой картинки не стало?',
+    optionsType: isWord?'text':'emoji', options:opts.map(o=>o.label), correctIndex: opts.findIndex(o=>o.i===missingIdx) };
 }};
 
-const MECH_ATTENTION_FINDALL = { label:'Найди все одинаковые', generate({grade,diffIdx}){
+const MECH_ATTENTION_FINDALL = { label:'Найди все одинаковые', generate({grade,diffIdx,topicCtx}){
   const gridN = GRID_N[grade-1][diffIdx];
-  const target = pick(EMOJI_POOL);
-  const distractors = EMOJI_POOL.filter(e=>e!==target);
+  const isWord = !!(topicCtx && topicCtx.words && topicCtx.words.length>=4);
+  const pool = isWord ? topicCtx.words : EMOJI_POOL;
+  const target = pick(pool);
+  const distractors = pool.filter(e=>e!==target);
   const targetCount = Math.max(3, Math.floor(gridN/3));
   const cells=[];
   for(let i=0;i<targetCount;i++) cells.push({label:target,isTarget:true});
-  while(cells.length<gridN) cells.push({label:pick(distractors),isTarget:false});
-  return { pattern:'findAll', mechanicLabel:this.label, prompt:`Найди и нажми на все ${target}`, items:shuffle(cells), targetCount };
+  while(cells.length<gridN) cells.push({label: distractors.length?pick(distractors):target, isTarget:false});
+  return { pattern:'findAll', mechanicLabel:this.label, isWord, prompt:`Найди и нажми на все «${target}»`, items:shuffle(cells), targetCount };
 }};
 const MECH_ATTENTION_ODD = { label:'Найди отличие среди похожих', generate({grade,diffIdx}){
-  let [common,odd] = pick(CONFUSABLE_PAIRS);
+  let [common,odd] = pick(CONFUSABLE_BY_DIFF[diffIdx]);
   if (Math.random()<0.5){ const t=common; common=odd; odd=t; }
   const gridN = Math.min(GRID_N[grade-1][diffIdx],16);
   const oddPos = randInt(0,gridN-1);
@@ -386,23 +419,42 @@ function buildFlashTask(mode,grade,diffIdx){
 const MECH_REACTION_GO = { label:'Нажми, когда увидишь нужный символ', generate:({grade,diffIdx})=>buildFlashTask('go',grade,diffIdx) };
 const MECH_REACTION_GONOGO = { label:'Стоп-сигнал', generate:({grade,diffIdx})=>buildFlashTask('gonogo',grade,diffIdx) };
 
-const MECH_SPEECH_CONTINUE = { label:'Продолжи фразу', generate(){ return { pattern:'prompt', mechanicLabel:this.label, prompt: pick(SENTENCE_STARTERS) }; } };
-const MECH_SPEECH_NAME_MANY = { label:'Назови как можно больше', generate({topicCtx}){
+const MECH_SPEECH_CONTINUE = { label:'Продолжи фразу', generate({diffIdx,topicCtx}){
+  if (topicCtx && topicCtx.words && topicCtx.words.length){
+    const w = pick(topicCtx.words);
+    const templates = [
+      `Придумай предложение со словом «${w}»`,
+      `Объясни своими словами, что значит «${w}»`,
+      `Придумай короткую историю, в которой обязательно встречается «${w}»`,
+    ];
+    return { pattern:'prompt', mechanicLabel:this.label, prompt: pick(templates) };
+  }
+  return { pattern:'prompt', mechanicLabel:this.label, prompt: pick(SENTENCE_STARTERS_BY_DIFF[diffIdx]) };
+} };
+const MECH_SPEECH_NAME_MANY = { label:'Назови как можно больше', generate({diffIdx,topicCtx}){
   const {name} = pickCategoryWords(topicCtx);
-  return { pattern:'prompt', mechanicLabel:this.label, prompt:`Назови как можно больше слов на тему «${name}»`, timerSeconds:20 };
+  const timerSeconds = 25 - diffIdx*5;
+  return { pattern:'prompt', mechanicLabel:this.label, prompt:`Назови как можно больше слов на тему «${name}»`, timerSeconds };
 }};
 
-const MECH_LOGIC_ODDONE = { label:'Что лишнее?', generate({topicCtx}){
+const MECH_LOGIC_ODDONE = { label:'Что лишнее?', generate({diffIdx,topicCtx}){
   const names = Object.keys(WORD_BANK);
   const mainCat = pickCategoryWords(topicCtx);
-  const otherName = pick(names.filter(n=>n!==mainCat.name)) || names[0];
+  let candidates = names.filter(n=>n!==mainCat.name);
+  const cluster = WORD_CLUSTERS[mainCat.name];
+  if (cluster){
+    if (diffIdx===2){ const same = names.filter(n=>n!==mainCat.name && WORD_CLUSTERS[n]===cluster); if (same.length) candidates = same; }
+    else if (diffIdx===0){ const other = names.filter(n=>WORD_CLUSTERS[n]!==cluster); if (other.length) candidates = other; }
+  }
+  const otherName = pick(candidates) || names[0];
   const three = pickN(mainCat.words,3);
-  const odd = pick(WORD_BANK[otherName]);
+  const odd = pick(WORD_BANK[otherName] || mainCat.words);
   const options = shuffle([...three, odd]);
   return { pattern:'choose', mechanicLabel:this.label, prompt:'Найди лишнее слово', optionsType:'text', options, correctIndex:options.indexOf(odd) };
 }};
 const MECH_LOGIC_PATTERN = { label:'Продолжи закономерность', generate({grade,diffIdx,topicCtx}){
-  if (Math.random()<0.5){
+  const forceMath = !!(topicCtx && topicCtx.mathMode);
+  if (forceMath || Math.random()<0.5){
     let step, start;
     if (topicCtx && topicCtx.mathMode==='multiply'){ step = randInt(2, Math.min(9, 2+diffIdx*3)); start = step; }
     else { step = randInt(1, PATTERN_STEP_MAX[grade-1][diffIdx]); start = randInt(1,10); }
@@ -413,7 +465,8 @@ const MECH_LOGIC_PATTERN = { label:'Продолжи закономерност�
     const options = shuffle([correct,d1,d2]).map(String);
     return { pattern:'choose', mechanicLabel:this.label, prompt:`Продолжи ряд: ${seq.join(', ')}, ...?`, optionsType:'text', options, correctIndex: options.indexOf(String(correct)) };
   } else {
-    const cyc = pickN(EMOJI_POOL, randInt(2,3));
+    const cycLen = diffIdx===0 ? 2 : (diffIdx===1 ? randInt(2,3) : 3);
+    const cyc = pickN(EMOJI_POOL, cycLen);
     const seq=[0,1,2,3,4].map(i=>cyc[i%cyc.length]);
     const correct = cyc[5%cyc.length];
     const distractors = EMOJI_POOL.filter(e=>!cyc.includes(e));
@@ -422,7 +475,7 @@ const MECH_LOGIC_PATTERN = { label:'Продолжи закономерност�
   }
 }};
 
-const MECH_THINKING_WHATIF = { label:'Что произойдёт, если…?', generate(){ return { pattern:'prompt', mechanicLabel:this.label, prompt: pick(CAUSE_EFFECT_PROMPTS) }; } };
+const MECH_THINKING_WHATIF = { label:'Что произойдёт, если…?', generate({diffIdx}){ return { pattern:'prompt', mechanicLabel:this.label, prompt: pick(CAUSE_EFFECT_BY_DIFF[diffIdx]) }; } };
 const MECH_THINKING_COMPARE = { label:'Сравни и сделай вывод', generate({grade,diffIdx}){
   const max = NUM_MAX[grade-1][diffIdx];
   let a=randInt(1,max), b=randInt(1,max);
@@ -491,7 +544,7 @@ function renderChoose(container, task, done){
   }
 
   if (task.preReveal){
-    const memGrid = el('options-grid emoji-grid preview-grid');
+    const memGrid = el('options-grid preview-grid '+(task.preReveal.isWord?'word-grid':'emoji-grid'));
     task.preReveal.items.forEach(e=>memGrid.appendChild(el('option-btn',e)));
     container.appendChild(memGrid);
     container.appendChild(el('task-subprompt','Запоминай...'));
@@ -508,7 +561,7 @@ function renderChoose(container, task, done){
 function renderFindAll(container, task, done){
   container.innerHTML='';
   container.appendChild(el('task-prompt', task.prompt));
-  const grid = el('options-grid emoji-grid'+(task.big?' big-grid':''));
+  const grid = el('options-grid '+(task.isWord?'word-grid':'emoji-grid')+(task.big?' big-grid':''));
   const statusEl = el('task-status','');
   let found=0;
   task.items.forEach(item=>{
@@ -534,7 +587,7 @@ function renderFindAll(container, task, done){
 function renderSequence(container, task, done){
   container.innerHTML='';
   container.appendChild(el('task-prompt', task.prompt));
-  const grid = el('options-grid emoji-grid');
+  const grid = el('options-grid '+(task.isWord?'word-grid':'emoji-grid'));
   const cells = task.items.map(e=>{ const b=document.createElement('button'); b.className='option-btn'; b.textContent=e; grid.appendChild(b); return b; });
   container.appendChild(grid);
   const statusEl = el('task-status','Смотри внимательно...');
