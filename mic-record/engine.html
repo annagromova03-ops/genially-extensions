@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Микрофон</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&display=swap');
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0; min-height:100%; background:transparent;
+    font-family:'Baloo 2','Trebuchet MS','Verdana',sans-serif;
+  }
+  #app{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px;}
+
+  .widget{--scale:1; display:flex;flex-direction:column;align-items:center;gap:16px;}
+
+  .mic-wrap{
+    position:relative;
+    width:calc(clamp(72px,16vw,140px) * var(--scale));
+    height:calc(clamp(72px,16vw,140px) * var(--scale));
+  }
+  .ring{
+    position:absolute; inset:0; border-radius:50%;
+    border:3px solid #ff5566; opacity:0;
+  }
+  .is-recording .ring{ animation:pulseRing 1.6s ease-out infinite; }
+  .ring:nth-child(2){ animation-delay:.5s !important; }
+  .ring:nth-child(3){ animation-delay:1s !important; }
+  @keyframes pulseRing{
+    0%{ transform:scale(.88); opacity:.55; }
+    100%{ transform:scale(1.9); opacity:0; }
+  }
+
+  .mic-btn{
+    position:absolute; inset:9%; border-radius:50%; border:none; padding:0; cursor:pointer;
+    background:var(--accent,#7c5cff);
+    box-shadow:0 10px 22px -6px rgba(50,30,20,.4), inset 0 6px 14px rgba(255,255,255,.3), inset 0 -8px 16px rgba(0,0,0,.15);
+    display:flex; align-items:center; justify-content:center;
+    transition:transform .15s, background .25s;
+    animation:breathe 3s ease-in-out infinite;
+  }
+  .mic-btn:hover{ transform:scale(1.06); }
+  .mic-btn:active{ transform:scale(.97); }
+  .is-recording .mic-btn{ background:#ff5566; animation:recPulse 1s ease-in-out infinite; }
+  @keyframes breathe{ 0%,100%{transform:scale(1);} 50%{transform:scale(1.035);} }
+  @keyframes recPulse{ 0%,100%{transform:scale(1);} 50%{transform:scale(1.08);} }
+
+  .mic-icon{ width:44%; height:44%; color:#fff; }
+
+  .rec-dot{
+    position:absolute; top:2%; right:2%; width:15%; height:15%; min-width:12px; min-height:12px;
+    border-radius:50%; background:#ff1f3d; box-shadow:0 0 0 3px #fff;
+    opacity:0; transition:opacity .2s;
+  }
+  .is-recording .rec-dot{ opacity:1; }
+
+  .label{
+    font-weight:700; font-size:clamp(14px,2.6vw,19px); color:#4a3b2a;
+    text-align:center; max-width:360px; line-height:1.4;
+  }
+
+  .finish-btn{
+    display:none; background:#fff; color:#ff5566; border:2.5px solid #ff5566; border-radius:999px;
+    padding:10px 22px; font-family:inherit; font-weight:800; font-size:14px; cursor:pointer;
+    align-items:center; gap:6px; transition:background .15s, color .15s, transform .1s;
+  }
+  .finish-btn:hover{ background:#ff5566; color:#fff; }
+  .finish-btn:active{ transform:translateY(1px); }
+  .is-recording .finish-btn{ display:inline-flex; }
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="widget" id="widget">
+    <div class="mic-wrap">
+      <span class="ring"></span>
+      <span class="ring"></span>
+      <span class="ring"></span>
+      <button class="mic-btn" id="micBtn" type="button" aria-label="Микрофон">
+        <svg class="mic-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <rect x="9" y="2" width="6" height="12" rx="3" fill="currentColor"/>
+          <path d="M5 11a1 1 0 0 1 2 0 5 5 0 0 0 10 0 1 1 0 0 1 2 0 7 7 0 0 1-6 6.92V21h3a1 1 0 0 1 0 2H8a1 1 0 0 1 0-2h3v-3.08A7 7 0 0 1 5 11Z" fill="currentColor"/>
+        </svg>
+      </button>
+      <span class="rec-dot"></span>
+    </div>
+    <div class="label" id="labelEl"></div>
+    <button class="finish-btn" id="finishBtn" type="button">⏹ Закончить</button>
+  </div>
+</div>
+
+<script>
+function fromBase64Url(str){
+  let base64 = str.replace(/-/g,'+').replace(/_/g,'/');
+  while (base64.length % 4) base64 += '=';
+  const binary = atob(base64);
+  const bytes = Uint8Array.from(binary, c => c.charCodeAt(0));
+  return JSON.parse(new TextDecoder().decode(bytes));
+}
+const DEFAULT_CONFIG = { label:'Нажми на микрофон и говори', accent:'#7c5cff', size:100 };
+function loadConfig(){
+  const params = new URLSearchParams(location.search);
+  const d = params.get('d');
+  if (d){
+    try { return Object.assign({}, DEFAULT_CONFIG, fromBase64Url(d)); }
+    catch(e){ console.warn('Не удалось прочитать конфиг из URL, показываю демо.', e); }
+  }
+  return DEFAULT_CONFIG;
+}
+
+const config = loadConfig();
+const RECORDING_LABEL = 'Идёт запись… Говори!';
+const idleLabel = config.label || DEFAULT_CONFIG.label;
+
+document.documentElement.style.setProperty('--accent', config.accent || DEFAULT_CONFIG.accent);
+document.getElementById('widget').style.setProperty('--scale', (config.size || DEFAULT_CONFIG.size) / 100);
+document.getElementById('labelEl').textContent = idleLabel;
+
+const widget = document.getElementById('widget');
+const micBtn = document.getElementById('micBtn');
+const finishBtn = document.getElementById('finishBtn');
+const labelEl = document.getElementById('labelEl');
+let recording = false;
+
+function start(){
+  recording = true;
+  widget.classList.add('is-recording');
+  labelEl.textContent = RECORDING_LABEL;
+}
+function stop(){
+  recording = false;
+  widget.classList.remove('is-recording');
+  labelEl.textContent = idleLabel;
+}
+micBtn.addEventListener('click', () => { recording ? stop() : start(); });
+finishBtn.addEventListener('click', stop);
+</script>
+</body>
+</html>

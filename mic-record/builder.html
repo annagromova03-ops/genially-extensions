@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Конструктор: Кнопка микрофона</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Space+Mono:wght@400;700&display=swap');
+  :root{
+    --bg-page:#0b0c1f; --bg-panel:#13152f; --bg-input:#0c0e22; --bg-terminal:#05060f;
+    --pink:#ff4fd8; --pink-dim:rgba(255,79,216,0.35);
+    --blue:#4fd8ff; --blue-dim:rgba(79,216,255,0.35);
+    --text:#eef0ff; --text-dim:#8b90b8; --danger:#ff6b81; --success:#3ecf6a; --line:#262a52;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; font-family:'Baloo 2','Trebuchet MS','Verdana',sans-serif; color:var(--text);
+    background:
+      radial-gradient(1000px 560px at -8% -12%, var(--pink-dim), transparent 60%),
+      radial-gradient(1000px 560px at 108% 112%, var(--blue-dim), transparent 60%),
+      var(--bg-page);
+    min-height:100vh;
+  }
+  header{background:rgba(255,255,255,0.03); border-bottom:1px solid var(--line); padding:18px 24px;}
+  header h1{
+    margin:0;font-size:20px;
+    background:linear-gradient(90deg,var(--pink),var(--blue));
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    display:inline-block;
+  }
+  header p{margin:4px 0 0;font-size:13px;color:var(--text-dim);}
+  .layout{display:flex; gap:24px; padding:24px; align-items:flex-start; flex-wrap:wrap;}
+  .panel{
+    background:var(--bg-panel); border:1px solid var(--line); border-radius:16px; padding:20px;
+    box-shadow:0 0 0 1px rgba(255,255,255,0.02), 0 12px 30px rgba(0,0,0,0.35);
+  }
+  .form-panel{flex:1 1 380px; min-width:320px; box-shadow:0 0 0 1px rgba(255,79,216,0.15), 0 0 30px -14px var(--pink);}
+  .preview-panel{flex:1 1 420px; min-width:320px; position:sticky; top:24px; box-shadow:0 0 0 1px rgba(79,216,255,0.15), 0 0 30px -14px var(--blue);}
+  label{display:block;font-weight:700;font-size:12px;letter-spacing:.04em;text-transform:uppercase;margin:16px 0 6px;color:var(--text-dim);}
+  label:first-child{margin-top:0;}
+  input[type=text]{
+    width:100%; padding:9px 11px; background:var(--bg-input); border:1px solid var(--line);
+    border-radius:10px; color:var(--text); font-family:inherit; font-size:14px;
+    transition:border-color .15s, box-shadow .15s;
+  }
+  input[type=text]:focus{
+    outline:none; border-color:var(--pink); box-shadow:0 0 0 3px rgba(255,79,216,0.18), 0 0 16px -4px var(--pink);
+  }
+  input[type=text]::placeholder{color:#565b8a;}
+  input[type=range]{width:100%;accent-color:var(--pink);}
+  .hint{font-size:12px;color:var(--text-dim);margin-top:5px;}
+  .value-tag{color:var(--blue);font-weight:700;}
+
+  .color-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;}
+  .color-btn{
+    width:100%;aspect-ratio:1;border-radius:12px;border:2px solid var(--line);cursor:pointer;
+    padding:0;transition:transform .1s, border-color .15s;
+  }
+  .color-btn:hover{transform:translateY(-1px);}
+  .color-btn.active{border-color:#fff; box-shadow:0 0 0 2px rgba(255,255,255,0.25);}
+
+  .generate-btn{
+    display:block; width:100%; margin-top:20px; border:none; border-radius:999px;
+    padding:14px; font-family:inherit; font-weight:700; font-size:16px; cursor:pointer;
+    color:#0b0c1f; background:linear-gradient(90deg,var(--pink),var(--blue));
+    box-shadow:0 0 24px -6px var(--pink), 0 0 34px -10px var(--blue);
+  }
+  .generate-btn:hover{filter:brightness(1.08);}
+
+  .preview-frame-wrap{
+    border:1px solid var(--blue); border-radius:14px; padding:10px;
+    background:var(--bg-terminal); box-shadow:0 0 0 1px rgba(79,216,255,0.15), 0 0 26px -10px var(--blue);
+  }
+  .preview-frame-wrap iframe{ width:100%; height:320px; border:none; border-radius:10px; background:#fff9f2; }
+  .out-label{display:flex;justify-content:space-between;align-items:center;margin:16px 0 4px;}
+  .out-label label{margin:0;}
+  .copy-btn{
+    background:rgba(255,255,255,0.06);color:var(--blue);border:1px solid var(--line);border-radius:8px;
+    padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;
+  }
+  .copy-btn:hover{border-color:var(--blue);}
+  .copy-btn.copied{background:var(--success);color:#04170a;border-color:var(--success);}
+  textarea.output{
+    width:100%;height:70px;font-family:'Space Mono',monospace;font-size:12px;
+    background:var(--bg-terminal);color:#8be9fd;border:1px solid var(--line);border-radius:10px;
+    padding:9px 11px;resize:vertical;
+  }
+  .steps{
+    font-size:13px;line-height:1.5;color:var(--text-dim);
+    background:rgba(79,216,255,0.06);border:1px solid rgba(79,216,255,0.25);
+    border-radius:12px;padding:14px 16px;margin-top:16px;
+  }
+  .steps b{color:var(--pink);}
+  .note{
+    font-size:13px;line-height:1.5;color:var(--text-dim);
+    background:rgba(255,79,216,0.06);border:1px solid rgba(255,79,216,0.25);
+    border-radius:12px;padding:14px 16px;margin-top:16px;
+  }
+  .note b{color:var(--blue);}
+
+  .brand-badge{
+    display:flex;align-items:center;justify-content:center;gap:10px;
+    padding:16px 24px 22px;color:var(--text-dim);font-weight:800;font-size:13px;
+    letter-spacing:.08em;text-transform:uppercase;
+  }
+  .brand-badge img{
+    width:38px;height:38px;border-radius:50%;object-fit:cover;
+    border:2px solid var(--pink);box-shadow:0 0 12px -2px var(--pink);
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>🎙️ Конструктор: Кнопка микрофона</h1>
+  <p>Ученик нажимает на микрофон — он пульсирует, как будто идёт запись. Нажимает «Закончить» — микрофон останавливается.</p>
+</header>
+
+<div class="layout">
+  <div class="panel form-panel">
+    <label>Подсказка для ученика (видна, пока микрофон не нажат)</label>
+    <input type="text" id="f-label" value="Нажми на микрофон и говори">
+
+    <label>Цвет микрофона</label>
+    <div class="color-grid" id="colorGrid"></div>
+
+    <label>Размер <span class="value-tag" id="sizeValue">100%</span></label>
+    <input type="range" id="f-size" min="60" max="160" step="5" value="100">
+    <div class="hint">Увеличь, если микрофон должен быть заметным центром слайда; уменьши для маленького уголка.</div>
+
+    <button class="generate-btn" id="genBtn">Сгенерировать / обновить превью</button>
+
+    <div class="note"><b>Важно:</b> это визуальный эффект «идёт запись». Настоящий звук микрофон не слушает и никуда не отправляет — ученик отвечает вслух, а ты оцениваешь ответ на месте, как в остальных речевых заданиях.</div>
+  </div>
+
+  <div class="panel preview-panel">
+    <label style="margin-top:0;">Живое превью</label>
+    <div class="preview-frame-wrap">
+      <iframe id="previewFrame"></iframe>
+    </div>
+
+    <div class="out-label"><label>Ссылка (если поле в Genially просит просто URL)</label>
+      <button class="copy-btn" id="copyLink">Копировать ссылку</button></div>
+    <textarea class="output" id="outLink" readonly></textarea>
+
+    <div class="out-label"><label>Код для вставки (если поле просит embed-код)</label>
+      <button class="copy-btn" id="copyCode">Скопировать код для Genially</button></div>
+    <textarea class="output" id="outCode" readonly></textarea>
+
+    <div class="steps">
+      <b>Как вставить в Genially:</b> открой свой проект → «Вставить» → «Другое» → вставь ссылку или код выше → «Вставить».
+    </div>
+  </div>
+</div>
+
+<script>
+function toBase64Url(obj){
+  const json = JSON.stringify(obj);
+  const bytes = new TextEncoder().encode(json);
+  let binary = '';
+  bytes.forEach(b => binary += String.fromCharCode(b));
+  const base64 = btoa(binary);
+  return base64.replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+}
+
+const COLORS = ['#7c5cff','#ff6f91','#ff9d4d','#2fb8a6','#4d96ff','#ff5566'];
+let selectedColor = '#7c5cff';
+
+function renderColorGrid(){
+  const grid = document.getElementById('colorGrid');
+  grid.innerHTML = COLORS.map(c => `
+    <button type="button" class="color-btn ${c===selectedColor?'active':''}" data-color="${c}" style="background:${c};"></button>`).join('');
+  grid.querySelectorAll('.color-btn').forEach(btn=>{
+    btn.addEventListener('click', () => {
+      selectedColor = btn.dataset.color;
+      renderColorGrid();
+      generate();
+    });
+  });
+}
+
+function engineBaseUrl(){
+  return location.href.replace(/builder\.html.*$/, 'engine.html');
+}
+
+function generate(){
+  const size = document.getElementById('f-size').value;
+  document.getElementById('sizeValue').textContent = size + '%';
+
+  const config = {
+    label: document.getElementById('f-label').value,
+    accent: selectedColor,
+    size: parseInt(size, 10)
+  };
+  const url = engineBaseUrl() + '?d=' + toBase64Url(config);
+  document.getElementById('previewFrame').src = url;
+  document.getElementById('outLink').value = url;
+  document.getElementById('outCode').value =
+    `<iframe src="${url}" width="360" height="320" style="border:none;max-width:100%;" title="Микрофон"></iframe>`;
+}
+
+function wireCopyButton(btnId, textareaId){
+  document.getElementById(btnId).addEventListener('click', () => {
+    const ta = document.getElementById(textareaId);
+    ta.select();
+    navigator.clipboard.writeText(ta.value).then(() => {
+      const btn = document.getElementById(btnId);
+      btn.classList.add('copied');
+      const old = btn.textContent;
+      btn.textContent = 'Скопировано!';
+      setTimeout(()=>{btn.classList.remove('copied'); btn.textContent = old;}, 1400);
+    });
+  });
+}
+
+let generateTimer = null;
+function scheduleGenerate(){
+  clearTimeout(generateTimer);
+  generateTimer = setTimeout(generate, 500);
+}
+
+document.getElementById('f-label').addEventListener('input', scheduleGenerate);
+document.getElementById('f-size').addEventListener('input', scheduleGenerate);
+document.getElementById('genBtn').addEventListener('click', generate);
+wireCopyButton('copyLink','outLink');
+wireCopyButton('copyCode','outCode');
+
+renderColorGrid();
+generate();
+</script>
+
+<div class="brand-badge">
+  <img src="../assets/avatar.jpg" alt="Уроки-приключения">
+  <span>Уроки-приключения</span>
+</div>
+</body>
+</html>
