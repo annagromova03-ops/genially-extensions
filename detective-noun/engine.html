@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Дело о ключе</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=PT+Sans:wght@400;700&family=Russo+One&display=swap">
+<style>
+/* Layout concept: a station hall. A departure board on top shows the case title and what is happening now; a wall of seven luggage lockers shows progress (one door opens per platform); one blue-banded form sheet per step; feedback arrives as a loudspeaker announcement under the sheet; the notebook is a ring-bound drawer. */
+*{box-sizing:border-box}
+:root{
+  color-scheme:light;
+  --gutter:clamp(16px,4vw,36px);
+  --hall:#e6ecf0;--hall-2:#d2dce3;--line:#b7c5cf;
+  --ink:#14212b;--ink-soft:#4a5b68;
+  --c:#0d4c80;--c-deep:#093a63;--ct:#e3eef8;
+  --sign:var(--c);--sign-deep:var(--c-deep);
+  --board:#0d1822;--board-2:#1a2d3e;--amber:#ffb21a;--amber-dim:#8a6a1c;
+  --brass:#bd9650;--steel:#9fb1be;--steel-dark:#6c8190;
+  --paper:#ffffff;--red:#c93a3a;--ok:#1f8a5b;--focus:#1565c0;
+  --f-sign:"Russo One","Arial Black",Impact,sans-serif;
+  --f-ui:"PT Sans","Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+  --f-board:"IBM Plex Mono","Courier New",Courier,monospace;
+}
+/* у каждой платформы свой цвет: шапка листа, кнопки, ответы, табло и фон подхватывают его */
+html[data-p="1"]{--c:#c75b00;--c-deep:#8f4000;--ct:#ffeedd}
+html[data-p="2"]{--c:#1c5fc2;--c-deep:#12418a;--ct:#e2edff}
+html[data-p="3"]{--c:#6b3fc0;--c-deep:#4a2a8a;--ct:#eee6ff}
+html[data-p="4"]{--c:#14804f;--c-deep:#0d5a38;--ct:#dff5e8}
+html[data-p="5"]{--c:#c63a30;--c-deep:#8f2820;--ct:#ffe4e1}
+html[data-p="6"]{--c:#0b7f8c;--c-deep:#075a63;--ct:#dcf4f6}
+html[data-p="7"]{--c:#b8306a;--c-deep:#85204c;--ct:#ffe2ee}
+[hidden]{display:none!important}
+html{height:100%;background:var(--hall)}
+body{min-height:100%;margin:0;padding-inline:var(--gutter);padding-block:0 112px;color:var(--ink);font:400 17px/1.55 var(--f-ui);background-color:var(--hall);background-image:radial-gradient(640px 340px at 6% 0,var(--ct),transparent 72%),radial-gradient(560px 380px at 100% 28%,var(--ct),transparent 72%),linear-gradient(rgba(20,33,43,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(20,33,43,.05) 1px,transparent 1px);background-size:auto,auto,56px 56px,56px 56px;-webkit-text-size-adjust:100%}
+h1,h2,h3,p,ol,ul{margin:0}
+.wrap{max-width:980px;margin:0 auto;padding-top:18px}
+
+/* departure board */
+.board{position:relative;overflow:hidden;display:grid;gap:12px;padding:14px 16px 26px;background:var(--board);color:var(--amber);border:3px solid #28404f;border-radius:6px;box-shadow:0 6px 0 var(--sign-deep)}
+.route{position:absolute;left:0;right:0;bottom:0;height:9px;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:2px;background:#050b11}
+.route span{background:var(--rc);opacity:.25;transition:opacity .4s}
+.route span.d{opacity:1}
+.route span.c{opacity:1;animation:glow 1.4s ease-in-out infinite}
+.b-top{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px}
+.stn{padding:5px 10px;background:var(--sign);color:#fff;font:400 13px/1 var(--f-sign);letter-spacing:.14em;border-radius:3px}
+.b-title{display:flex;flex-wrap:wrap;gap:3px}
+.ch{position:relative;display:inline-grid;place-items:center;width:1.2em;height:1.65em;background:#050b11;color:var(--amber);font:600 clamp(16px,3.8vw,26px)/1 var(--f-board);border-radius:2px}
+.ch::after{content:"";position:absolute;left:0;right:0;top:50%;height:1px;background:rgba(0,0,0,.85)}
+.ch.sp{width:.5em;background:transparent}
+.ch.sp::after{display:none}
+.ch.flip{animation:flip .5s ease-out both;animation-delay:var(--d)}
+.b-tools{margin-left:auto;display:flex;align-items:center;gap:12px;font:400 12.5px/1 var(--f-board);letter-spacing:.06em;text-transform:uppercase;color:#d6b25e}
+.b-now{font:500 clamp(12px,2.7vw,15px)/1.35 var(--f-board);letter-spacing:.08em;text-transform:uppercase}
+.b-now .k{margin-right:10px;padding:2px 8px;background:var(--amber);color:var(--board);border-radius:2px}
+
+/* buttons */
+.btn{all:unset;box-sizing:border-box;cursor:pointer;display:inline-flex;align-items:center;gap:8px;min-height:46px;padding:0 20px;font:400 14px/1 var(--f-sign);letter-spacing:.1em;text-transform:uppercase;text-align:center;border-radius:3px}
+.btn:focus-visible,.opt:focus-visible,.w:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.btn-go{background:var(--sign);color:#fff;box-shadow:0 4px 0 var(--sign-deep)}
+.btn-go:active{transform:translateY(3px);box-shadow:0 1px 0 var(--sign-deep)}
+.btn-line{border:1.5px solid var(--sign);color:var(--sign)}
+.b-tools .btn-line{border-color:#d6b25e;color:var(--amber)}
+.btn.sm{min-height:38px;padding:0 14px;font-size:12px}
+.dot{display:inline-block;width:8px;height:8px;margin-left:8px;border-radius:50%;background:var(--amber)}
+
+/* locker wall */
+.wall{display:grid;grid-template-columns:repeat(7,minmax(0,78px));justify-content:center;gap:clamp(6px,1.4vw,12px);margin:18px 0 20px;padding:clamp(8px,1.6vw,14px);background:var(--ct);border:2px solid var(--c);border-radius:6px}
+.lk{position:relative;aspect-ratio:3/4;perspective:520px}
+.lk .in{position:absolute;inset:0;display:grid;place-items:center;background:#22313d;color:var(--amber);border-radius:3px;box-shadow:inset 0 0 8px #000}
+.lk .in svg{width:56%;height:auto;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.lk .door{position:absolute;inset:0;border:2px solid var(--lc2,var(--steel-dark));border-radius:3px;background:linear-gradient(160deg,var(--lc,#b3c3ce),var(--lc2,#8fa3b1));transform-origin:left center;transition:transform .6s ease}
+.lk .door::before{content:"";position:absolute;left:8%;top:6%;width:30%;height:88%;background:linear-gradient(90deg,rgba(255,255,255,.35),transparent);border-radius:2px;pointer-events:none}
+.lk .num{position:absolute;top:7%;left:50%;transform:translateX(-50%);padding:1px 6px;background:var(--brass);color:#2b1f08;font:400 clamp(9px,1.8vw,13px)/1.2 var(--f-sign);border-radius:2px}
+.lk .vents{position:absolute;left:18%;right:18%;top:30%;height:26%;background:repeating-linear-gradient(to bottom,rgba(40,60,75,.55) 0 2px,transparent 2px 6px)}
+.lk .hole{position:absolute;left:50%;bottom:13%;width:16%;aspect-ratio:1;background:#2b3943;border-radius:50%;transform:translateX(-50%)}
+.lk.open .door{transform:rotateY(-80deg)}
+.lk.cur .door{box-shadow:0 0 0 3px var(--amber),0 0 14px rgba(255,178,26,.7)}
+
+/* form sheet */
+.sheet{position:relative;background:var(--paper);border:2px solid var(--c);border-radius:6px;box-shadow:0 12px 26px rgba(20,33,43,.16),0 0 0 4px var(--ct);overflow:hidden}
+.sh-head{position:relative;overflow:hidden;display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding:10px clamp(16px,3vw,28px);background:var(--sign);color:#fff}
+.sh-head.rb{background:linear-gradient(90deg,#c75b00,#1c5fc2 22%,#6b3fc0 40%,#14804f 58%,#c63a30 76%,#b8306a)}
+.sh-head>*{position:relative;z-index:1}
+.sh-head .wm{position:absolute;z-index:0;right:14px;top:50%;width:58px;height:58px;transform:translateY(-50%) rotate(-8deg);opacity:.22;pointer-events:none}
+.sh-head .wm svg{width:100%;height:100%;fill:none;stroke:#fff;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round}
+.pl{display:inline-grid;place-items:center;width:30px;height:30px;background:#fff;color:var(--sign);font:400 18px/1 var(--f-sign);border-radius:3px}
+.sh-head h2{font:400 clamp(16px,3vw,22px)/1.15 var(--f-sign);letter-spacing:.06em;text-transform:uppercase;text-wrap:balance;outline:none}
+.sh-head .meta{margin-left:auto;font:400 12px/1.3 var(--f-board);letter-spacing:.04em;opacity:.85}
+.sh-body{padding:clamp(16px,3vw,28px)}
+.lead{max-width:62ch;margin-bottom:12px;font-size:18px}
+.task{max-width:64ch;margin-bottom:16px;color:var(--ink-soft)}
+.rules{display:grid;gap:8px;margin:6px 0 22px;padding:0;list-style:none}
+.rules li{display:flex;gap:10px}
+.rules li::before{content:"";flex:none;width:10px;height:10px;margin-top:.5em;background:var(--amber);border:2px solid var(--board);border-radius:50%}
+.row{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;margin-top:12px}
+.count{font:400 13.5px/1 var(--f-board);color:var(--ink-soft)}
+.sub{margin:18px 0 10px;font:400 15px/1 var(--f-sign);letter-spacing:.1em;text-transform:uppercase}
+
+/* explanation */
+.ex{display:grid;gap:14px;margin:0 0 6px;padding:0;list-style:none}
+.ex li{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start;font-size:18px;line-height:1.6}
+.ex .no{display:grid;place-items:center;width:28px;height:28px;margin-top:2px;background:var(--sign);color:#fff;font:400 14px/1 var(--f-sign);border-radius:50%}
+.ex li.new{animation:rise .35s ease-out}
+.ex i{font-style:italic}
+.cols{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:10px 0}
+.cols>div{display:flex;flex-wrap:wrap;gap:6px;padding:10px;background:#eef3f6;border:1px solid var(--line);border-radius:4px}
+.cols.c3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.cols b{flex:0 0 100%;font:400 13px/1 var(--f-sign);letter-spacing:.1em;text-transform:uppercase;color:var(--sign)}
+.cols span{padding:2px 9px;background:#fff;border:1px solid var(--line);border-radius:3px;font:500 16px/1.5 var(--f-board)}
+
+/* multiple choice */
+.prog{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px}
+.prog i{width:20px;height:6px;background:var(--hall-2);border-radius:2px}
+.prog i.d{background:var(--sign)}
+.prog i.c{background:var(--amber);outline:1px solid var(--board)}
+.mc-p{margin:4px 0 6px;font-size:19px}
+.mc-q{margin-bottom:10px;color:var(--ink-soft)}
+.big{font:500 clamp(24px,5vw,34px)/1.3 var(--f-board)}
+.tagc{display:inline-block;margin-left:10px;padding:1px 10px;background:var(--board);color:var(--amber);font:500 15px/1.6 var(--f-board);border-radius:3px;vertical-align:middle}
+.opts{display:flex;flex-wrap:wrap;gap:10px}
+.opt{all:unset;box-sizing:border-box;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;min-height:50px;padding:8px 18px;background:#fff;color:var(--ink);border:2px solid var(--sign);border-radius:4px;font:700 17px/1.3 var(--f-ui);box-shadow:0 3px 0 var(--sign-deep)}
+.opt:hover:not(:disabled){background:var(--ct)}
+.opt:active:not(:disabled){transform:translateY(2px);box-shadow:0 1px 0 var(--sign-deep)}
+.opt.mono{min-width:96px;font:500 clamp(18px,3.4vw,24px)/1.3 var(--f-board)}
+.opt.no{opacity:.4;cursor:not-allowed;text-decoration:line-through;box-shadow:none}
+.opt.right{background:#d9f2e5;border-color:var(--ok);box-shadow:0 3px 0 var(--ok)}
+.opt:disabled{cursor:default}
+.flap{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;margin:6px 0 16px;padding:14px;background:var(--board);border-radius:6px}
+.flap .fl{display:flex;flex-wrap:wrap;gap:3px}
+.flap .ch{width:1.1em;height:1.5em;font-size:clamp(15px,3.6vw,22px)}
+.flap .arr{width:26px;height:26px;fill:none;stroke:var(--amber-dim);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+/* tapping words */
+.doc{margin:6px 0 16px;padding:16px 18px;background:var(--ct);border:1px solid var(--c);border-radius:4px;font:400 clamp(15px,2.2vw,17.5px)/2.1 var(--f-board)}
+.w{all:unset;cursor:pointer;display:inline;padding:0 .12em;margin:0 -.12em;border-radius:3px;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+.w:not(:disabled):hover{background:#ffe9ad}
+.w:disabled{cursor:default}
+.w.on{background:#ffd56a;box-shadow:0 0 0 2px var(--board) inset}
+.w.bad{box-shadow:0 0 0 2px var(--red) inset;background:#fde3e3}
+.w.good{box-shadow:0 0 0 2px var(--ok) inset;background:#dff3e8}
+.w.fixed{cursor:default;color:var(--ok);font-weight:600;text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:.2em}
+.w.active{background:#fde3e3;box-shadow:0 0 0 2px var(--red) inset}
+.w.miss{display:inline-block;animation:shake .35s}
+.lock{font-weight:600}
+.q{margin-top:14px;padding-top:14px;border-top:1px dashed var(--steel-dark)}
+.q-t{margin-bottom:10px;font-weight:700}
+
+/* report with gaps */
+.sent{margin:8px 0 18px;font:400 clamp(16px,2.4vw,19px)/2.2 var(--f-board)}
+.gap{display:inline-block;min-width:4.5ch;margin:0 .1em;padding:0 .3em;border-bottom:3px dashed var(--steel-dark);text-align:center;line-height:1.3}
+.gap .ph{visibility:hidden}
+.gap.active{border-bottom-color:var(--amber-dim);background:#fff3d1;animation:pulse 1.3s ease-in-out infinite}
+.gap.done{border-bottom:3px solid var(--ok);color:var(--ok);font-weight:600}
+.gap.revealed{border-bottom:3px solid var(--red);color:var(--red);font-weight:600}
+
+/* reward and end */
+.rw{display:grid;grid-template-columns:minmax(80px,140px) 1fr;gap:20px;align-items:center;margin-bottom:6px}
+.rw .lk{width:100%}
+.found{display:grid;gap:10px;margin:0 0 14px;padding:0;list-style:none}
+.found li{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start;font-size:16px;line-height:1.55}
+.found .no{display:grid;place-items:center;width:26px;height:26px;margin-top:1px;background:var(--sign);color:#fff;font:400 13px/1 var(--f-sign);border-radius:50%}
+.stats-line{margin:6px 0 4px;font:400 15px/1.6 var(--f-board)}
+.verdict{display:flex;justify-content:flex-end;margin:2px 0 26px}
+.stamp{display:inline-block;padding:.12em .35em;border:5px solid var(--red);color:var(--red);font:400 clamp(28px,7vw,54px)/1 var(--f-sign);letter-spacing:.08em;text-transform:uppercase;transform:rotate(-7deg);opacity:.9}
+.stamp.in{animation:stampIn .55s cubic-bezier(.2,.9,.3,1.2) both}
+
+/* loudspeaker announcement */
+.pa{display:flex;gap:14px;align-items:flex-start;margin-top:16px;padding:14px 18px;background:var(--sign-deep);color:#fff;border-radius:4px;box-shadow:0 6px 0 rgba(9,58,99,.3)}
+.pa .ico{flex:none;width:30px;height:30px;color:var(--amber)}
+.pa .lb{display:block;margin-bottom:2px;font:400 12px/1.2 var(--f-sign);letter-spacing:.14em;text-transform:uppercase;color:var(--amber)}
+.pa .tx{font-size:16.5px;line-height:1.5}
+.pa.ok{background:#16684a}
+.pa.ok .lb,.pa.ok .ico,.pa.bad .lb,.pa.bad .ico{color:#fff}
+.pa.bad{background:#a83232}
+.pa.pop{animation:pop .3s ease-out}
+
+/* notebook */
+.scrim{position:fixed;inset:0;z-index:20;background:rgba(10,20,30,.5)}
+.notes{position:fixed;z-index:30;top:0;right:0;bottom:0;width:min(420px,100%);padding:20px 20px 28px 34px;overflow:auto;background-color:#f6f9fb;background-image:repeating-linear-gradient(to bottom,transparent 0 31px,rgba(13,76,128,.13) 31px 32px);border-left:6px double var(--brass);box-shadow:-12px 0 32px rgba(0,0,0,.35);transform:translateX(104%);visibility:hidden;transition:transform .25s ease,visibility 0s linear .25s}
+.notes.open{transform:none;visibility:visible;transition:transform .25s ease}
+.notes-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
+.notes-head h2{font:400 20px/1.1 var(--f-sign);letter-spacing:.06em;text-transform:uppercase}
+.notes-list{display:grid;gap:16px;padding:0;list-style:none}
+.n h3{margin-bottom:4px;font:400 14px/1.2 var(--f-sign);letter-spacing:.08em;text-transform:uppercase;color:var(--sign)}
+.n p{font:400 15px/1.65 var(--f-ui)}
+.n.locked .bar{display:block;height:20px;margin-bottom:4px;background:var(--board)}
+.n.locked small{font:400 12px/1.4 var(--f-board);color:var(--ink-soft)}
+
+.confetti{position:absolute;inset:0;z-index:5;overflow:hidden;pointer-events:none}
+.confetti i{position:absolute;top:-16px;width:9px;height:15px;border-radius:2px;opacity:0;animation:cf 2.2s ease-in forwards}
+@keyframes cf{0%{opacity:1;transform:translate(0,0) rotate(0)}100%{opacity:0;transform:translate(var(--dx),460px) rotate(var(--r))}}
+@keyframes glow{50%{opacity:.55}}
+@keyframes flip{from{transform:rotateX(90deg);opacity:.2}to{transform:none;opacity:1}}
+@keyframes shake{20%{transform:translateX(-4px)}40%{transform:translateX(4px)}60%{transform:translateX(-3px)}80%{transform:translateX(3px)}}
+@keyframes pulse{50%{border-bottom-color:var(--amber)}}
+@keyframes pop{from{transform:scale(.97);opacity:.6}to{transform:none;opacity:1}}
+@keyframes rise{from{transform:translateY(8px);opacity:0}to{transform:none;opacity:1}}
+@keyframes stampIn{0%{transform:rotate(-14deg) scale(2.2);opacity:0}60%{transform:rotate(-7deg) scale(.96);opacity:1}100%{transform:rotate(-7deg) scale(1);opacity:.9}}
+
+/* переход по слайдам: стрелки внизу экрана и список слайдов */
+.nav{position:fixed;z-index:15;left:50%;bottom:max(12px,env(safe-area-inset-bottom));transform:translateX(-50%);display:flex;align-items:stretch;width:min(560px,calc(100% - 2*var(--gutter)));background:var(--board);border:2px solid #28404f;border-radius:8px;box-shadow:0 5px 0 var(--sign-deep),0 14px 28px rgba(10,20,30,.35);overflow:hidden}
+.nv{all:unset;box-sizing:border-box;cursor:pointer;display:grid;place-items:center;flex:none;width:64px;min-height:58px;color:var(--amber)}
+.nv svg{width:30px;height:30px;fill:none;stroke:currentColor;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.nv:hover:not(:disabled){background:var(--board-2)}
+.nv:active:not(:disabled){transform:translateY(2px)}
+.nv:disabled{opacity:.28;cursor:default}
+.nv-mid{all:unset;box-sizing:border-box;cursor:pointer;flex:1;min-width:0;display:grid;align-content:center;gap:3px;padding:6px 10px;text-align:center;border-inline:1px solid #28404f;color:#d6b25e;font:500 12px/1.25 var(--f-board);letter-spacing:.05em;text-transform:uppercase}
+.nv-mid:hover{background:var(--board-2)}
+.nv-mid b{color:var(--amber);font-weight:600;font-size:16px;letter-spacing:.12em}
+.nv-mid span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nv:focus-visible,.nv-mid:focus-visible{outline:3px solid var(--focus);outline-offset:-3px}
+.toc{position:fixed;z-index:16;left:50%;bottom:calc(max(12px,env(safe-area-inset-bottom)) + 78px);transform:translateX(-50%);width:min(560px,calc(100% - 2*var(--gutter)));max-height:min(62vh,540px);overflow:auto;padding:4px 12px 12px;background:#fff;border:2px solid var(--c);border-radius:8px;box-shadow:0 14px 36px rgba(10,20,30,.4)}
+.toc h3{display:flex;align-items:center;gap:8px;margin:12px 0 5px;font:400 12.5px/1.2 var(--f-sign);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft)}
+.toc h3 i{flex:none;width:12px;height:12px;border-radius:3px;background:var(--rc)}
+.toc button{all:unset;box-sizing:border-box;cursor:pointer;display:flex;gap:10px;align-items:baseline;width:100%;padding:7px 10px;border-radius:4px;font:400 16px/1.3 var(--f-ui)}
+.toc button:hover{background:var(--ct)}
+.toc button.cur{background:var(--amber);color:var(--board);font-weight:700}
+.toc button:focus-visible{outline:3px solid var(--focus);outline-offset:-3px}
+.toc .no{flex:none;min-width:2ch;font:500 12.5px/1.3 var(--f-board);color:var(--ink-soft)}
+.toc button.cur .no{color:var(--board)}
+
+@media (max-width:640px){
+  .nv{width:56px}
+  .wall{grid-template-columns:repeat(7,minmax(0,1fr));gap:clamp(4px,1.2vw,10px)}
+  .b-tools{margin-left:0}
+  .rw{grid-template-columns:90px 1fr;gap:14px}
+  .cols,.cols.c3{grid-template-columns:1fr}
+  .sh-head .meta{margin-left:0;width:100%}
+  .notes{top:auto;left:0;right:0;width:100%;max-height:80%;border-left:0;border-top:6px double var(--brass);border-radius:14px 14px 0 0;transform:translateY(104%)}
+  .notes.open{transform:none}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="board" aria-label="Табло">
+    <div class="b-top">
+      <span class="stn">ЗАРЕЧЬЕ</span>
+      <h1 class="b-title" id="title" aria-label="Дело о ключе"></h1>
+      <div class="b-tools">
+        <span id="stats"></span>
+        <button type="button" class="btn btn-line sm" id="btnNotes" data-act="notes" aria-expanded="false" aria-controls="notes">Блокнот<span class="dot" id="noteDot" hidden></span></button>
+      </div>
+    </div>
+    <div class="b-now" id="now"></div>
+    <div class="route" id="route" aria-hidden="true"></div>
+  </header>
+  <section class="wall" id="wall" aria-label="Ячейки камеры хранения"></section>
+  <main>
+    <article class="sheet" id="stage"></article>
+    <div class="pa" id="pa" role="status" aria-live="polite" hidden></div>
+  </main>
+</div>
+<div class="scrim" id="scrim" data-act="notes" hidden></div>
+<aside class="notes" id="notes" aria-label="Блокнот эксперта">
+  <div class="notes-head"><h2>Блокнот сыщика</h2><button type="button" class="btn btn-line sm" id="notesClose" data-act="notes">Закрыть</button></div>
+  <ol class="notes-list" id="notesList"></ol>
+</aside>
+<nav class="nav" id="nav" aria-label="Переход по слайдам">
+  <button type="button" class="nv" id="navPrev" data-act="prev" aria-label="Предыдущий слайд" title="Назад (стрелка влево)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 4 7 12l8 8"/></svg></button>
+  <button type="button" class="nv-mid" id="navMid" data-act="toc" aria-expanded="false" aria-controls="toc" title="Список слайдов"><b id="navNo"></b><span id="navTitle"></span></button>
+  <button type="button" class="nv" id="navNext" data-act="next" aria-label="Следующий слайд" title="Дальше (стрелка вправо)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 4 8 8-8 8"/></svg></button>
+</nav>
+<div class="toc" id="toc" aria-label="Список слайдов" hidden></div>
+
+<script>
+(function(){
+'use strict';
+
+/* ======================= помощники ======================= */
+const $=(s,r)=>(r||document).querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+const reduceMotion=()=>window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+const capFirst=w=>w.replace(/[а-яёa-z]/i,c=>c.toUpperCase());
+
+/* токены текста: K — заглавная уже стоит, C — нужна заглавная, L — остаётся строчной,
+   W — обычное слово, P — знак после слова, O — открывающая кавычка, X — слово для поиска ошибки, E — слово с ошибкой */
+const L=(w,r)=>({k:'L',w,r}),C=(w,r)=>({k:'C',w,r}),K=w=>({k:'K',w}),W=w=>({k:'W',w}),P=w=>({k:'P',w}),O=w=>({k:'O',w});
+const X=w=>({k:'X',w}),E=(w,fix,o)=>({k:'E',w,fix,o});
+
+/* ======================= CASE: весь контент урока ======================= */
+const kc=(w,who,note)=>({
+  p:`<span class="big">${w}</span>`,q:'Кто это? Что это?',fix:1,mono:1,trap:!!note,
+  o:[
+    {t:'кто?',ok:who,why:`«${w}» — ${who?'кто?':'что?'}${note?': '+note:'.'}`},
+    {t:'что?',ok:!who,why:`«${w}» — ${who?'кто?':'что?'}${note?': '+note:'.'}`}
+  ].map(o=>({t:o.t,ok:o.ok?1:0,why:o.ok?o.why:'Не то. '+o.why}))
+});
+const seen=(w,right,wrong,who)=>({
+  p:`Свидетель говорит: «Я видел …». Слово: <span class="big">${w}</span>`,
+  o:[
+    {t:right,ok:1,why:who?`Кто? Слово одушевлённое, поэтому форма изменилась: видел кого? ${right}.`:`Что? Слово неодушевлённое, форма не изменилась: видел что? ${right}.`},
+    {t:wrong,why:who?`«${w}» — одушевлённое слово. После «видел» нужна форма «кого?»: ${right}.`:`«${w}» — неодушевлённое слово. После «видел» форма не меняется: ${right}.`}
+  ]
+});
+const TEST={'м.р.':w=>`мой ${w}`,'ж.р.':w=>`моя ${w}`,'ср.р.':w=>`моё ${w}`,'мн.ч.':w=>`мои ${w}`};
+const gender=(w,g,why,nosay)=>({
+  p:`<span class="big">${w}</span>`,q:'Какой род?',fix:1,mono:1,trap:!!why,say:nosay?null:w,
+  o:['м.р.','ж.р.','ср.р.','мн.ч.'].map(t=>({t,ok:t===g?1:0,why:t===g
+    ?(why||(g==='мн.ч.'?`«${w}» есть только во множественном числе, рода нет: ${TEST[g](w)}.`:`«${w}» — ${g}: ${TEST[g](w)}.`))
+    :(g==='мн.ч.'?'Не то. Слово есть только во множественном числе, рода у него нет: подходит «мои».':'Не то. Скажите слово вслух: мой, моя или моё? Какое звучит правильно?')}))
+});
+const pc=(w,proper,note)=>{
+  const right=`«${w}» — ${proper?'собственное':'нарицательное'}: ${note}.`;
+  return {p:`<span class="big">${w}</span>`,q:'Собственное или нарицательное?',fix:1,
+    o:[{t:'собственное',ok:proper?1:0,why:proper?right:'Не то. '+right},{t:'нарицательное',ok:proper?0:1,why:proper?'Не то. '+right:right}]};
+};
+const an=(w,yes,note)=>{
+  const right=`«${w}» — ${yes?'одушевлённое: отвечает на вопрос кто?':'неодушевлённое: отвечает на вопрос что?'}${note?' '+note:''}`;
+  return {p:`<span class="big">${w}</span>`,q:'Одушевлённое или неодушевлённое?',fix:1,trap:!!note,
+    o:[{t:'одушевлённое (кто?)',ok:yes?1:0,why:yes?right:'Не то. '+right},{t:'неодушевлённое (что?)',ok:yes?0:1,why:yes?'Не то. '+right:right}]};
+};
+const N=(w,q)=>({k:'N',w,q}),Z=(w,r)=>({k:'Z',w,r});
+const sp=(w,hasSoft,g)=>[
+  {p:`<span class="big">${w}_</span>`,q:'Какой род?',fix:1,mono:1,o:['м.р.','ж.р.'].map(t=>({t,ok:t===g?1:0,why:t===g?`${w}${hasSoft?'ь':''} — ${g}.`:'Не то. Проверьте род: мой / моя.'}))},
+  {p:`<span class="big">${w}_</span><span class="tagc">${g}</span>`,q:'Нужен ли ь?',fix:1,o:[
+    {t:`ь нужен: ${w}ь`,ok:hasSoft?1:0,why:hasSoft?`${w}ь — ж.р., после шипящей ь пишется.`:'Не то. Ь после шипящей пишется только у слов ж.р.'},
+    {t:`ь не нужен: ${w}`,ok:hasSoft?0:1,why:hasSoft?'Не то. У слов ж.р. после шипящей ь пишется.':`${w} — м.р., после шипящей ь не пишется.`}
+  ]}
+];
+const pick=(p,good,bad,whyGood,whyBad)=>({p,q:'Выберите форму по смыслу.',o:[{t:good,ok:1,why:whyGood},{t:bad,why:whyBad}]});
+const errO=(fix,g,mr)=>({fix,o:mr
+  ?[{t:'Слово м.р., поэтому ь не нужен',ok:1,why:`${fix} — м.р. (мой ${fix.toLowerCase()}), у слов м.р. после шипящей ь не пишется.`},{t:'Слово ж.р., поэтому ь нужен',why:`${fix} — м.р., а ь после шипящей нужен только у ж.р.`}]
+  :[{t:'Слово ж.р., поэтому ь нужен',ok:1,why:`${fix} — ж.р. (моя ${fix.toLowerCase()}), у слов ж.р. после шипящей ь пишется.`},{t:'Слово м.р., поэтому ь не нужен',why:`${fix} — ж.р., а у ж.р. после шипящей ь пишется.`}]});
+
+/* повторение прошлого урока (режим «Продолжить с платформы 4») */
+const RECAP_STEPS=[
+  {t:'nouns',title:'Найди существительные',intro:'Вспомним прошлый урок. В тексте слова разных частей речи. Нажмите на все существительные: слова, которые отвечают на вопросы кто? что? Потом нажмите «Проверить».',
+   okMsg:'Все существительные найдены: носильщик, Фёдор, чемодан, толпа, кот, Барсик, ветер, дерево. Теперь назовём, какие из них собственные, а какие нарицательные.',
+   tokens:[N('Носильщик','кто'),N('Фёдор','кто'),Z('быстро','отвечает на вопрос как? Это не предмет.'),Z('нёс','отвечает на вопрос что делал? Это действие.'),Z('тяжёлый','отвечает на вопрос какой? Это не предмет.'),N('чемодан','что'),P('.'),
+     Z('Громко','отвечает на вопрос как? Это не предмет.'),Z('шумела','отвечает на вопрос что делала? Это действие.'),N('толпа','что'),P('.'),
+     Z('Рядом','отвечает на вопрос где? Это не предмет.'),Z('спал','отвечает на вопрос что делал? Это действие.'),Z('рыжий','отвечает на вопрос какой? Это не предмет.'),N('кот','кто'),N('Барсик','кто'),P('.'),
+     N('Ветер','что'),Z('качал','отвечает на вопрос что делал? Это действие.'),N('дерево','что'),P('.')]},
+  {t:'mc',title:'Собственные или нарицательные?',intro:'Назовите, какое имя у каждого найденного существительного.',shuf:1,items:[
+    pc('носильщик',0,'так называют любого человека с такой работой, пишется со строчной'),
+    pc('Фёдор',1,'это имя конкретного человека, пишется с заглавной'),
+    pc('чемодан',0,'так называют любой предмет такого рода, пишется со строчной'),
+    pc('толпа',0,'так называют любую толпу, пишется со строчной'),
+    pc('кот',0,'так называют любого кота, пишется со строчной'),
+    pc('Барсик',1,'это кличка конкретного кота, пишется с заглавной'),
+    pc('ветер',0,'так называют любой ветер, пишется со строчной'),
+    pc('дерево',0,'так называют любое дерево, пишется со строчной')]},
+  {t:'mc',title:'Одушевлённые или неодушевлённые?',intro:'Назовите, какое каждое слово: одушевлённое (кто?) или неодушевлённое (что?).',shuf:1,items:[
+    an('носильщик',1),an('Фёдор',1),an('чемодан',0),an('толпа',0,'Названия групп неодушевлённые.'),
+    an('кот',1),an('Барсик',1),an('ветер',0),an('дерево',0,'Растения неодушевлённые.')]}
+];
+
+/* блок «Род»: объяснение с проверкой вслух и четыре круга практики */
+const ROD_STEPS=[
+  {t:'explain',title:'Род',note:'n3',points:[
+    'Род — постоянный признак существительного. Родов три: <b>м.р.</b> (мужской), <b>ж.р.</b> (женский), <b>ср.р.</b> (средний).',
+    'Как определить: скажите слово вслух со словом <i>мой, моя или моё</i>. Получилось «мой ключ» — м.р. «Моя ложка» — ж.р. «Моё кольцо» — ср.р.<div class="cols c3"><div><b>мой: м.р.</b><span>ключ</span><span>плащ</span><span>носильщик</span><span>кот</span></div><div><b>моя: ж.р.</b><span>ложка</span><span>брошь</span><span>ночь</span><span>кошка</span></div><div><b>моё: ср.р.</b><span>кольцо</span><span>пальто</span><span>окно</span><span>дерево</span></div></div>',
+    'У слов, которые есть только во множественном числе (очки, часы), рода нет. Для них подходит «мои»: мои очки, мои часы. Их подписывают <b>мн.ч.</b>',
+    '<b>Ловушки.</b> По окончанию род угадывать нельзя. Папа и дядя — м.р., хотя оканчиваются на -а и -я: это мужчины. День — м.р., а тень — ж.р. Пальто, такси, метро — ср.р., эти слова не изменяются. Всегда проверяйте вслух: мой, моя или моё.']},
+  {t:'mc',title:'Разминка',intro:'Скажите слово вслух со словами мой, моя, моё и выберите род. Кнопка «Проверить вслух» покажет, как это сделать.',shuf:1,items:[
+    gender('чемодан','м.р.'),gender('касса','ж.р.'),gender('окно','ср.р.'),gender('рюкзак','м.р.'),gender('сумка','ж.р.'),gender('расписание','ср.р.')]},
+  {t:'mc',title:'Опись из гнезда',intro:'Инспектор залез на крышу и нашёл гнездо с вещами, пропавшими у пассажиров. Определите род каждого слова.',shuf:1,items:[
+    gender('ключ','м.р.'),gender('брошь','ж.р.'),gender('кольцо','ср.р.'),gender('очки','мн.ч.'),gender('ложка','ж.р.'),gender('часы','мн.ч.'),gender('значок','м.р.'),gender('зеркальце','ср.р.')]},
+  {t:'mc',title:'Ловушки',intro:'Здесь род легко перепутать. Проверяйте вслух.',shuf:1,items:[
+    gender('шампунь','м.р.','Мягкий знак на конце не показывает род: шампунь — м.р. (мой шампунь).'),
+    gender('пальто','ср.р.','Неизменяемое слово: пальто — ср.р. (моё пальто).'),
+    gender('такси','ср.р.','Неизменяемое слово: такси — ср.р. (моё такси).'),
+    gender('метро','ср.р.','Неизменяемое слово: метро — ср.р. (моё метро).'),
+    gender('тень','ж.р.','Мягкий знак на конце не показывает род: тень — ж.р. (моя тень).'),
+    gender('рояль','м.р.','Мягкий знак на конце не показывает род: рояль — м.р. (мой рояль).'),
+    gender('папа','м.р.','Слово оканчивается на -а, но папа — мужчина: мой папа, значит м.р.'),
+    gender('дядя','м.р.','Слово оканчивается на -я, но дядя — мужчина: мой дядя, значит м.р.')]},
+  {t:'mc',title:'Контроль',intro:'Контрольный круг без подсказок «вслух»: определите род шести новых слов.',shuf:1,items:[
+    gender('дверь','ж.р.',null,1),gender('конь','м.р.',null,1),gender('поле','ср.р.',null,1),gender('брюки','мн.ч.',null,1),
+    gender('дедушка','м.р.','Слово оканчивается на -а, но дедушка — мужчина: мой дедушка, значит м.р.',1),gender('ножницы','мн.ч.',null,1)]}
+];
+
+const STAGES=[
+{name:'Табло',meta:'антонимы и синонимы',icon:'board',beat:'Табло включено, и в ячейке №1 лежит бланк протокола.',steps:[
+  {t:'explain',title:'Антонимы и синонимы',note:'n6',points:[
+    '<b>Антонимы</b> — слова с противоположным значением. <b>Синонимы</b> — слова с близким значением, но с разным оттенком.',
+    'Слово подбирают из той же части речи: к существительному «вход» нужно «выход», а не глагол «выходить».']},
+  {t:'mc',title:'Скажи наоборот',intro:'Подберите антоним к существительному на табло.',delay:1700,items:[
+    {flap:'ПРИБЫТИЕ',a:'ОТПРАВЛЕНИЕ',o:[{t:'отправление',ok:1,why:'Прибытие и отправление — антонимы, оба существительные.'},{t:'прибывать',why:'«Прибывать» — глагол. Антоним к существительному ищут среди существительных.'},{t:'поезд',why:'«Поезд» не противоположен по смыслу, это просто связанное слово.'}]},
+    {flap:'ВХОД',a:'ВЫХОД',o:[{t:'выход',ok:1,why:'Вход и выход — антонимы, оба существительные.'},{t:'выходить',why:'«Выходить» — глагол, а нужно существительное.'},{t:'дверь',why:'«Дверь» не противоположна по смыслу.'}]},
+    {flap:'ШУМ',a:'ТИШИНА',o:[{t:'тишина',ok:1,why:'Шум и тишина — антонимы.'},{t:'шуметь',why:'«Шуметь» — глагол, а нужно существительное.'},{t:'звук',why:'«Звук» близок по смыслу к «шуму», это не антоним.'}]},
+    {flap:'ПРАВДА',a:'ЛОЖЬ',o:[{t:'ложь',ok:1,why:'Правда и ложь — антонимы.'},{t:'лгать',why:'«Лгать» — глагол, а нужно существительное.'},{t:'истина',why:'«Истина» — синоним слова «правда», а нужен антоним.'}]},
+    {flap:'НАЧАЛО',a:'КОНЕЦ',o:[{t:'конец',ok:1,why:'Начало и конец — антонимы.'},{t:'начинать',why:'«Начинать» — глагол, а нужно существительное.'},{t:'старт',why:'«Старт» — синоним слова «начало», а нужен антоним.'}]},
+    {flap:'НАХОДКА',a:'ПРОПАЖА',o:[{t:'пропажа',ok:1,why:'Находка и пропажа — антонимы.'},{t:'находить',why:'«Находить» — глагол, а нужно существительное.'},{t:'поиск',why:'«Поиск» не противоположен по смыслу.'}]}
+  ]},
+  {t:'mc',title:'Скажи иначе',intro:'Подберите синоним. У синонимов разные оттенки смысла и стиля.',manual:1,items:[
+    {p:'Слово «вор». Какой синоним подойдёт для официального протокола?',o:[{t:'воришка',why:'«Воришка» — разговорное слово с оттенком пренебрежения, в протоколе его не пишут.'},{t:'похититель',ok:1,why:'Верно. «Похититель» звучит нейтрально и официально.'},{t:'грабитель',why:'«Грабитель» — тот, кто отнимает силой. Это синоним с другим смыслом.'}]},
+    {p:'Найдите синоним к слову «причина»: почему человек так поступил.',o:[{t:'мотив',ok:1,why:'Верно. Причина поступка — это мотив.'},{t:'алиби',why:'«Алиби» — доказательство, что человека не было на месте преступления.'},{t:'улика',why:'«Улика» — предмет или след, который доказывает вину.'}]},
+    {p:'Найдите синоним к слову «тайна».',o:[{t:'секрет',ok:1,why:'Верно. Тайна и секрет — синонимы.'},{t:'шифр',why:'«Шифр» — способ спрятать смысл, но не синоним слова «тайна».'},{t:'ключ',why:'«Ключ» открывает замок, а не называет тайну.'}]},
+    {p:'Страх бывает разной силы. Какое слово обозначает самый сильный страх?',o:[{t:'испуг',why:'«Испуг» — быстрый и недолгий страх.'},{t:'тревога',why:'«Тревога» слабее и длится дольше.'},{t:'ужас',ok:1,why:'Верно. Ужас — самый сильный страх.'}]}
+  ]}
+]},
+
+{name:'Протокол',meta:'собственные и нарицательные',icon:'paper',beat:'Протокол прочитан верно: сорока в показаниях — птица, а не Фёдор Сорока. Подозрение с носильщика снято.',steps:[
+  {t:'explain',title:'Существительное',go:'К протоколу',points:[
+    'Существительное называет предмет, человека, животное, явление, чувство, действие и отвечает на вопросы <b>кто? что?</b> Примеры: ключ, свидетель, тишина, бег.',
+    'Начальная форма существительного — именительный падеж единственного числа: ключами → ключ.']},
+  {t:'cap',title:'Протокол №7',intro:'Нажимайте на слова, которые нужно писать с заглавной, затем нажмите «Проверить». Заглавные в начале предложений уже стоят. Подумайте: какие слова называют кого-то или что-то одно, конкретное?',
+   okMsg:'Верно. «Сорока» встретилось дважды: Фёдор Сорока — фамилия человека, а сорока, которая улетела на крышу, — птица.',
+   tokens:[K('Протокол'),W('№7.'),K('Станция'),C('заречье','Название станции пишется с заглавной, а слово «станция» остаётся строчным.'),P(','),L('вторник','День недели пишется со строчной.'),P(','),L('три'),L('часа'),L('ночи'),P('.'),
+     K('Носильщик'),C('фёдор','Имя человека.'),C('сорока','Фамилия человека — собственное имя.'),L('дежурил'),L('на'),L('платформе'),P('.'),
+     K('Уборщица'),L('тётя','Слово «тётя» нарицательное: оно остаётся строчным.'),C('зина','Имя человека.'),L('показала'),P(':'),O('«'),K('Я'),L('видела'),L('как'),L('сорока','Здесь сорока — птица: она схватила ключ и улетела на крышу.'),L('схватила'),L('ключ'),L('и'),L('улетела'),L('на'),L('крышу'),P('».')]},
+  {t:'explain',title:'Собственные и нарицательные',note:'n1',points:[
+    '<b>Собственные</b> называют конкретного человека, животное, место, предмет и пишутся с заглавной: Анна, кот Барсик, Заречье, «Заря». <b>Нарицательные</b> называют все предметы такого рода и пишутся со строчной: станция, поезд, кот.',
+    'Родовое слово при названии пишется со строчной: станция Заречье, улица Ленина, поезд «Заря».',
+    'Дни недели, месяцы, национальности и языки пишутся со строчной: вторник, апрель, англичанин, по-английски. В английском это иначе, поэтому здесь частая ошибка.']},
+  {t:'cap',title:'Протокол без заглавных',intro:'Нажимайте на слова, которые нужно писать с заглавной, затем нажмите «Проверить». Заглавные в начале предложений уже стоят.',
+   okMsg:'Всё верно. Дни недели, месяцы, языки и национальности остались строчными, а имена, названия и клички получили заглавные.',
+   tokens:[K('В'),L('понедельник','Дни недели пишутся со строчной.'),L('вечером'),L('на'),L('станцию'),C('заречье','Название станции пишется с заглавной.'),L('прибыл'),L('поезд','Слово «поезд» родовое: оно остаётся строчным.'),O('«'),C('заря','Название поезда в кавычках пишется с заглавной.'),P('»'),L('из'),L('города'),C('омска','Название города пишется с заглавной.'),P('.'),
+     K('Пассажирка'),C('анна','Имя человека.'),C('миронова','Фамилия человека.'),P(','),L('преподаватель'),L('музыки'),P(','),L('сдала'),L('в'),L('камеру'),L('хранения'),L('скрипку'),P('.'),
+     K('Она'),L('говорит'),L('по-русски','Названия языков и слова от них пишутся со строчной.'),L('и'),L('по-английски','В английском иначе, а в русском название языка пишется со строчной.'),P(','),L('а'),L('её'),L('сосед'),L('по'),L('купе'),P(','),L('англичанин','Национальность пишется со строчной.'),P(','),L('не'),L('знал'),L('ни'),L('слова'),L('по-русски','Названия языков пишутся со строчной.'),P('.'),
+     K('Кот'),C('барсик','Кличка животного пишется с заглавной.'),P(','),L('любимец'),L('кассира'),P(','),L('всё'),L('время'),L('сидел'),L('у'),L('окошка'),P('.'),
+     K('Домой'),C('анна','Имя человека.'),L('едет'),L('по'),L('улице','Родовое слово «улица» пишется со строчной.'),C('ленина','Название улицы пишется с заглавной.'),L('в'),L('начале'),L('апреля','Месяцы пишутся со строчной.'),P('.')]}
+]},
+
+{name:'Свидетели',meta:'одушевлённые и неодушевлённые',icon:'eye',beat:'Свидетели допрошены: они видели носильщика, кассира и сыщика, но ключа ни у кого в руках не было.',steps:[
+  {t:'explain',title:'Одушевлённые и неодушевлённые',note:'n2',points:[
+    '<b>Одушевлённые</b> существительные называют людей и животных и отвечают на вопрос <b>кто?</b>: носильщик, сорока, кошка. <b>Неодушевлённые</b> называют всё остальное и отвечают на вопрос <b>что?</b>: ключ, платформа, тишина.',
+    '<b>Ловушки.</b> Растения неодушевлённые: дерево, ромашка — что? Названия групп неодушевлённые: толпа, стая, народ — что? Сказочные существа одушевлённые: русалка, леший, дракон — кто?',
+    'Зачем это знать: от одушевлённости зависит форма в вопросе «кого? что?»: вижу <b>носильщика</b>, но вижу <b>ключ</b>. Это пригодится в падежах.']},
+  {t:'mc',title:'Кто? или что?',intro:'Определите, к какой группе относится слово.',shuf:1,items:[
+    kc('носильщик',1),kc('ключ',0),kc('сорока',1),kc('платформа',0),
+    kc('толпа',0,'название группы неодушевлённое'),kc('дерево',0,'растения неодушевлённые'),kc('русалка',1,'сказочные существа одушевлённые'),
+    kc('тишина',0),kc('кассир',1),kc('фонарь',0)]},
+  {t:'mc',title:'Допрос',intro:'Выберите нужную форму слова.',shuf:1,items:[
+    seen('носильщик','носильщика','носильщик',1),seen('фонарь','фонарь','фонаря',0),seen('кассир','кассира','кассир',1),
+    seen('вокзал','вокзал','вокзала',0),seen('сыщик','сыщика','сыщик',1),seen('перрон','перрон','перрона',0)]},
+  {t:'mc',title:'Вывод эксперта',intro:'Посмотрите на формы, которые вы выбрали.',manual:1,items:[
+    {p:'У каких слов форма в вопросе «видел кого? что?» изменилась?',o:[
+      {t:'у одушевлённых мужского рода: носильщика, кассира, сыщика',ok:1,why:'Верно. У одушевлённых слов м.р. форма «кого?» отличается от начальной формы.'},
+      {t:'у неодушевлённых: фонарь, вокзал, перрон',why:'Наоборот: у неодушевлённых форма не изменилась.'},
+      {t:'у всех слов',why:'Форма изменилась не у всех: фонарь, вокзал и перрон остались прежними.'}]}]}
+]},
+
+{name:'Опись',meta:'род существительных',icon:'tag',beat:'На крыше нашли гнездо. В нём ключ, брошь, кольцо, часы и другие вещи, пропавшие у пассажиров. Опись составлена.',steps:ROD_STEPS},
+
+{name:'Ь после шипящих',meta:'орфограмма',icon:'key',beat:'Ярлыки и объявления исправлены: вещи готовы к возврату владельцам.',steps:[
+  {t:'explain',title:'Ь после шипящих',note:'n4',go:'Проверить себя',points:[
+    'Сравните два столбика.<div class="cols"><div><b>ж.р.</b><span>ночь</span><span>мышь</span><span>дочь</span><span>ложь</span></div><div><b>м.р.</b><span>нож</span><span>ключ</span><span>малыш</span><span>плащ</span></div></div>На слух конец слов почти одинаковый, различает только род.',
+    '<b>Правило.</b> На конце существительных после ж, ч, ш, щ ь пишется у слов ж.р. и не пишется у слов м.р.',
+    '<b>Почему так.</b> После шипящих ь ничего не смягчает: ж и ш всегда твёрдые, ч и щ всегда мягкие. Здесь ь только показывает ж.р. В словах «конь» и «тень» ь, наоборот, показывает мягкость: это другой ь.',
+    '<b>Как проверять.</b> Сначала определить род, потом решать про ь. Исключений у существительных нет. Правило только для существительных: у «лишь», «спишь» другие причины, о них позже.']},
+  {t:'mc',title:'Проверка',intro:'Сначала определите род, потом решите про ь.',manual:1,items:[
+    {p:'<span class="big">мыш_</span>',o:[{t:'мышь',ok:1,why:'Мышь — ж.р. (моя мышь), после шипящей ь пишется.'},{t:'мыш',why:'Мышь — ж.р., а у слов ж.р. после шипящей ь пишется.'}]},
+    {p:'<span class="big">малыш_</span>',o:[{t:'малыш',ok:1,why:'Малыш — м.р. (мой малыш), после шипящей ь не пишется.'},{t:'малышь',why:'Малыш — м.р., а у слов м.р. ь после шипящей не пишется.'}]},
+    {p:'<span class="big">помощ_</span>',o:[{t:'помощь',ok:1,why:'Помощь — ж.р. (моя помощь), после шипящей ь пишется.'},{t:'помощ',why:'Помощь — ж.р., а у слов ж.р. после шипящей ь пишется.'}]}]},
+  {t:'mc',title:'Ярлыки',intro:'Для каждого слова определите род и решите, нужен ли ь.',items:[
+    ...sp('ноч',1,'ж.р.'),...sp('багаж',0,'м.р.'),...sp('этаж',0,'м.р.'),...sp('помощ',1,'ж.р.'),
+    ...sp('плащ',0,'м.р.'),...sp('малыш',0,'м.р.'),...sp('доч',1,'ж.р.'),...sp('реч',1,'ж.р.')]},
+  {t:'err',title:'Объявление-корректор',intro:'В объявлении на вокзале 4 ошибки с ь. Нажмите на слова с ошибками и объясните каждую.',
+   okMsg:'Все ошибки найдены. Багаж и ключ — м.р., ь не нужен; помощь и ночь — ж.р., ь нужен.',
+   tokens:[W('Внимание!'),E('Багажь','Багаж',errO('Багаж',0,1)),X('сдавайте'),X('в'),X('камеру'),X('хранения'),P('.'),
+     E('Ключь','Ключ',errO('Ключ',0,1)),X('от'),X('ячейки'),X('получите'),X('у'),X('кассира'),P('.'),
+     X('Если'),X('нужна'),E('помощ','помощь',errO('Помощь',1,0)),P(','),X('обратитесь'),X('к'),X('дежурному'),P('.'),
+     X('Камера'),X('закрыта'),X('на'),E('ноч','ночь',errO('Ночь',1,0)),P('.')]}
+]},
+
+{name:'Число',meta:'картотека',icon:'cards',beat:'Картотека заполнена: каждая находка вернётся к хозяину.',steps:[
+  {t:'explain',title:'Число',note:'n5',points:[
+    'Число — единственное или множественное. Есть слова только во множественном числе (<b>очки, ножницы, сутки, брюки, духи</b>) и только в единственном (<b>молоко, мебель, золото</b>).',
+    'Есть неправильные формы: человек — люди, ребёнок — дети, друг — друзья, дочь — дочери.',
+    'У некоторых слов две формы множественного числа с разным смыслом: <b>цветы — цвета, листы — листья, зубы — зубья</b>.',
+    'Связь с правилом про ь: во множественном числе ь исчезает и пишется -и: ночь — ночи, мышь — мыши, ключ — ключи.']},
+  {t:'mc',title:'Картотека',intro:'Выберите форму по смыслу.',shuf:1,items:[
+    pick('Осенью с деревьев падают <b>…</b>.','листья','листы','Верно. С деревьев падают листья.','Листы — это листы бумаги, картона, металла, а с деревьев падают листья.'),
+    pick('На столе у кассира лежат <b>…</b> бумаги.','листы','листья','Верно. Листы бумаги.','Листья растут на деревьях, а бумагу считают листами.'),
+    pick('На перроне женщина уронила <b>…</b>: букет роз.','цветы','цвета','Верно. Цветы — растения.','Цвета — это окраска, а букет роз состоит из цветов.'),
+    pick('Светофор по очереди меняет <b>…</b>.','цвета','цветы','Верно. Цвета — красный, жёлтый, зелёный.','Цветы растут на клумбе, а светофор меняет цвета.'),
+    pick('У часов сломались <b>…</b> шестерёнки.','зубья','зубы','Верно. У шестерёнки, пилы, расчёски — зубья.','Зубы бывают у людей и животных, а у шестерёнки зубья.'),
+    pick('Врач осмотрел пассажирке <b>…</b>.','зубы','зубья','Верно. У человека зубы.','Зубья бывают у шестерёнки или пилы, а у человека зубы.')]},
+  {t:'mc',title:'Лишнее слово',intro:'Только одно слово имеет форму единственного числа.',manual:1,items:[
+    {p:'Какое слово лишнее: ножницы, брюки, очки, сутки, шарфы?',o:[
+      {t:'ножницы',why:'«Ножницы» есть только во множественном числе.'},{t:'брюки',why:'«Брюки» есть только во множественном числе.'},{t:'очки',why:'«Очки» есть только во множественном числе.'},{t:'сутки',why:'«Сутки» есть только во множественном числе.'},
+      {t:'шарфы',ok:1,why:'Верно. Есть форма «шарф», а остальные слова только во множественном числе.'}]}]}
+]},
+
+{name:'Рапорт',meta:'синонимы и антонимы в тексте',icon:'violin',beat:'',steps:[
+  {t:'explain',title:'Рапорт',go:'К рапорту',points:[
+    'Вы пишете рапорт инспектору Иванову о том, как нашёлся ключ.',
+    'Слово «сорока» (птица) уже использовано. Дальше птицу называют другими существительными, фамилию Фёдора Сороки пишут с заглавной, а в рапорт входит пара антонимов.']},
+  {t:'gaps',title:'Рапорт инспектору',intro:'Выберите слова, которые подойдут в каждый пропуск.',
+   text:'Ключ от ячейки №7 унесла сорока. {0} схватила ключ со стола кассы и улетела на крышу. {1} давно устроила там гнездо и годами таскала туда всё, что блестит. Носильщик {2} ни при чём: его фамилия просто совпала с названием птицы. Версия о носильщике оказалась {3}, а {4} лежала в гнезде.',
+   gaps:[
+    {o:[{t:'Птица',ok:1,why:'Верно. «Птица» — родовое слово, оно называет ту же сороку другим существительным.'},{t:'Сорока',why:'Слово «сорока» уже было. Дальше птицу называют другими существительными.'},{t:'Носильщик',why:'Носильщик — человек, а ключ схватила птица.'}]},
+    {o:[{t:'Воровка',ok:1,why:'Верно. «Воровка» названа по поступку: она годами таскала чужое.'},{t:'Кассирша',why:'Кассирша — человек, а гнездо устроила птица.'},{t:'Скрипка',why:'Скрипка не может устроить гнездо.'}]},
+    {o:[{t:'Фёдор Сорока',ok:1,why:'Верно. Фамилия человека — собственное имя, она пишется с заглавной.'},{t:'Фёдор сорока',why:'Фамилия совпала с названием птицы, но это фамилия: пишется с заглавной.'},{t:'фёдор сорока',why:'Имя и фамилия человека пишутся с заглавной.'}]},
+    {o:[{t:'ложью',ok:1,why:'Верно. Версия о носильщике оказалась ложью: ключ взял не он.'},{t:'правдой',why:'Наоборот: версия о носильщике неверна.'}]},
+    {o:[{t:'правда',ok:1,why:'Верно. Правда и ложь — антонимы: ложная версия и правда в гнезде.'},{t:'ложь',why:'Здесь нужен антоним к слову «ложь»: правда.'}]}
+   ]}
+]}
+];
+
+const NOTES=[
+  {id:'n1',title:'Существительное, собственные и нарицательные',lock:'платформа 2',body:'Существительное называет предмет, человека, животное, явление, чувство, действие: кто? что? Начальная форма — именительный падеж единственного числа (ключами → ключ). Собственные пишутся с заглавной: Анна, кот Барсик, Заречье, «Заря». Нарицательные — со строчной: станция, поезд, кот. Родовое слово при названии — со строчной: станция Заречье, улица Ленина. Дни недели, месяцы, национальности и языки — со строчной: вторник, апрель, англичанин, по-английски.'},
+  {id:'n2',title:'Одушевлённые и неодушевлённые',lock:'платформа 3',body:'Одушевлённые называют людей и животных, вопрос кто? (носильщик, сорока). Неодушевлённые — всё остальное, вопрос что? (ключ, тишина). Растения, толпа, стая — что? Русалка, леший — кто? От этого зависит форма в вопросе кого? что?: вижу носильщика, вижу ключ.'},
+  {id:'n3',title:'Род',lock:'платформа 4',body:'Род: м.р., ж.р., ср.р. Скажи слово вслух со словом мой / моя / моё: мой ключ, моя ложка, моё кольцо. Слова только во множественном числе — мн.ч., рода нет (мои очки). Папа и дядя — м.р. Пальто, такси, метро — ср.р. Ь на конце род не показывает: день — м.р., тень — ж.р.'},
+  {id:'n4',title:'Ь после ж, ч, ш, щ',lock:'платформа 5',body:'На конце существительных после ж, ч, ш, щ ь пишется у ж.р. (ночь, мышь, дочь, ложь) и не пишется у м.р. (нож, ключ, малыш, плащ). Здесь ь не смягчает, а показывает ж.р. Сначала определи род.'},
+  {id:'n5',title:'Число',lock:'платформа 6',body:'Только во мн.ч.: очки, ножницы, сутки. Только в ед.ч.: молоко, мебель. Неправильные формы: человек — люди, ребёнок — дети, друг — друзья, дочь — дочери. Две формы с разным смыслом: цветы — цвета, листы — листья, зубы — зубья. Во мн.ч. ь исчезает: ночь — ночи, мышь — мыши.'},
+  {id:'n6',title:'Синонимы и антонимы',lock:'платформа 1',body:'Антонимы — слова с противоположным значением, синонимы — с близким значением, но разным оттенком. Подбирай слово той же части речи: вход — выход, а не «выходить».'}
+];
+
+const ICONS={
+  board:'<rect x="3" y="5" width="18" height="14" rx="1.5"/><path d="M6 9h5M6 13h9M6 16h4M15 9h3"/>',
+  paper:'<path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4M10 12h6M10 16h6"/>',
+  eye:'<path d="M2 12s4-6.5 10-6.5S22 12 22 12s-4 6.5-10 6.5S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+  tag:'<path d="M3.5 12.5L12 4h7a1.5 1.5 0 0 1 1.5 1.5V13l-8.5 8.5a1.5 1.5 0 0 1-2.1 0l-6.4-6.4a1.5 1.5 0 0 1 0-2.1z"/><circle cx="16" cy="8" r="1.4"/>',
+  key:'<circle cx="7.5" cy="12" r="3.8"/><path d="M11.3 12H21M17.5 12v3.5M14.5 12v2.5"/>',
+  cards:'<rect x="4" y="4.5" width="16" height="6" rx="1"/><rect x="4" y="13.5" width="16" height="6" rx="1"/><path d="M8 7.5h5M8 16.5h5"/>',
+  violin:'<path d="M12 2.5v8"/><ellipse cx="12" cy="12.5" rx="3.4" ry="2.4"/><ellipse cx="12" cy="17.5" rx="4.6" ry="3.7"/><path d="M10.5 18.5h3M12 13.5v4"/>'
+};
+const ico=n=>`<svg viewBox="0 0 24 24" aria-hidden="true">${ICONS[n]}</svg>`;
+const LUPA='<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="6.5" cy="6.5" r="4.6" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M10 10l4.4 4.4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+const SPEAKER='<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3.5L13 5v14l-5.5-4.5H4z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
+const ARROW='<svg class="arr" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8h16l-3-3M21 16H5l3 3"/></svg>';
+
+const tiles=(s,anim)=>[...s].map((c,i)=>c===' '?'<span class="ch sp"></span>':`<span class="ch${anim?' flip':''}" style="--d:${i*50}ms">${esc(c)}</span>`).join('');
+/* цвета платформ: дверцы ячеек, полоса маршрута, радужное табло и конфетти */
+const LK=['#f39a2d','#4a96f5','#9d72ee','#38c27c','#f2675c','#2ec4d2','#e8639a'];
+const LK2=['#c97a14','#2a6fc9','#7a4fd1','#1f9a5e','#cf4036','#1698a5','#c24077'];
+const RB=['#ffb21a','#5fb4ff','#b99cff','#5fe3a1','#ff8f85','#55e0ea','#ff8ebb'];
+const rainbow=s=>{let k=0;return [...s].map(c=>c===' '?'<span class="ch sp"></span>':`<span class="ch" style="color:${RB[k++%RB.length]}">${esc(c)}</span>`).join('');};
+const lockerHtml=(i,open,id)=>`<div class="lk${open?' open':''}"${id?` id="${id}"`:''} style="--lc:${LK[i]};--lc2:${LK2[i]}"><div class="in">${ico(STAGES[i].icon)}</div><div class="door"><span class="num">${i+1}</span><span class="vents"></span><span class="hole"></span></div></div>`;
+
+/* ======================= состояние ======================= */
+let S;
+const newState=()=>({phase:'brief',cont:false,si:0,pi:0,mistakes:0,hints:3,opened:[],justOpened:null,unlocked:[],stageNotes:[],noteNew:false,msg:null,refocus:null,tick:0,rev:1,mc:null,cap:null,nn:null,err:null,gaps:null});
+const step=()=>STAGES[S.si].steps[S.pi];
+const mist=()=>{S.mistakes++;paintStats();};
+const unlock=id=>{if(id&&!S.unlocked.includes(id)){S.unlocked.push(id);S.stageNotes.push(id);S.noteNew=true;}};
+
+/* ======================= сообщения ======================= */
+const LABEL={info:'Внимание',ok:'Верно',bad:'Не то'};
+function paintPA(){
+  const el=$('#pa');
+  if(!S.msg){el.hidden=true;el.innerHTML='';return;}
+  el.hidden=false;
+  el.className='pa '+S.msg.kind;
+  el.innerHTML=`${SPEAKER}<div class="tx"><span class="lb">${LABEL[S.msg.kind]}</span>${S.msg.html}</div>`;
+  el.classList.remove('pop');void el.offsetWidth;el.classList.add('pop');
+}
+function nudge(){
+  const el=$('#pa');
+  if(el.hidden)return;
+  const r=el.getBoundingClientRect(),behavior=reduceMotion()?'auto':'smooth';
+  if(r.bottom>window.innerHeight-8)window.scrollBy({top:r.bottom-window.innerHeight+16,behavior});
+  else if(r.top<0)window.scrollBy({top:r.top-16,behavior});
+}
+function say(kind,html){S.msg={kind,html};paintPA();setTimeout(nudge,0);}
+function paintStats(){$('#stats').textContent=`Ошибки ${S.mistakes} · Лупа ${S.hints}`;}
+
+/* ======================= экраны ======================= */
+const head=(title,meta)=>`<div class="sh-head"><span class="pl">${S.si+1}</span><h2 data-h tabindex="-1">${title}</h2><span class="meta">${meta}</span><span class="wm">${ico(STAGES[S.si].icon)}</span></div>`;
+const V={};
+
+V.brief=()=>`
+<div class="sh-head rb"><span class="pl">№</span><h2 data-h tabindex="-1">Дело о ключе</h2><span class="meta">бюро находок, станция Заречье</span><span class="wm">${ico('key')}</span></div>
+<div class="sh-body">
+<p class="lead">Ночью на вокзале станции Заречье пропал ключ от ячейки №7 камеры хранения. В ячейке лежит скрипка пассажирки. В протоколе написано «сорока взяла ключ», и инспектор Иванов подозревает носильщика Фёдора Сороку.</p>
+<p class="lead">Вы сыщик бюро находок. Нужно разобраться в уликах, пока не арестован невиновный.</p>
+<ul class="rules"><li>Читайте объяснения и задания внимательно: правила нужны, чтобы раскрыть дело.</li><li>Ошибки не страшны, но попадают в отчёт.</li><li>В блокноте остаются правила, которые вы открыли. Каждая платформа открывает одну ячейку.</li></ul>
+<div class="row"><button type="button" class="btn btn-go" data-act="start" data-af>Принять дело</button><button type="button" class="btn btn-line" data-act="startcont">Продолжить с платформы 4</button></div>
+<p class="task" style="margin-top:14px">Уже проходили платформы 1–3? Нажмите «Продолжить с платформы 4»: сначала короткое повторение существительных, потом род и всё, что дальше.</p>
+</div>`;
+
+V.explain=st=>{
+  const n=Math.min(S.rev,st.points.length),last=n>=st.points.length;
+  const list=st.points.slice(0,n).map((p,i)=>`<li${i===n-1&&n>1?' class="new"':''}><span class="no">${i+1}</span><div>${p}</div></li>`).join('');
+  const btn=last?`<button type="button" class="btn btn-go" data-act="exdone" data-af>${st.go||'К заданию'}</button>`:`<button type="button" class="btn btn-go" data-act="exmore" data-af>Дальше</button>`;
+  return `${head(st.title,'объяснение')}<div class="sh-body"><ol class="ex">${list}</ol><div class="row">${btn}</div></div>`;
+};
+
+function flapRow(it,rev){return `<div class="flap"><div class="fl">${tiles(it.flap)}</div>${ARROW}<div class="fl">${rev?tiles(it.a,1):tiles('?'.repeat(it.a.length))}</div></div>`;}
+V.mc=st=>{
+  const m=S.mc,it=curItem(),total=st.items.length;
+  const dots=`<div class="prog" aria-hidden="true">${st.items.map((_,i)=>`<i class="${i<m.i?'d':i===m.i?'c':''}"></i>`).join('')}</div>`;
+  const prompt=it.flap?flapRow(it,m.rev):`<p class="mc-p">${it.p}</p>`;
+  let af=false;
+  const opts=m.ord.map(k=>{
+    const o=it.o[k],dis=m.no.includes(k)||m.lock;
+    const a=!dis&&!af?(af=true,' data-af'):'';
+    const cls=['opt'];
+    if(it.mono)cls.push('mono');
+    if(m.no.includes(k))cls.push('no');
+    if(m.rev&&o.ok)cls.push('right');
+    return `<button type="button" class="${cls.join(' ')}" data-act="mc" data-k="${k}"${dis?' disabled':''}${a}>${o.t}</button>`;
+  }).join('');
+  let ctl='';
+  if(m.lock&&m.manual)ctl=`<div class="row"><button type="button" class="btn btn-go" data-act="mcnext" data-af>${m.i===total-1?'Дальше':'Следующее'}</button></div>`;
+  else if(!m.lock)ctl=`<div class="row">${it.say?'<button type="button" class="btn btn-go sm" data-act="mcsay">Проверить вслух</button>':''}<button type="button" class="btn btn-line sm" data-act="mchint">${LUPA}Лупа</button></div>`;
+  return `${head(st.title,`${m.i+1} из ${total}`)}<div class="sh-body">${st.intro?`<p class="task">${st.intro}</p>`:''}${dots}${prompt}${it.q?`<p class="mc-q">${it.q}</p>`:''}<div class="opts">${opts}</div>${ctl}</div>`;
+};
+
+function tokHtml(tokens,fn){
+  let out='';
+  tokens.forEach((t,i)=>{
+    const prev=tokens[i-1];
+    if(i>0&&t.k!=='P'&&!(prev&&prev.k==='O'))out+=' ';
+    out+=fn(t,i);
+  });
+  return out;
+}
+V.cap=st=>{
+  const c=S.cap;
+  const txt=tokHtml(st.tokens,(t,i)=>{
+    if(t.k==='K')return `<span class="lock">${esc(t.w)}</span>`;
+    if(t.k==='W'||t.k==='P'||t.k==='O')return esc(t.w);
+    const on=!!c.on[i],cls=['w'];
+    if(on)cls.push('on');
+    if(c.bad[i])cls.push('bad');
+    return `<button type="button" class="${cls.join(' ')}" data-act="cap" data-i="${i}"${c.done?' disabled':''}>${esc(on?capFirst(t.w):t.w)}</button>`;
+  });
+  const btn=c.done?'<button type="button" class="btn btn-go" data-act="capnext" data-af>Дальше</button>':'<button type="button" class="btn btn-go" data-act="capcheck">Проверить</button>';
+  return `${head(st.title,'заглавные буквы')}<div class="sh-body"><p class="task">${st.intro}</p><div class="doc">${txt}</div><div class="row">${btn}</div></div>`;
+};
+
+V.nouns=st=>{
+  const c=S.nn;
+  const txt=tokHtml(st.tokens,(t,i)=>{
+    if(t.k==='W'||t.k==='P')return esc(t.w);
+    const cls=['w'];
+    if(c.on[i])cls.push('on');
+    if(c.bad[i])cls.push('bad');
+    return `<button type="button" class="${cls.join(' ')}" data-act="nn" data-i="${i}"${c.done?' disabled':''}>${esc(t.w)}</button>`;
+  });
+  const btn=c.done?'<button type="button" class="btn btn-go" data-act="nnnext" data-af>Дальше</button>':'<button type="button" class="btn btn-go" data-act="nncheck">Проверить</button>';
+  return `${head(st.title,'повторение')}<div class="sh-body"><p class="task">${st.intro}</p><div class="doc">${txt}</div><div class="row">${btn}</div></div>`;
+};
+
+V.err=st=>{
+  const e=S.err,total=st.tokens.filter(t=>t.k==='E').length,fixedN=Object.keys(e.fixed).length;
+  const txt=tokHtml(st.tokens,(t,i)=>{
+    if(t.k==='W'||t.k==='P')return esc(t.w);
+    if(e.fixed[i]!==undefined)return `<span class="w fixed">${esc(e.fixed[i])}</span>`;
+    const cls=['w'];
+    if(e.active===i)cls.push('active');
+    return `<button type="button" class="${cls.join(' ')}" data-act="err" data-i="${i}">${esc(t.w)}</button>`;
+  });
+  let tail;
+  if(e.active!==null){
+    const t=st.tokens[e.active];
+    let af=false;
+    const opts=e.ord.map(k=>{
+      const dis=e.no.includes(k),a=!dis&&!af?(af=true,' data-af'):'';
+      return `<button type="button" class="opt${dis?' no':''}" data-act="erropt" data-k="${k}"${dis?' disabled':''}${a}>${t.o.o[k].t}</button>`;
+    }).join('');
+    tail=`<div class="q"><p class="q-t">Что не так в слове «${esc(t.w)}»?</p><div class="opts">${opts}</div></div>`;
+  }else if(fixedN===total){
+    tail='<div class="row"><button type="button" class="btn btn-go" data-act="errnext" data-af>Дальше</button></div>';
+  }else{
+    tail=`<div class="row"><span class="count">Найдено ошибок: ${fixedN} из ${total}</span></div>`;
+  }
+  return `${head(st.title,'ь после шипящих')}<div class="sh-body"><p class="task">${st.intro}</p><div class="doc">${txt}</div>${tail}</div>`;
+};
+
+function gapSentence(text,filled,active){
+  return text.split(/(\{\d\})/).map(p=>{
+    const m=p.match(/^\{(\d)\}$/);
+    if(!m)return esc(p);
+    const n=+m[1],f=filled[n];
+    if(f)return `<span class="gap ${f.cls}">${esc(f.v)}</span>`;
+    return `<span class="gap${n===active?' active':''}"><span class="ph">Фёдор Сорока</span></span>`;
+  }).join('');
+}
+V.gaps=st=>{
+  const g=S.gaps,n=st.gaps.length;
+  let tail;
+  if(g.done)tail='<div class="row"><button type="button" class="btn btn-go" data-act="gapnext" data-af>Закрыть дело</button></div>';
+  else{
+    const cur=st.gaps[g.i];let af=false;
+    const opts=g.ord.map(k=>{
+      const dis=g.no.includes(k),a=!dis&&!af?(af=true,' data-af'):'';
+      return `<button type="button" class="opt${dis?' no':''}" data-act="gap" data-k="${k}"${dis?' disabled':''}${a}>${cur.o[k].t}</button>`;
+    }).join('');
+    tail=`<p class="mc-q">Пропуск ${g.i+1} из ${n}.</p><div class="opts">${opts}</div>`;
+  }
+  return `${head(st.title,'антонимы и синонимы')}<div class="sh-body"><p class="task">${st.intro}</p><div class="doc sent">${gapSentence(st.text,g.filled,g.done?-1:g.i)}</div>${tail}</div>`;
+};
+
+V.reward=()=>{
+  const stg=STAGES[S.si];
+  const notes=S.stageNotes.map(id=>NOTES.find(n=>n.id===id).title);
+  return `<div class="sh-head"><span class="pl">${S.si+1}</span><h2 data-h tabindex="-1">Ячейка №${S.si+1} открыта</h2><span class="meta">${esc(stg.name)}: пройдено</span><span class="wm">${ico(stg.icon)}</span></div>
+<div class="sh-body"><div class="rw">${lockerHtml(S.si,false,'bigLk')}<div><p class="lead">${stg.beat}</p>${notes.length?`<p class="task">В блокноте новая запись: ${notes.map(t=>`<b>${t}</b>`).join(', ')}.</p>`:''}</div></div>
+<div class="row"><button type="button" class="btn btn-go" data-act="rwnext" data-af>На платформу ${S.si+2}</button></div></div>`;
+};
+
+V.end=()=>{
+  const rank=S.mistakes<=10?'старший сыщик':S.mistakes<=22?'сыщик':'стажёр бюро находок';
+  const items=NOTES.map((n,i)=>`<li><span class="no">${i+1}</span><span><b>${n.title}.</b> ${n.body}</span></li>`).join('');
+  return `<div class="sh-head rb"><span class="pl">7</span><h2 data-h tabindex="-1">Дело закрыто</h2><span class="meta">ячейка №7 открыта</span><span class="wm">${ico('violin')}</span></div>
+<div class="sh-body"><div class="verdict"><span class="stamp in">Дело закрыто</span></div>
+<p class="lead">Ключ найден в гнезде на крыше, скрипка возвращена Анне Мироновой, носильщик Фёдор Сорока оправдан. Протокол перечитали правильно: сорока в показаниях оказалась птицей.</p>
+<h3 class="sub">Что установлено</h3><ol class="found">${items}</ol>
+<p class="stats-line">Ошибок: ${S.mistakes}. Подсказок использовано: ${3-S.hints}. Звание: <b>${rank}</b>.</p>
+<div class="row"><button type="button" class="btn btn-go" data-act="again" data-af>Сыграть ещё раз</button></div></div>`;
+};
+
+/* ======================= отрисовка ======================= */
+function viewHtml(){
+  if(S.phase==='brief')return V.brief();
+  if(S.phase==='reward')return V.reward();
+  if(S.phase==='end')return V.end();
+  const st=step();
+  return V[st.t](st);
+}
+function nowHtml(){
+  if(S.phase==='brief')return '<span class="k">Сейчас</span>Дело открыто';
+  if(S.phase==='reward')return `<span class="k">Ячейка №${S.si+1}</span>открыта`;
+  if(S.phase==='end')return '<span class="k">Ячейка №7</span>дело закрыто';
+  const stg=STAGES[S.si];
+  return `<span class="k">Платформа ${S.si+1}</span>${esc(stg.name)} · ${esc(stg.meta)}`;
+}
+function wallHtml(){
+  let h='';
+  for(let i=0;i<STAGES.length;i++){
+    const open=S.opened.includes(i)&&S.justOpened!==i;
+    const cur=S.phase==='step'&&S.si===i;
+    h+=lockerHtml(i,open).replace('class="lk','class="lk'+(cur?' cur':''));
+  }
+  return h;
+}
+function notesHtml(){
+  return NOTES.map(n=>S.unlocked.includes(n.id)
+    ?`<li class="n"><h3>${n.title}</h3><p>${n.body}</p></li>`
+    :`<li class="n locked"><span class="bar"></span><small>Засекречено: откроется на ${n.lock.replace('платформа','платформе')}</small></li>`).join('');
+}
+function render(){
+  document.documentElement.dataset.p=(S.phase==='step'||S.phase==='reward')?String(S.si+1):'0';
+  $('#now').innerHTML=nowHtml();
+  $('#route').innerHTML=routeHtml();
+  $('#wall').innerHTML=wallHtml();
+  $('#stage').innerHTML=viewHtml();
+  $('#notesList').innerHTML=notesHtml();
+  $('#noteDot').hidden=!S.noteNew;
+  paintStats();paintPA();paintNav();
+  if(S.justOpened!==null){
+    const id=S.justOpened;S.justOpened=null;
+    const lk=$('#wall').children[id],big=$('#bigLk');
+    setTimeout(()=>{if(lk)lk.classList.add('open');if(big)big.classList.add('open');},90);
+  }
+  if(S.refocus){
+    const el=(S.refocus==='af'&&$('#stage [data-af]'))||$('#stage [data-h]');
+    if(el)el.focus({preventScroll:true});
+    S.refocus=null;
+  }
+}
+const toTop=()=>window.scrollTo({top:0,behavior:reduceMotion()?'auto':'smooth'});
+function confetti(n){
+  if(reduceMotion())return;
+  const host=$('#stage');
+  const old=host.querySelector('.confetti');if(old)old.remove();
+  const box=document.createElement('div');
+  box.className='confetti';box.setAttribute('aria-hidden','true');
+  const colors=RB.concat(LK);
+  for(let i=0;i<n;i++){
+    const p=document.createElement('i');
+    p.style.left=(Math.random()*100)+'%';
+    p.style.background=colors[i%colors.length];
+    p.style.setProperty('--dx',(Math.random()*160-80)+'px');
+    p.style.setProperty('--r',(Math.random()*720-360)+'deg');
+    p.style.animationDelay=(Math.random()*.6)+'s';
+    p.style.animationDuration=(1.6+Math.random()*1.2)+'s';
+    box.appendChild(p);
+  }
+  host.appendChild(box);
+  setTimeout(()=>box.remove(),3600);
+}
+const routeHtml=()=>LK.map((c,i)=>`<span class="${S.opened.includes(i)?'d':S.phase==='step'&&S.si===i?'c':''}" style="--rc:${c}"></span>`).join('');
+
+/* ======================= ход игры ======================= */
+function setStageSteps(){
+  const st=STAGES[3];
+  st.steps=S.cont?RECAP_STEPS.concat(ROD_STEPS):ROD_STEPS;
+  st.name=S.cont?'Повторение и род':'Опись';
+  st.meta=S.cont?'существительные и род':'род существительных';
+}
+function enterStep(){
+  S.tick++;S.rev=1;
+  const st=step();
+  if(st.t==='mc'){
+    S.mc={i:0,no:[],lock:false,rev:false,manual:false,order:st.shuf?shuffle(st.items.map((_,k)=>k)):st.items.map((_,k)=>k),ord:[]};
+    prepItem();
+  }
+  if(st.t==='cap')S.cap={on:{},bad:{},checks:0,done:false};
+  if(st.t==='nouns')S.nn={on:{},bad:{},checks:0,done:false};
+  if(st.t==='err')S.err={fixed:{},active:null,no:[],ord:[]};
+  if(st.t==='gaps'){S.gaps={i:0,filled:[],no:[],ord:[],done:false};prepGap();}
+}
+function nextStep(){
+  const stg=STAGES[S.si];
+  if(S.pi<stg.steps.length-1){S.pi++;enterStep();S.msg=null;S.refocus='h';render();toTop();}
+  else finishStage();
+}
+function finishStage(){
+  S.opened.push(S.si);S.justOpened=S.si;
+  S.phase=S.si===STAGES.length-1?'end':'reward';
+  S.msg=null;S.refocus='h';render();toTop();
+  confetti(S.phase==='end'?90:40);
+}
+function rewardNext(){
+  S.si++;S.pi=0;S.phase='step';S.stageNotes=[];
+  enterStep();S.msg=null;S.refocus='h';render();toTop();
+}
+
+/* ======================= переход по слайдам (стрелки) =======================
+   Слайды идут по порядку: вступление, шаги каждой платформы, ячейка (на последней платформе финал).
+   Стрелка вперёд на странице объяснения сначала показывает следующий пункт, потом уходит дальше.
+   Стрелка назад всегда ведёт на предыдущий слайд (объяснение открывается целиком). */
+const stepsOf=si=>si===3?(S.cont?RECAP_STEPS.concat(ROD_STEPS):ROD_STEPS):STAGES[si].steps;
+const stageName=si=>si===3?(S.cont?'Повторение и род':'Опись'):STAGES[si].name;
+function slides(){
+  const L=[{k:'brief',t:'Дело открыто'}];
+  STAGES.forEach((stg,si)=>{
+    stepsOf(si).forEach((s,pi)=>L.push({k:'step',si,pi,t:s.title}));
+    L.push(si===STAGES.length-1?{k:'end',si,t:'Дело закрыто'}:{k:'reward',si,t:`Ячейка №${si+1} открыта`});
+  });
+  return L;
+}
+function curIdx(L){
+  if(S.phase==='brief')return 0;
+  if(S.phase==='end')return L.length-1;
+  const i=L.findIndex(x=>S.phase==='reward'?(x.k==='reward'&&x.si===S.si):(x.k==='step'&&x.si===S.si&&x.pi===S.pi));
+  return i<0?0:i;
+}
+function goSlide(idx,dir){
+  const L=slides();
+  idx=Math.max(0,Math.min(L.length-1,idx));
+  const T=L[idx];
+  setStageSteps();
+  for(let i=0;i<idx;i++){                       /* всё, что осталось позади, считается пройденным */
+    const x=L[i];
+    if(x.k==='step'){const n=stepsOf(x.si)[x.pi].note;if(n)unlock(n);}
+    else if((x.k==='reward'||x.k==='end')&&!S.opened.includes(x.si))S.opened.push(x.si);
+  }
+  S.msg=null;
+  let first=false;
+  if(T.k==='brief')S.phase='brief';
+  else if(T.k==='step'){
+    S.phase='step';S.si=T.si;S.pi=T.pi;S.stageNotes=[];
+    enterStep();
+    const st=step();
+    if(st.t==='explain'&&dir<0)S.rev=st.points.length;
+  }else{
+    const ns=stepsOf(T.si).map(s=>s.note).filter(Boolean);
+    ns.forEach(unlock);
+    S.phase=T.k;S.si=T.si;S.stageNotes=ns;
+    first=!S.opened.includes(T.si);
+    if(first)S.opened.push(T.si);
+    S.justOpened=T.si;
+  }
+  render();toTop();
+  if(first)confetti(T.k==='end'?90:40);
+}
+function slideStep(dir){
+  const L=slides(),i=curIdx(L);
+  if(S.phase==='step'){
+    const st=step();
+    if(st.t==='explain'&&dir>0&&S.rev<st.points.length){S.rev++;render();return;}
+  }
+  goSlide(i+dir,dir);
+}
+function renderToc(L,cur){
+  let h='',last=-2;
+  L.forEach((x,k)=>{
+    const g=x.k==='brief'?-1:x.si;
+    if(g!==last){
+      last=g;
+      h+=g===-1?'<h3><i style="--rc:#bd9650"></i>Вступление</h3>'
+        :`<h3><i style="--rc:${LK[g]}"></i>Платформа ${g+1} · ${esc(stageName(g))}${S.opened.includes(g)?' ✓':''}</h3>`;
+    }
+    h+=`<button type="button" data-act="goto" data-i="${k}"${k===cur?' class="cur" aria-current="step"':''}><span class="no">${k+1}</span><span>${esc(x.t)}</span></button>`;
+  });
+  $('#toc').innerHTML=h;
+  const c=$('#toc .cur');
+  if(c)$('#toc').scrollTop=Math.max(0,c.offsetTop-90);
+}
+function toggleToc(force){
+  const el=$('#toc'),open=force===undefined?el.hidden:force;
+  el.hidden=!open;
+  $('#navMid').setAttribute('aria-expanded',String(open));
+  if(open){const L=slides();renderToc(L,curIdx(L));}
+}
+function paintNav(){
+  const L=slides(),i=curIdx(L),T=L[i];
+  $('#navPrev').disabled=i===0;
+  $('#navNext').disabled=i===L.length-1;
+  $('#navNo').textContent=`${i+1} / ${L.length}`;
+  $('#navTitle').textContent=T.k==='step'?`Платформа ${T.si+1} · ${T.t}`:T.t;
+  if(!$('#toc').hidden)renderToc(L,i);
+}
+
+/* объяснение */
+function onExMore(){S.rev++;S.refocus='af';render();}
+function onExDone(){const st=step();unlock(st.note);nextStep();}
+
+/* выбор ответа */
+function curItem(){const st=step();return st.items[S.mc.order[S.mc.i]];}
+function prepItem(){
+  const m=S.mc,it=curItem();
+  m.no=[];m.lock=false;m.rev=false;m.manual=false;
+  m.ord=it.fix?it.o.map((_,k)=>k):shuffle(it.o.map((_,k)=>k));
+}
+function mcAdvance(){
+  const st=step(),m=S.mc;
+  if(m.i>=st.items.length-1){nextStep();return;}
+  m.i++;prepItem();S.msg=null;S.refocus='af';render();
+}
+function onMC(k){
+  const st=step(),m=S.mc,it=curItem(),o=it.o[k];
+  if(m.lock)return;
+  if(o.ok){
+    m.rev=true;m.lock=true;m.manual=!!(it.trap||st.manual);
+    say('ok',o.why||'Верно.');
+    S.refocus=m.manual?'af':null;render();
+    if(!m.manual){const tk=S.tick,i=m.i;setTimeout(()=>{if(S.tick===tk&&S.mc&&S.mc.i===i&&S.mc.lock)mcAdvance();},it.flap?(st.delay||1700):(st.delay||1100));}
+  }else{
+    mist();m.no.push(k);
+    if(it.o.length-m.no.length<=1){
+      const right=it.o.find(x=>x.ok);
+      m.rev=true;m.lock=true;m.manual=true;
+      say('bad',`${o.why} Правильный ответ: <b>${right.t}</b>.`);
+      S.refocus='af';render();
+    }else{say('bad',o.why);S.refocus='af';render();}
+  }
+}
+function onMCHint(){
+  const st=step(),m=S.mc,it=curItem();
+  if(S.hints<1){say('info','Подсказки закончились.');return;}
+  const avail=m.ord.filter(k=>!m.no.includes(k));
+  const wrong=avail.filter(k=>!it.o[k].ok);
+  if(avail.length>2&&wrong.length){m.no.push(wrong[0]);S.hints--;say('info','Лупа убрала один лишний вариант.');}
+  else{S.hints--;say('info',it.h||st.h||'Вспомните правило: оно записано в блокноте.');}
+  S.refocus='af';render();
+}
+
+function onMCSay(){
+  const w=curItem().say;
+  say('info',`Скажите вслух: <b>мой ${w}</b>, <b>моя ${w}</b>, <b>моё ${w}</b>, <b>мои ${w}</b>. Какое сочетание звучит правильно?`);
+}
+
+/* повторение: найти существительные */
+function onNN(i,b){
+  const c=S.nn;
+  if(c.done)return;
+  c.on[i]=!c.on[i];delete c.bad[i];
+  b.classList.toggle('on',c.on[i]);b.classList.remove('bad');
+}
+function onNNCheck(){
+  const st=step(),c=S.nn,wrong=[];
+  st.tokens.forEach((t,i)=>{if(t.k==='N'||t.k==='Z'){if((t.k==='N')!==!!c.on[i])wrong.push(i);}});
+  if(!wrong.length){c.done=true;c.bad={};say('ok',st.okMsg);S.refocus='af';render();return;}
+  c.checks++;mist();c.bad={};wrong.forEach(i=>c.bad[i]=1);
+  if(c.checks>=3){
+    st.tokens.forEach((t,i)=>{if(t.k==='N'||t.k==='Z')c.on[i]=t.k==='N';});
+    c.bad={};c.done=true;
+    say('bad','Три проверки подряд с ошибками. Правильный вариант показан на экране: существительные отвечают на вопросы кто? что?');
+    S.refocus='af';render();return;
+  }
+  const list=wrong.slice(0,3).map(i=>{
+    const t=st.tokens[i];
+    return t.k==='N'?`<b>${esc(t.w)}</b>: отвечает на вопрос ${t.q}? Это существительное.`:`<b>${esc(t.w)}</b>: ${t.r}`;
+  }).join('<br>');
+  say('bad',`Ошибок: ${wrong.length}. Они подсвечены красным.<br>${list}`);
+  render();
+}
+
+/* заглавные буквы */
+function onCap(i,b){
+  const c=S.cap,t=step().tokens[i];
+  if(c.done)return;
+  c.on[i]=!c.on[i];delete c.bad[i];
+  b.classList.toggle('on',c.on[i]);b.classList.remove('bad');
+  b.textContent=c.on[i]?capFirst(t.w):t.w;
+}
+function onCapCheck(){
+  const st=step(),c=S.cap,wrong=[];
+  st.tokens.forEach((t,i)=>{if(t.k==='L'||t.k==='C'){if((t.k==='C')!==!!c.on[i])wrong.push(i);}});
+  if(!wrong.length){c.done=true;c.bad={};say('ok',st.okMsg);S.refocus='af';render();return;}
+  c.checks++;mist();c.bad={};wrong.forEach(i=>c.bad[i]=1);
+  if(c.checks>=3){
+    st.tokens.forEach((t,i)=>{if(t.k==='L'||t.k==='C')c.on[i]=t.k==='C';});
+    c.bad={};c.done=true;
+    say('bad','Три проверки подряд с ошибками. Правильный вариант показан на экране: сверьте его с правилами в блокноте.');
+    S.refocus='af';render();return;
+  }
+  const list=wrong.slice(0,3).map(i=>{
+    const t=st.tokens[i],cur=!!c.on[i];
+    const r=t.r||(cur?'Это нарицательное слово, оно пишется со строчной.':'Это название, оно пишется с заглавной.');
+    return `<b>${esc(cur?capFirst(t.w):t.w)}</b>: ${r}`;
+  }).join('<br>');
+  say('bad',`Ошибок: ${wrong.length}. Они подсвечены красным.<br>${list}`);
+  render();
+}
+
+/* поиск ошибок с ь */
+function onErr(i,b){
+  const st=step(),e=S.err,t=st.tokens[i];
+  if(e.fixed[i]!==undefined)return;
+  if(t.k==='E'){
+    e.active=i;e.no=[];e.ord=shuffle(t.o.o.map((_,k)=>k));
+    say('info',`Нашли: «${esc(t.w)}». Объясните, что здесь не так.`);
+    S.refocus='af';render();return;
+  }
+  mist();b.classList.remove('miss');void b.offsetWidth;b.classList.add('miss');
+  say('bad',`В слове «${esc(t.w)}» ошибки с ь нет.`);
+}
+function onErrOpt(k){
+  const st=step(),e=S.err,i=e.active,t=st.tokens[i],o=t.o.o[k];
+  if(o.ok){
+    e.fixed[i]=t.fix;e.active=null;
+    const total=st.tokens.filter(x=>x.k==='E').length,left=total-Object.keys(e.fixed).length;
+    say('ok',`${esc(t.w)} → ${esc(t.fix)}. ${o.why} ${left?`Осталось найти: ${left}.`:st.okMsg}`);
+    S.refocus=left?null:'af';
+  }else{
+    mist();e.no.push(k);say('bad',o.why);S.refocus='af';
+  }
+  render();
+}
+function onErrNext(){nextStep();}
+
+/* рапорт */
+function prepGap(){
+  const st=step(),g=S.gaps,cur=st.gaps[g.i];
+  g.no=[];g.ord=shuffle(cur.o.map((_,k)=>k));
+}
+function onGap(k){
+  const st=step(),g=S.gaps,cur=st.gaps[g.i],o=cur.o[k];
+  if(o.ok){
+    g.filled[g.i]={v:o.t,cls:'done'};say('ok',o.why);
+  }else{
+    mist();g.no.push(k);
+    if(cur.o.length-g.no.length>1){say('bad',o.why);S.refocus='af';render();return;}
+    const right=cur.o.find(x=>x.ok);
+    g.filled[g.i]={v:right.t,cls:'revealed'};say('bad',`${o.why} Правильный ответ: <b>${right.t}</b>.`);
+  }
+  if(g.i<st.gaps.length-1){g.i++;prepGap();}else g.done=true;
+  S.refocus='af';render();
+}
+
+/* блокнот */
+function toggleNotes(force){
+  const el=$('#notes'),open=force===undefined?!el.classList.contains('open'):force;
+  el.classList.toggle('open',open);
+  $('#scrim').hidden=!open;
+  $('#btnNotes').setAttribute('aria-expanded',String(open));
+  if(open){S.noteNew=false;$('#noteDot').hidden=true;$('#notesClose').focus();}
+  else $('#btnNotes').focus();
+}
+
+/* ======================= события ======================= */
+document.addEventListener('click',e=>{
+  if(!$('#toc').hidden&&!e.target.closest('#toc,#navMid'))toggleToc(false);
+  const b=e.target.closest('[data-act]');
+  if(!b||b.disabled)return;
+  switch(b.dataset.act){
+    case 'notes':toggleNotes();break;
+    case 'prev':slideStep(-1);break;
+    case 'next':slideStep(1);break;
+    case 'toc':toggleToc();break;
+    case 'goto':{const k=+b.dataset.i,cur=curIdx(slides());toggleToc(false);goSlide(k,k>cur?1:-1);break;}
+    case 'start':S.cont=false;S.phase='step';S.si=0;S.pi=0;setStageSteps();enterStep();S.refocus='h';render();toTop();break;
+    case 'startcont':S.cont=true;S.opened=[0,1,2];S.unlocked=['n1','n2','n6'];S.stageNotes=[];S.si=3;S.pi=0;S.phase='step';setStageSteps();enterStep();S.refocus='h';render();toTop();break;
+    case 'nn':onNN(+b.dataset.i,b);break;
+    case 'nncheck':onNNCheck();break;
+    case 'nnnext':nextStep();break;
+    case 'mcsay':onMCSay();break;
+    case 'exmore':onExMore();break;
+    case 'exdone':onExDone();break;
+    case 'mc':onMC(+b.dataset.k);break;
+    case 'mchint':onMCHint();break;
+    case 'mcnext':mcAdvance();break;
+    case 'cap':onCap(+b.dataset.i,b);break;
+    case 'capcheck':onCapCheck();break;
+    case 'capnext':nextStep();break;
+    case 'err':onErr(+b.dataset.i,b);break;
+    case 'erropt':onErrOpt(+b.dataset.k);break;
+    case 'errnext':onErrNext();break;
+    case 'gap':onGap(+b.dataset.k);break;
+    case 'gapnext':nextStep();break;
+    case 'rwnext':rewardNext();break;
+    case 'again':S=newState();S.tick=Date.now();render();S.refocus=null;toTop();break;
+  }
+});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){
+    if(!$('#toc').hidden)toggleToc(false);
+    else if($('#notes').classList.contains('open'))toggleNotes(false);
+    return;
+  }
+  if((e.key==='ArrowRight'||e.key==='ArrowLeft')&&!e.altKey&&!e.ctrlKey&&!e.metaKey&&!e.shiftKey
+     &&!$('#notes').classList.contains('open')&&!/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)){
+    e.preventDefault();slideStep(e.key==='ArrowRight'?1:-1);
+  }
+});
+
+$('#title').innerHTML=rainbow('ДЕЛО О КЛЮЧЕ');
+S=newState();
+render();
+})();
+</script>
+</body>
+</html>

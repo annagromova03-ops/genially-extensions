@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Радиограмма с маяка</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=PT+Sans:wght@400;700&family=Rubik:wght@500;600;700;800&display=swap">
+<style>
+/* Layout concept: a sunny harbour. The page header is an illustrated sea scene: a lighthouse on the rocks, layered waves, clouds and gulls. The lesson ship sails from the harbour towards the lighthouse as steps are finished, and a buoy lights up for every finished step. Under the scene every step is a white log sheet with a wavy header edge; the radiogram is a paper tape; replies come as messages from the ship's bridge. */
+*{box-sizing:border-box}
+:root{
+  color-scheme:light;
+  --gutter:clamp(14px,4vw,34px);
+  --deep:#0c3a6b;--abyss:#082a4f;
+  --lamp:#ffc933;--lamp-deep:#c58f00;--brass:#d6a64a;--brass-deep:#8a6416;
+  --page:#e3f4fa;--paper:#fffdf6;--line:#cfe3ec;--ink:#10294a;--ink-soft:#4b6580;
+  --c:#0f8fb0;--c-deep:#0a627b;--ct:#dff4fa;
+  --ok:#17935f;--bad:#d8433a;--focus:#1d6fe0;
+  --f-head:"Rubik","Segoe UI",system-ui,sans-serif;
+  --f-ui:"PT Sans","Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+  --f-mono:"IBM Plex Mono","Courier New",Courier,monospace;
+  --w-far:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 60' preserveAspectRatio='none'%3E%3Cpath d='M0 28Q50 6 100 28T200 28T300 28T400 28T500 28T600 28V60H0Z' fill='%2358b6ea'/%3E%3Cpath d='M0 28Q50 6 100 28T200 28T300 28T400 28T500 28T600 28' fill='none' stroke='%23fff' stroke-opacity='.6' stroke-width='3'/%3E%3C/svg%3E");
+  --w-mid:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 60' preserveAspectRatio='none'%3E%3Cpath d='M0 30Q75 2 150 30T300 30T450 30T600 30V60H0Z' fill='%232d8ccc'/%3E%3Cpath d='M0 30Q75 2 150 30T300 30T450 30T600 30' fill='none' stroke='%23fff' stroke-opacity='.5' stroke-width='3'/%3E%3C/svg%3E");
+  --w-near:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 60' preserveAspectRatio='none'%3E%3Cpath d='M0 26Q50 4 100 26T200 26T300 26T400 26T500 26T600 26V60H0Z' fill='%2314609f'/%3E%3Cpath d='M0 26Q50 4 100 26T200 26T300 26T400 26T500 26T600 26' fill='none' stroke='%23fff' stroke-opacity='.3' stroke-width='3'/%3E%3C/svg%3E");
+  --w-sh1:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 60' preserveAspectRatio='none'%3E%3Cpath d='M0 30Q75 4 150 30T300 30T450 30T600 30V60H0Z' fill='%234aa9e0'/%3E%3C/svg%3E");
+  --w-sh2:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 60' preserveAspectRatio='none'%3E%3Cpath d='M0 26Q50 4 100 26T200 26T300 26T400 26T500 26T600 26V60H0Z' fill='%231d6fb2'/%3E%3C/svg%3E");
+  --w-paper:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 12' preserveAspectRatio='none'%3E%3Cpath d='M0 12V7Q7.5 1 15 7T30 7T45 7T60 7V12Z' fill='%23fffdf6'/%3E%3C/svg%3E");
+  --cloud:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 50'%3E%3Cg fill='%23fff'%3E%3Ccircle cx='32' cy='30' r='16'/%3E%3Ccircle cx='58' cy='22' r='20'/%3E%3Ccircle cx='86' cy='30' r='15'/%3E%3Crect x='24' y='28' width='72' height='18' rx='9'/%3E%3C/g%3E%3C/svg%3E");
+}
+/* у каждого блока урока свой цвет: шапка листа, кнопки, ответы и подсветка подхватывают его */
+html[data-b="2"]{--c:#0a9aa3;--c-deep:#066f76;--ct:#d9f4f4}
+html[data-b="3"]{--c:#d4651a;--c-deep:#9a4510;--ct:#fff0e3}
+html[data-b="4"]{--c:#2f6fda;--c-deep:#1f4aa6;--ct:#e3ecff}
+[hidden]{display:none!important}
+html{height:100%;background:var(--page)}
+body{position:relative;min-height:100%;margin:0;padding-inline:var(--gutter);padding-block:0 132px;color:var(--ink);font:400 17px/1.55 var(--f-ui);background-color:var(--page);background-image:linear-gradient(rgba(16,100,160,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(16,100,160,.06) 1px,transparent 1px);background-size:48px 48px;-webkit-text-size-adjust:100%}
+h1,h2,h3,p,ol,ul{margin:0}
+.wrap{position:relative;z-index:1;max-width:980px;margin:0 auto;padding-top:16px}
+
+/* волны у нижнего края страницы */
+.shore{position:fixed;z-index:0;left:0;right:0;bottom:0;height:84px;overflow:hidden;pointer-events:none}
+.shore .wv{background-size:600px 100%}
+.wv4{bottom:0;height:84px;background-image:var(--w-sh1);animation-duration:30s}
+.wv5{bottom:-8px;height:58px;background-image:var(--w-sh2);animation-duration:19s;animation-direction:reverse}
+
+/* ---------- сцена: маяк, море, корабль ---------- */
+.scene{--sunw:clamp(46px,7.4vw,74px);position:relative;isolation:isolate;height:clamp(236px,31vw,292px);overflow:hidden;border:3px solid var(--deep);border-radius:18px;box-shadow:0 6px 0 var(--abyss),0 18px 32px rgba(8,42,79,.25);background:linear-gradient(180deg,#3ba7e6 0%,#7fd0f5 42%,#d6f3fb 58%,#d6f3fb 100%)}
+.sun{position:absolute;z-index:0;left:55%;top:12%;width:var(--sunw);aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 38% 36%,#fffbd0,#ffdc55 52%,#ffbb00);box-shadow:0 0 0 clamp(8px,1.4vw,14px) rgba(255,236,150,.38),0 0 0 clamp(18px,3vw,30px) rgba(255,236,150,.2),0 0 64px 22px rgba(255,238,170,.5)}
+.cl{position:absolute;z-index:0;left:42%;height:clamp(26px,4.2vw,46px);aspect-ratio:120/50;background:var(--cloud) center/contain no-repeat;opacity:0;animation:cloud 70s linear infinite}
+.c1{top:9%;animation-delay:-22s}
+.c2{top:33%;height:clamp(20px,3.2vw,34px);animation-duration:96s;animation-delay:-60s}
+.c3{top:19%;height:clamp(22px,3.6vw,38px);animation-duration:84s;animation-delay:-6s}
+.gull{position:absolute;z-index:2;width:clamp(16px,2.6vw,26px);opacity:.78;animation:glide 16s ease-in-out infinite alternate}
+.gull path{animation:flap 1.6s ease-in-out infinite;transform-origin:50% 100%;transform-box:fill-box}
+.g1{left:42%;top:31%}
+.g2{left:49%;top:22%;width:clamp(12px,2vw,19px);animation-delay:-6s}
+.g3{left:27%;top:39%;width:clamp(11px,1.8vw,16px);animation-delay:-11s}
+.sea{position:absolute;z-index:1;left:0;right:0;bottom:0;height:43%;background:linear-gradient(180deg,#58b6ea 0%,#2d8ccc 38%,#14609f 100%)}
+.wv{position:absolute;left:0;width:calc(100% + 600px);background-repeat:repeat-x;background-position:left bottom;background-size:600px 100%;animation:wv 24s linear infinite;pointer-events:none}
+.wv1{z-index:2;bottom:calc(43% - 17px);height:34px;background-image:var(--w-far)}
+.wv2{z-index:4;bottom:calc(11% - 4px);height:52px;background-image:var(--w-mid);animation-duration:16s;animation-direction:reverse}
+.wv3{z-index:5;bottom:-12px;height:50px;background-image:var(--w-near);animation-duration:11s}
+.lh{position:absolute;z-index:3;right:1.5%;bottom:2%;height:91%;width:auto;aspect-ratio:110/250;overflow:visible}
+.beam{animation:beam 6s ease-in-out infinite}
+.beam.br{animation-delay:-3s}
+.lamp{transform-origin:55px 51px;animation:lamp 3s ease-in-out infinite}
+.scene.arrived .beam{animation:none;opacity:.95}
+.scene.arrived .lamp{animation-duration:1.1s}
+
+/* путь корабля: буи загораются, корабль плывёт к маяку */
+.lane{position:absolute;z-index:3;left:0;right:0;bottom:21%;height:0;pointer-events:none}
+.buoys{position:absolute;z-index:6;left:0;right:0;bottom:20%;height:0;pointer-events:none}
+.bo{position:absolute;bottom:0;width:17px;height:17px;margin-left:-8.5px;border-radius:50%;background:linear-gradient(#fff 0 34%,#e24a3b 34% 66%,#fff 66%);border:2.5px solid var(--deep);box-shadow:0 3px 0 rgba(8,42,79,.35);animation:buoy 3s ease-in-out infinite;animation-delay:var(--d,0s);transition:background .4s}
+.bo.d{background:var(--lamp);box-shadow:0 0 0 3px rgba(255,201,51,.5),0 0 14px 4px rgba(255,214,90,.85)}
+.bo.c{box-shadow:0 0 0 4px rgba(255,255,255,.9),0 3px 0 4px rgba(8,42,79,.25)}
+.glint{position:absolute;z-index:1;left:calc(55% + var(--sunw)/2);top:60%;width:calc(var(--sunw)*1.25);transform:translateX(-50%);pointer-events:none;animation:glint 4s ease-in-out infinite}
+.far{position:absolute;z-index:1;left:28%;top:calc(57% - 27px);width:clamp(22px,3.4vw,34px);pointer-events:none}
+.ship{position:absolute;bottom:-9px;left:5%;width:clamp(58px,9.6vw,98px);transform:translateX(-50%);transition:left 1.2s cubic-bezier(.45,.05,.25,1)}
+.ship svg{display:block;width:100%;height:auto;overflow:visible;transform-origin:50% 90%;animation:bob 3.4s ease-in-out infinite}
+
+/* текст на сцене */
+.sc-text{position:absolute;z-index:6;left:clamp(14px,3vw,28px);top:clamp(12px,2.4vw,20px);display:grid;gap:8px;justify-items:start;max-width:min(62%,560px)}
+.sc-row{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px}
+.plate{padding:4px 10px;background:linear-gradient(180deg,#f3d58a,#d6a64a);color:#3a2a06;font:700 11px/1 var(--f-head);letter-spacing:.16em;border-radius:4px;box-shadow:0 2px 0 var(--brass-deep),inset 0 1px 0 rgba(255,255,255,.55)}
+.sc-stats{padding:3px 10px;background:rgba(255,255,255,.9);color:var(--deep);border-radius:99px;font:600 11.5px/1.4 var(--f-head);letter-spacing:.03em}
+.sc-title{font:800 clamp(22px,5.2vw,44px)/1.02 var(--f-head);letter-spacing:.01em;text-transform:uppercase;color:#fff;text-shadow:0 2px 0 #0c5fa0,0 4px 0 var(--deep),0 9px 14px rgba(8,42,79,.35);text-wrap:balance}
+
+/* где мы сейчас */
+.now{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;margin:14px 2px 0;font:600 clamp(12px,2.4vw,14px)/1.35 var(--f-head);color:var(--deep)}
+.now .k{padding:3px 10px;background:var(--deep);color:#fff;border-radius:99px;font-size:.88em;letter-spacing:.06em;text-transform:uppercase}
+
+/* buttons */
+.btn{all:unset;box-sizing:border-box;cursor:pointer;display:inline-flex;align-items:center;gap:8px;min-height:46px;padding:0 20px;font:700 14px/1 var(--f-head);letter-spacing:.07em;text-transform:uppercase;text-align:center;border-radius:12px}
+.btn:focus-visible,.opt:focus-visible,.gp:focus-visible,.sgm button:focus-visible,.seg button:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.btn-go{background:var(--c);color:#fff;box-shadow:0 4px 0 var(--c-deep)}
+.btn-go:hover{filter:brightness(1.07)}
+.btn-go:active{transform:translateY(3px);box-shadow:0 1px 0 var(--c-deep)}
+.btn-line{border:2px solid var(--c);color:var(--c-deep);background:#fff}
+.btn-line:hover:not(:disabled){background:var(--ct)}
+.btn-line:disabled{opacity:.4;cursor:default}
+.btn.sm{min-height:38px;padding:0 14px;font-size:12px}
+
+/* лист-журнал */
+.sheet{position:relative;margin-top:12px;background:var(--paper);color:var(--ink);border:3px solid var(--c);border-radius:16px;box-shadow:0 6px 0 var(--c-deep),0 18px 34px rgba(8,42,79,.16);overflow:hidden}
+.sh-head{position:relative;overflow:hidden;display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding:12px clamp(16px,3vw,28px) 24px;background:var(--c);color:#fff}
+.sh-head.hero{background:linear-gradient(90deg,#0a9aa3,#2f6fda 55%,#d4651a)}
+.sh-head::after{content:"";position:absolute;z-index:1;left:0;right:0;bottom:-1px;height:12px;background:var(--w-paper) repeat-x left bottom/60px 12px}
+.sh-head>*{position:relative;z-index:2}
+.sh-head .wm{position:absolute;z-index:0;right:14px;top:42%;width:58px;height:58px;transform:translateY(-50%) rotate(-6deg);opacity:.25;pointer-events:none}
+.sh-head .wm svg{width:100%;height:100%}
+.pl{display:inline-grid;place-items:center;min-width:34px;height:34px;padding:0 4px;background:#fff;color:var(--c-deep);font:800 17px/1 var(--f-head);border-radius:50%;box-shadow:0 0 0 3px var(--brass),0 2px 0 3px var(--brass-deep)}
+.sh-head h2{font:800 clamp(16px,3vw,22px)/1.15 var(--f-head);letter-spacing:.03em;text-transform:uppercase;text-wrap:balance;outline:none}
+.sh-head .meta{margin-left:auto;margin-right:70px;font:500 12px/1.3 var(--f-head);letter-spacing:.04em;opacity:.92}
+.sh-body{padding:clamp(16px,3vw,28px)}
+.lead{max-width:62ch;margin-bottom:12px;font-size:18px}
+.task{max-width:66ch;margin-bottom:14px;color:var(--ink-soft)}
+.rules{display:grid;gap:9px;margin:6px 0 22px;padding:0;list-style:none}
+.rules li{display:flex;gap:11px}
+.rules li::before{content:"";flex:none;width:18px;height:18px;margin-top:.32em;border:2px solid var(--deep);border-radius:50%;background:radial-gradient(circle,var(--paper) 0 24%,transparent 26%),conic-gradient(#e24a3b 0 25%,#fff 0 50%,#e24a3b 0 75%,#fff 0)}
+.row{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;margin-top:14px}
+.sub{margin:16px 0 8px;font:700 14px/1 var(--f-head);letter-spacing:.1em;text-transform:uppercase;color:var(--c-deep)}
+
+/* объяснение */
+.ex{display:grid;gap:14px;margin:0 0 6px;padding:0;list-style:none}
+.ex li{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;align-items:start;font-size:18px;line-height:1.6}
+.ex .no{display:grid;place-items:center;width:28px;height:28px;margin-top:2px;background:var(--c);color:#fff;font:800 14px/1 var(--f-head);border-radius:50%}
+.ex li.new{animation:rise .35s ease-out}
+.kt-wrap{margin:10px 0 4px;overflow-x:auto}
+.kt{width:100%;margin:0;border-collapse:collapse;font-size:16px;background:#fff;border:1px solid var(--line)}
+.kt th,.kt td{padding:8px 12px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+.kt th{background:var(--ct);font:700 12.5px/1.2 var(--f-head);letter-spacing:.08em;text-transform:uppercase;color:var(--c-deep)}
+.kt tr:last-child td{border-bottom:0}
+.kt .sg{display:inline-grid;place-items:center;min-width:1.5em;height:1.5em;padding:0 .2em;background:var(--lamp);color:#3a2a06;border-radius:50%;font:700 15px/1 var(--f-mono);box-shadow:0 2px 0 var(--lamp-deep)}
+
+/* выбор ответа */
+.prog{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px}
+.prog i{width:22px;height:7px;background:var(--line);border-radius:4px}
+.prog i.d{background:var(--c)}
+.prog i.c{background:var(--lamp);outline:2px solid var(--deep)}
+.mc-p{margin:4px 0 6px;font-size:19px}
+.big{font:500 clamp(22px,4.6vw,32px)/1.35 var(--f-mono)}
+.cue{margin:0 0 8px;color:var(--ink-soft);font-style:italic}
+.slot{display:inline-block;min-width:1.5em;margin-left:.2em;padding:0 .15em;border-bottom:3px dashed var(--c);text-align:center;color:var(--c-deep)}
+.slot.on{border-bottom-style:solid;color:#3a2a06;background:var(--lamp);border-radius:8px;font-weight:700}
+.opts{display:flex;flex-wrap:wrap;gap:10px;margin-top:6px}
+.opt{all:unset;box-sizing:border-box;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;min-height:50px;padding:8px 18px;background:#fff;color:var(--ink);border:2px solid var(--c);border-radius:12px;font:700 17px/1.3 var(--f-ui);box-shadow:0 3px 0 var(--c-deep)}
+.opt:hover:not(:disabled){background:var(--ct)}
+.opt:active:not(:disabled){transform:translateY(2px);box-shadow:0 1px 0 var(--c-deep)}
+.opt.mono{min-width:78px;font:600 clamp(22px,4vw,30px)/1.2 var(--f-mono)}
+.opt.no{opacity:.4;cursor:not-allowed;text-decoration:line-through;box-shadow:none}
+.opt.right{background:#d8f1e4;border-color:var(--ok);box-shadow:0 3px 0 var(--ok)}
+.opt:disabled{cursor:default}
+
+/* лента радиограммы */
+.tape{position:relative;margin:12px 0 14px;padding:14px clamp(12px,2.4vw,22px) 24px;background:#fffdf0;border:1px solid #e6dcb8;border-radius:8px;box-shadow:0 3px 0 #ebe2c2,0 10px 20px rgba(8,42,79,.08);
+  background-image:radial-gradient(circle,#d9cea4 2px,transparent 2.5px),radial-gradient(circle,#d9cea4 2px,transparent 2.5px);background-size:16px 12px,16px 12px;background-position:4px 0,4px 100%;background-repeat:repeat-x,repeat-x;
+  font:500 clamp(17px,2.6vw,22px)/2.7 var(--f-mono);color:var(--ink)}
+.tape-h{display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px;margin:6px 0 8px;padding-bottom:9px;border-bottom:2px dashed #dcd1a8;font:600 12px/1.3 var(--f-head);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft)}
+.tape-h b{padding:3px 10px;background:var(--deep);color:#fff;border-radius:99px;font-weight:700}
+.tw{display:inline;white-space:normal}
+.gw{position:relative;display:inline-block;vertical-align:middle}
+.gp{all:unset;box-sizing:border-box;position:relative;cursor:pointer;display:inline-grid;place-items:center;width:20px;height:1.75em;margin:0 1px;border-radius:6px}
+.gp::before{content:"";position:absolute;left:50%;top:12%;bottom:12%;border-left:2px dashed #c4b78a;transform:translateX(-50%)}
+.gp:hover:not(:disabled){background:rgba(15,143,176,.14)}
+.gp:hover:not(:disabled)::before,.gp:focus-visible::before{border-left:3px solid var(--c)}
+.gp:disabled{cursor:default}
+.gp.has{width:auto;min-width:30px;margin:0 3px}
+.gp.has::before{display:none}
+.gp .sg{display:inline-grid;place-items:center;min-width:1.4em;height:1.4em;padding:0 .15em;background:var(--lamp);color:#3a2a06;border-radius:50%;font:700 .92em/1 var(--f-mono);box-shadow:0 2px 0 var(--lamp-deep)}
+.gp.good .sg{background:#cdeedd;color:#0e6b40;box-shadow:0 0 0 2px var(--ok)}
+.gp.bad .sg{background:#ffd9d6;color:#9d1f19;box-shadow:0 0 0 2px var(--bad);animation:shake .35s}
+.gp.hint{background:rgba(255,201,51,.45);animation:pulse 1s ease-in-out 4}
+.sgm{position:absolute;z-index:8;top:calc(100% - 4px);left:50%;transform:translateX(-50%);display:flex;gap:6px;padding:6px;background:#fff;border:2px solid var(--c);border-radius:14px;box-shadow:0 12px 26px rgba(8,42,79,.35)}
+.sgm button{all:unset;box-sizing:border-box;cursor:pointer;display:grid;place-items:center;min-width:44px;height:44px;padding:0 6px;background:var(--ct);border:2px solid var(--c);border-radius:10px;font:700 22px/1 var(--f-mono);color:var(--ink)}
+.sgm button:hover{background:var(--lamp)}
+.sgm button.x{font:700 12px/1.1 var(--f-ui);color:var(--ink-soft);background:#fff;border-color:var(--line)}
+.restored{margin:12px 0 4px;display:grid;gap:8px;padding:0;list-style:none}
+.restored li{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;align-items:start;padding:10px 14px;background:#fff;border:1px solid var(--line);border-left:6px solid var(--ok);border-radius:10px}
+.restored .no{display:grid;place-items:center;width:26px;height:26px;margin-top:2px;background:var(--c);color:#fff;font:800 13px/1 var(--f-head);border-radius:50%}
+.restored .tx{font:500 clamp(16px,2.4vw,20px)/1.5 var(--f-mono)}
+.restored .tx b{color:var(--c-deep)}
+.restored .nt{grid-column:2;font-size:15px;color:var(--ink-soft)}
+
+/* виды предложений */
+.kn{display:grid;gap:12px;margin:8px 0 6px}
+.kn-row{display:grid;gap:10px;padding:12px 14px;background:#fff;border:1px solid var(--line);border-left:6px solid var(--c);border-radius:10px}
+.kn-row.good{border-left-color:var(--ok);background:#f0faf4}
+.kn-row.bad{border-left-color:var(--bad);background:#fff3f2}
+.kn-tx{font:500 clamp(16px,2.4vw,20px)/1.4 var(--f-mono)}
+.kn-grp{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.kn-lb{min-width:92px;font:700 12px/1.2 var(--f-head);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft)}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{all:unset;box-sizing:border-box;cursor:pointer;padding:6px 12px;background:#fff;border:2px solid var(--line);border-radius:10px;font:700 15px/1.2 var(--f-ui)}
+.seg button:hover{border-color:var(--c)}
+.seg button.on{background:var(--c);border-color:var(--c-deep);color:#fff}
+.kn-nt{font-size:15px;color:#9d1f19}
+
+/* письмо */
+.wr{display:grid;gap:14px;margin:8px 0 6px}
+.wr-row{display:grid;gap:6px}
+.wr-lb{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;font-weight:700}
+.wr-lb .no{display:inline-grid;place-items:center;width:24px;height:24px;background:var(--c);color:#fff;font:800 13px/1 var(--f-head);border-radius:50%}
+.wr-lb em{font:600 12px/1.2 var(--f-head);font-style:normal;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft)}
+.wr-in{box-sizing:border-box;width:100%;padding:10px 12px;background:#fff;color:var(--ink);border:2px solid var(--line);border-radius:10px;font:500 clamp(16px,2.4vw,19px)/1.4 var(--f-mono)}
+.wr-in:focus{outline:3px solid var(--focus);outline-offset:1px;border-color:var(--c)}
+.wr-row.good .wr-in{border-color:var(--ok);background:#f0faf4}
+.wr-row.bad .wr-in{border-color:var(--bad);background:#fff3f2}
+.wr-nt{font-size:15px;color:#9d1f19}
+.wr-row.good .wr-nt{color:#0e6b40}
+
+/* финал */
+.found{display:grid;gap:10px;margin:0 0 14px;padding:0;list-style:none}
+.found li{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start;font-size:16px;line-height:1.55}
+.found .no{display:grid;place-items:center;width:26px;height:26px;margin-top:1px;background:var(--c);color:#fff;font:800 13px/1 var(--f-head);border-radius:50%}
+.stats-line{margin:6px 0 4px;font:400 15px/1.6 var(--f-mono)}
+.verdict{display:flex;justify-content:flex-end;margin:2px 0 22px}
+.stamp{display:inline-block;padding:.12em .35em;border:5px solid var(--bad);color:var(--bad);font:800 clamp(26px,6vw,46px)/1 var(--f-head);letter-spacing:.06em;text-transform:uppercase;transform:rotate(-7deg);opacity:.9;border-radius:6px}
+.stamp.in{animation:stampIn .55s cubic-bezier(.2,.9,.3,1.2) both}
+
+/* сообщение с капитанского мостика */
+.pa{display:flex;gap:14px;align-items:flex-start;margin-top:16px;padding:14px 18px;background:var(--deep);color:#eaf6ff;border:3px solid var(--brass);border-radius:14px;box-shadow:0 5px 0 var(--abyss)}
+.pa .ico{flex:none;width:30px;height:30px;color:var(--lamp)}
+.pa .lb{display:block;margin-bottom:2px;font:700 12px/1.2 var(--f-head);letter-spacing:.14em;text-transform:uppercase;color:var(--lamp)}
+.pa .tx{font-size:16.5px;line-height:1.5}
+.pa.ok{background:#0e6b4a;border-color:#8be5bb}
+.pa.ok .lb,.pa.ok .ico,.pa.bad .lb,.pa.bad .ico{color:#fff}
+.pa.bad{background:#a8322b;border-color:#ffb3ad}
+.pa.pop{animation:pop .3s ease-out}
+
+.confetti{position:absolute;inset:0;z-index:5;overflow:hidden;pointer-events:none}
+.confetti i{position:absolute;top:-16px;width:9px;height:15px;border-radius:2px;opacity:0;animation:cf 2.2s ease-in forwards}
+@keyframes cf{0%{opacity:1;transform:translate(0,0) rotate(0)}100%{opacity:0;transform:translate(var(--dx),460px) rotate(var(--r))}}
+@keyframes wv{to{transform:translateX(-600px)}}
+@keyframes cloud{0%{opacity:0;transform:translateX(0)}12%{opacity:.95}84%{opacity:.95}100%{opacity:0;transform:translateX(46vw)}}
+@keyframes glide{from{transform:translate(0,0)}to{transform:translate(26px,-8px)}}
+@keyframes flap{50%{transform:scaleY(.62)}}
+@keyframes buoy{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes glint{0%,100%{opacity:.55}50%{opacity:1}}
+@keyframes bob{0%,100%{transform:translateY(0) rotate(-1.6deg)}50%{transform:translateY(-4px) rotate(1.6deg)}}
+@keyframes beam{0%,100%{opacity:.1}50%{opacity:.75}}
+@keyframes lamp{0%,100%{transform:scale(1);opacity:.85}50%{transform:scale(1.18);opacity:1}}
+@keyframes shake{20%{transform:translateX(-4px)}40%{transform:translateX(4px)}60%{transform:translateX(-3px)}80%{transform:translateX(3px)}}
+@keyframes pulse{50%{box-shadow:0 0 0 6px rgba(255,201,51,.55)}}
+@keyframes pop{from{transform:scale(.97);opacity:.6}to{transform:none;opacity:1}}
+@keyframes rise{from{transform:translateY(8px);opacity:0}to{transform:none;opacity:1}}
+@keyframes stampIn{0%{transform:rotate(-14deg) scale(2.2);opacity:0}60%{transform:rotate(-7deg) scale(.96);opacity:1}100%{transform:rotate(-7deg) scale(1);opacity:.9}}
+
+/* стрелки переходов по слайдам и список слайдов */
+.nav{position:fixed;z-index:15;left:50%;bottom:max(12px,env(safe-area-inset-bottom));transform:translateX(-50%);display:flex;align-items:stretch;width:min(560px,calc(100% - 2*var(--gutter)));background:var(--deep);border:3px solid var(--brass);border-radius:16px;box-shadow:0 5px 0 var(--abyss),0 14px 28px rgba(8,42,79,.4);overflow:hidden}
+.nv{all:unset;box-sizing:border-box;cursor:pointer;display:grid;place-items:center;flex:none;width:64px;min-height:58px;color:var(--lamp)}
+.nv svg{width:30px;height:30px;fill:none;stroke:currentColor;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.nv:hover:not(:disabled){background:#14508f}
+.nv:active:not(:disabled){transform:translateY(2px)}
+.nv:disabled{opacity:.3;cursor:default}
+.nv-mid{all:unset;box-sizing:border-box;cursor:pointer;flex:1;min-width:0;display:grid;align-content:center;gap:3px;padding:6px 10px;text-align:center;border-inline:2px solid rgba(214,166,74,.45);color:#bfe3ff;font:600 12px/1.25 var(--f-head);letter-spacing:.05em;text-transform:uppercase}
+.nv-mid:hover{background:#14508f}
+.nv-mid b{color:#fff;font-weight:800;font-size:16px;letter-spacing:.12em}
+.nv-mid span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nv:focus-visible,.nv-mid:focus-visible{outline:3px solid #fff;outline-offset:-4px}
+.toc{position:fixed;z-index:16;left:50%;bottom:calc(max(12px,env(safe-area-inset-bottom)) + 80px);transform:translateX(-50%);width:min(560px,calc(100% - 2*var(--gutter)));max-height:min(62vh,540px);overflow:auto;padding:4px 12px 12px;background:var(--paper);color:var(--ink);border:3px solid var(--c);border-radius:16px;box-shadow:0 14px 36px rgba(8,42,79,.4)}
+.toc h3{display:flex;align-items:center;gap:8px;margin:12px 0 5px;font:700 12.5px/1.2 var(--f-head);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft)}
+.toc h3 i{flex:none;width:12px;height:12px;border-radius:50%;background:var(--rc)}
+.toc button{all:unset;box-sizing:border-box;cursor:pointer;display:flex;gap:10px;align-items:baseline;width:100%;padding:7px 10px;border-radius:8px;font:400 16px/1.3 var(--f-ui)}
+.toc button:hover{background:var(--ct)}
+.toc button.cur{background:var(--lamp);color:#3a2a06;font-weight:700}
+.toc button:focus-visible{outline:3px solid var(--focus);outline-offset:-3px}
+.toc .no{flex:none;min-width:2ch;font:500 12.5px/1.3 var(--f-mono);color:var(--ink-soft)}
+.toc button.cur .no{color:#3a2a06}
+
+@media (max-width:640px){
+  .nv{width:56px}
+  .scene{height:clamp(236px,64vw,272px);border-radius:14px}
+  .sc-text{max-width:74%}
+  .sc-title{font-size:clamp(20px,6.6vw,28px)}
+  .lh{height:80%}
+  .bo{width:14px;height:14px;margin-left:-7px;border-width:2px}
+  .sh-head .meta{margin-left:0;margin-right:0;width:100%}
+  .kn-lb{min-width:100%}
+  .tape{line-height:3;padding-inline:10px}
+  .gp{width:26px;height:2.1em}
+  .gp.has{min-width:34px}
+  .sgm button{min-width:48px;height:48px}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
+}
+</style>
+</head>
+<body>
+<div class="shore" aria-hidden="true"><i class="wv wv4"></i><i class="wv wv5"></i></div>
+<div class="wrap">
+  <header class="scene" id="scene" aria-label="Маяк «Северный»">
+    <div class="sun" aria-hidden="true"></div>
+    <i class="cl c1" aria-hidden="true"></i><i class="cl c2" aria-hidden="true"></i><i class="cl c3" aria-hidden="true"></i>
+    <svg class="gull g1" viewBox="0 0 30 12" aria-hidden="true" focusable="false"><path d="M1 10Q8 0 15 8Q22 0 29 10" fill="none" stroke="#0c3a6b" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <svg class="gull g2" viewBox="0 0 30 12" aria-hidden="true" focusable="false"><path d="M1 10Q8 0 15 8Q22 0 29 10" fill="none" stroke="#0c3a6b" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <svg class="gull g3" viewBox="0 0 30 12" aria-hidden="true" focusable="false"><path d="M1 10Q8 0 15 8Q22 0 29 10" fill="none" stroke="#0c3a6b" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <div class="sea" aria-hidden="true"></div>
+    <svg class="glint" viewBox="0 0 80 60" aria-hidden="true" focusable="false"><g stroke="#fff" stroke-linecap="round" stroke-width="3"><path d="M20 6h40" opacity=".8"/><path d="M26 18h28" opacity=".7"/><path d="M12 30h56" opacity=".55"/><path d="M30 42h20" opacity=".5"/><path d="M20 54h40" opacity=".4"/></g></svg>
+    <svg class="far" viewBox="0 0 40 36" aria-hidden="true" focusable="false"><path d="M20 2L7 26H20Z" fill="#fff"/><path d="M22 7L34 26H22Z" fill="#fff4de"/><path d="M4 28H36L32 34H8Z" fill="#0f3d6e"/></svg>
+    <i class="wv wv1" aria-hidden="true"></i>
+    <svg class="lh" viewBox="0 0 110 250" aria-hidden="true" focusable="false">
+      <defs>
+        <linearGradient id="beamL" gradientUnits="userSpaceOnUse" x1="55" y1="0" x2="-340" y2="0"><stop offset="0" stop-color="#fff6c2" stop-opacity=".9"/><stop offset="1" stop-color="#fff6c2" stop-opacity="0"/></linearGradient>
+        <linearGradient id="beamR" gradientUnits="userSpaceOnUse" x1="55" y1="0" x2="400" y2="0"><stop offset="0" stop-color="#fff6c2" stop-opacity=".9"/><stop offset="1" stop-color="#fff6c2" stop-opacity="0"/></linearGradient>
+        <radialGradient id="lampGlow"><stop offset="0" stop-color="#fffbd6"/><stop offset=".5" stop-color="#ffe066" stop-opacity=".85"/><stop offset="1" stop-color="#ffd54a" stop-opacity="0"/></radialGradient>
+      </defs>
+      <polygon class="beam bl" points="55,51 -340,10 -340,94" fill="url(#beamL)"/>
+      <polygon class="beam br" points="55,51 400,10 400,94" fill="url(#beamR)"/>
+      <path d="M-2 250L6 222L22 207L40 200L72 200L92 209L106 227L112 250Z" fill="#7d6f63"/>
+      <path d="M6 222L22 207L40 200L52 203L36 215L20 232Z" fill="#9c8d7f"/>
+      <path d="M72 200L92 209L106 227L96 234L80 219Z" fill="#665a50"/>
+      <polygon points="40,76 70,76 72.5,107 37.5,107" fill="#e0463a"/>
+      <polygon points="37.5,107 72.5,107 75,138 35,138" fill="#fff"/>
+      <polygon points="35,138 75,138 77.5,169 32.5,169" fill="#e0463a"/>
+      <polygon points="32.5,169 77.5,169 80,200 30,200" fill="#fff"/>
+      <polygon points="58,76 70,76 80,200 64,200" fill="#0c3a6b" opacity=".12"/>
+      <path d="M49 200V186Q55 178 61 186V200Z" fill="#0c3a6b"/>
+      <rect x="52" y="116" width="6" height="9" rx="3" fill="#0c3a6b"/>
+      <rect x="52" y="148" width="6" height="9" rx="3" fill="#0c3a6b"/>
+      <rect x="33" y="70" width="44" height="7" rx="1.5" fill="#2b3a55"/>
+      <path d="M35 70V62M45 70V62M55 70V62M65 70V62M75 70V62M35 62H75" stroke="#2b3a55" stroke-width="1.6" fill="none"/>
+      <rect x="42" y="40" width="26" height="22" fill="#ffe27a" stroke="#2b3a55" stroke-width="2"/>
+      <path d="M50.7 40V62M59.3 40V62" stroke="#2b3a55" stroke-width="2"/>
+      <circle class="lamp" cx="55" cy="51" r="20" fill="url(#lampGlow)"/>
+      <path d="M39 40L55 22L71 40Z" fill="#e0463a" stroke="#2b3a55" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M55 22V14" stroke="#2b3a55" stroke-width="2"/><circle cx="55" cy="13" r="2.5" fill="#2b3a55"/>
+    </svg>
+    <div class="lane" aria-hidden="true">
+      <div class="ship" id="ship">
+        <svg viewBox="0 0 120 110" focusable="false">
+          <path d="M60 12V76" stroke="#6b4a2b" stroke-width="3.5" stroke-linecap="round"/>
+          <path d="M60 16L22 70H60Z" fill="#fff" stroke="#c6dceb" stroke-width="1.5" stroke-linejoin="round"/>
+          <path d="M64 24L100 70H64Z" fill="#fff4de" stroke="#e6d3ae" stroke-width="1.5" stroke-linejoin="round"/>
+          <path d="M60 12L60 22L76 17Z" fill="#e0463a"/>
+          <path d="M8 74H112L100 98Q98 102 92 102H28Q22 102 20 98Z" fill="#0f3d6e"/>
+          <path d="M10 78H110L107 84H13Z" fill="#e24a3b"/>
+          <circle cx="36" cy="92" r="3.2" fill="#bfe6ff" stroke="#0a2c52" stroke-width="1.2"/>
+          <circle cx="60" cy="92" r="3.2" fill="#bfe6ff" stroke="#0a2c52" stroke-width="1.2"/>
+          <circle cx="84" cy="92" r="3.2" fill="#bfe6ff" stroke="#0a2c52" stroke-width="1.2"/>
+        </svg>
+      </div>
+    </div>
+    <i class="wv wv2" aria-hidden="true"></i><i class="wv wv3" aria-hidden="true"></i>
+    <div class="buoys" id="buoys" aria-hidden="true"></div>
+    <div class="sc-text">
+      <div class="sc-row"><span class="plate">МАЯК «СЕВЕРНЫЙ»</span><span class="sc-stats" id="stats"></span></div>
+      <h1 class="sc-title">Радиограмма с маяка</h1>
+    </div>
+  </header>
+  <div class="now" id="now"></div>
+  <main>
+    <article class="sheet" id="stage"></article>
+    <div class="pa" id="pa" role="status" aria-live="polite" hidden></div>
+  </main>
+</div>
+<nav class="nav" id="nav" aria-label="Переход по слайдам">
+  <button type="button" class="nv" id="navPrev" data-act="prev" aria-label="Предыдущий слайд" title="Назад (стрелка влево)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 4 7 12l8 8"/></svg></button>
+  <button type="button" class="nv-mid" id="navMid" data-act="toc" aria-expanded="false" aria-controls="toc" title="Список слайдов"><b id="navNo"></b><span id="navTitle"></span></button>
+  <button type="button" class="nv" id="navNext" data-act="next" aria-label="Следующий слайд" title="Дальше (стрелка вправо)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 4 8 8-8 8"/></svg></button>
+</nav>
+<div class="toc" id="toc" aria-label="Список слайдов" hidden></div>
+
+<script>
+(function(){
+'use strict';
+
+/* ======================= помощники ======================= */
+const $=(s,r)=>(r||document).querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+const reduceMotion=()=>window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+const capFirst=w=>w.replace(/[а-яёa-z]/i,c=>c.toUpperCase());
+const BC=['#12a3a3','#e08a00','#7c5cff'];
+
+/* ======================= CASE: весь контент урока =======================
+   Типы шагов: explain (карточки с пунктами), mc (выбор ответа), tape (лента: нажать между словами и поставить знак),
+   kinds (вид предложения), write (письмо по заданию).
+   В tape: words — слова ленты, cut — где нужен знак: {индекс слова: {s: допустимые знаки, k: вид (s, q, c), why}},
+   no — пояснения для лишних разрезов. */
+const BLOCKS={2:'Конец предложения',3:'Виды предложений',4:'Письмо'};
+const NOEND='Здесь мысль ещё не закончена. Прочитайте вслух до этого места: голос не опускается.';
+
+const BASE=[
+ {id:'tapeA',t:'tape',b:2,title:'Радиограмма А',tag:'Радиограмма А',
+  intro:'Радиограмма пришла сплошной лентой, без знаков. Прочитайте её вслух и нажмите в тех промежутках между словами, где заканчивается мысль. Знак здесь один: точка. Потом нажмите «Передать».',
+  signs:['.'],
+  words:['корабль','«Альбатрос»','вышел','из','порта','в','полночь','море','было','спокойным','впереди','показался','берег','капитан','убавил','ход'],
+  cut:{
+   6:{s:['.'],k:'s',why:'«Корабль вышел из порта в полночь»: мысль закончена, ясно кто, что сделал и когда. Дальше новая мысль про море.'},
+   9:{s:['.'],k:'s',why:'«Море было спокойным»: законченная мысль.'},
+   12:{s:['.'],k:'s',why:'«Впереди показался берег»: мысль закончена. Дальше про капитана.'},
+   15:{s:['.'],k:'s',why:'«Капитан убавил ход»: последняя мысль. Знак нужен и в самом конце текста.'}},
+  no:{
+   0:'«Корабль»: что с кораблём? Мысль ещё не закончена.',
+   1:'«Корабль «Альбатрос»»: что с ним случилось? Мысль ещё не закончена.',
+   2:'«Вышел»: откуда? Мысль ещё не закончена.',
+   3:'Предлог «из» не может стоять в конце мысли: из чего?',
+   4:'«Вышел из порта»: когда? Мысль продолжается.',
+   5:'Предлог «в» не может стоять в конце мысли: во что?',
+   7:'«Море»: что с морем? Нужно «было спокойным».',
+   8:'«Море было»: каким? Мысль не закончена.',
+   10:'«Впереди»: что впереди? Мысль не закончена.',
+   11:'«Показался»: кто? Нужно «берег».',
+   13:'«Капитан»: что сделал капитан? Мысль не закончена.',
+   14:'«Капитан убавил»: что убавил? Нужно «ход».'},
+  okMsg:'Радиограмма восстановлена: четыре законченные мысли. Каждая начинается с заглавной буквы, а в конце стоит знак.'},
+
+ {id:'complete',t:'mc',b:2,title:'Закончена ли мысль?',intro:'Прочитайте фрагмент вслух и решите: можно ли здесь остановиться и поставить точку?',fix:1,items:[
+   {p:'<span class="big">Радист включил</span>',o:[{t:'мысль закончена',why:'Что включил? Не хватает слова, без него непонятно, о чём речь.'},{t:'мысль не закончена',ok:1,why:'Верно. Что включил? Мысль ждёт продолжения.'}]},
+   {p:'<span class="big">Радист включил прожектор</span>',o:[{t:'мысль закончена',ok:1,why:'Верно. Теперь понятно, кто и что сделал.'},{t:'мысль не закончена',why:'Здесь уже всё сказано: кто сделал и что сделал.'}]},
+   {p:'<span class="big">Когда корабль подошёл к маяку</span>',o:[{t:'мысль закончена',why:'Что случилось, когда он подошёл? Мысль ждёт продолжения, точку ставить рано.'},{t:'мысль не закончена',ok:1,why:'Верно. Часть «когда…» ждёт продолжения: что было потом?'}]},
+   {p:'<span class="big">Когда корабль подошёл к маяку, капитан поблагодарил радиста</span>',o:[{t:'мысль закончена',ok:1,why:'Верно. Теперь мысль закончена: когда подошёл, что сделал капитан.'},{t:'мысль не закончена',why:'Здесь уже всё сказано: можно ставить точку.'}]}
+ ]},
+
+ {id:'journal',t:'tape',b:2,title:'Бортовой журнал',tag:'Бортовой журнал',route:'корабль «Альбатрос»',
+  intro:'Ещё одна запись из бортового журнала: знаки пропали и здесь. Прочитайте вслух и нажмите там, где заканчивается мысль. Знак один: точка. Потом нажмите «Передать».',
+  signs:['.'],
+  words:['утром','над','морем','поднялся','густой','туман','когда','туман','рассеялся','капитан','увидел','берег','на','скале','стоял','старый','маяк','его','огонь','горел','всю','ночь'],
+  cut:{
+   5:{s:['.'],k:'s',why:'«Утром над морем поднялся густой туман»: мысль закончена.'},
+   11:{s:['.'],k:'s',why:'«Когда туман рассеялся, капитан увидел берег» — это одно предложение: часть «когда…» ждёт продолжения. Запятую поставим позже, сейчас важны границы.'},
+   16:{s:['.'],k:'s',why:'«На скале стоял старый маяк»: мысль закончена.'},
+   21:{s:['.'],k:'s',why:'«Его огонь горел всю ночь»: последняя мысль. Знак нужен и в самом конце.'}},
+  no:{
+   0:'«Утром»: что случилось утром? Мысль не закончена.',
+   1:'Предлог «над» не может стоять в конце мысли: над чем?',
+   2:'«Утром над морем»: что произошло? Мысль не закончена.',
+   3:'«Поднялся»: кто или что поднялось? Нужно слово «туман».',
+   4:'«Поднялся густой»: что поднялось? Нужно слово «туман».',
+   6:'После слова «когда» мысль не заканчивается: что случилось?',
+   7:'«Когда туман»: что с туманом? Мысль не закончена.',
+   8:'«Когда туман рассеялся» ждёт продолжения: что было потом? Точка здесь рано.',
+   9:'«Капитан»: что сделал капитан? Мысль не закончена.',
+   10:'«Капитан увидел»: что увидел? Нужно слово «берег».',
+   12:'Предлог «на» не может стоять в конце мысли: на чём?',
+   13:'«На скале»: что там? Мысль не закончена.',
+   14:'«На скале стоял»: кто или что стоял? Нужно слово «маяк».',
+   15:'«Старый»: какой предмет? Нужно слово «маяк».',
+   17:'«Его»: что его? Мысль не закончена.',
+   18:'«Его огонь»: что он делал? Мысль не закончена.',
+   19:'«Его огонь горел»: сколько? Мысль продолжается: дальше «всю ночь».',
+   20:'«Всю»: что всю? Нужно слово «ночь».'},
+  okMsg:'Журнал расшифрован: четыре законченные мысли. Часть «когда туман рассеялся» осталась внутри предложения.'},
+
+ {id:'voices',t:'mc',b:3,title:'Услышьте знак',intro:'Учитель читает предложение вслух. Выберите знак, который подходит к интонации.',mono:1,fix:1,items:[
+   {p:'<span class="big">Маяк горит<span class="slot">▢</span></span>',o:[
+     {t:'.',ok:1,why:'Верно. Голос опустился: радист спокойно сообщает.'},{t:'?',why:'Голос в конце не поднимался, радист ничего не спрашивает.'},{t:'!',why:'Здесь нет сильного чувства: читали спокойно.'}]},
+   {p:'<span class="big">Маяк горит<span class="slot">▢</span></span>',o:[
+     {t:'.',why:'Голос поднимался: радист спрашивает, это не сообщение.'},{t:'?',ok:1,why:'Верно. Голос поднялся: радист спрашивает, горит ли маяк.'},{t:'!',why:'Сильного чувства нет, радист спрашивает.'}]},
+   {p:'<span class="big">Маяк горит<span class="slot">▢</span></span>',o:[
+     {t:'.',why:'Здесь радость и сильное чувство, а точка для спокойного сообщения.'},{t:'?',why:'Никто не спрашивает: радист радуется.'},{t:'!',ok:1,why:'Верно. Сильное чувство, радость: восклицательный знак.'}]},
+   {p:'<span class="big">Зажги маяк<span class="slot">▢</span></span>',o:[
+     {t:'.',ok:1,why:'Верно. Это просьба, сказанная спокойно, поэтому точка.'},{t:'?',why:'Радист не спрашивает, а просит.'},{t:'!',why:'Так приказывают срочно, а здесь просьба сказана спокойно.'}]},
+   {p:'<span class="big">Зажги маяк<span class="slot">▢</span></span>',o:[
+     {t:'.',why:'Так просят спокойно, а здесь приказ, сказанный громко.'},{t:'?',why:'Радист не спрашивает, а приказывает.'},{t:'!',ok:1,why:'Верно. Срочный приказ, сильное чувство: восклицательный знак.'}]}
+ ]},
+
+ {id:'types',t:'explain',b:3,title:'Зачем мы говорим',points:[
+   'Мы говорим, чтобы <b>сообщить</b>, <b>спросить</b> или <b>попросить, приказать, посоветовать</b>. Это вид предложения по цели высказывания.<div class="kt-wrap"><table class="kt"><tr><th>Зачем говорим</th><th>Название</th><th>Знак</th></tr><tr><td>сообщаем, рассказываем</td><td>повествовательное</td><td><span class="sg">.</span></td></tr><tr><td>спрашиваем</td><td>вопросительное</td><td><span class="sg">?</span></td></tr><tr><td>просим, приказываем, советуем</td><td>побудительное</td><td><span class="sg">.</span> спокойно или <span class="sg">!</span> срочно</td></tr></table></div>',
+   'Ещё важно, <b>как</b> мы говорим: спокойно или с сильным чувством (радость, страх, удивление, срочность). Если с сильным чувством, ставим <b>!</b>. Такое предложение называется <b>восклицательным</b>, а спокойное — невосклицательным. Это вид по интонации.',
+   'Любой из трёх видов может быть восклицательным: <i>Какой густой туман!</i> (сообщение), <i>Неужели вы не видите скалы?!</i> (вопрос), <i>Немедленно зажгите свет!</i> (приказ).',
+   'Знак в конце выбирают двумя вопросами: <b>«Зачем я это говорю?»</b> и <b>«С каким чувством?»</b>']},
+
+ {id:'turn',t:'explain',b:3,all:1,title:'Превращение',go:'К радиограмме Б',meta:'говорим вслух',points:[
+   'Прочитайте каждую строку вслух три раза: как сообщение, как вопрос и как просьбу или приказ. Слушайте, как меняется голос, и смотрите, как меняется знак в конце.<div class="kt-wrap"><table class="kt"><tr><th>Сообщаем</th><th>Спрашиваем</th><th>Просим, приказываем</th></tr><tr><td>Радист включил прожектор<span class="sg">.</span></td><td>Радист включил прожектор<span class="sg">?</span></td><td>Включите прожектор<span class="sg">!</span></td></tr><tr><td>Корабль идёт к берегу<span class="sg">.</span></td><td>Корабль идёт к берегу<span class="sg">?</span></td><td>Идите к берегу<span class="sg">!</span></td></tr></table></div>',
+   'Слова почти те же, а смысл разный. Его показывает интонация, а на письме знак в конце.']},
+
+ {id:'tapeB',t:'tape',b:3,title:'Радиограмма Б',tag:'Радиограмма Б',
+  intro:'Радиограмма от корабля пришла сплошной лентой. Здесь нужны три знака: точка, вопросительный и восклицательный. Нажмите в промежутке и выберите знак. Потом нажмите «Передать».',
+  signs:['.','?','!'],
+  words:['вы','нас','слышите','мы','идём','курсом','на','север','включите','прожектор','у','нас','нет','карты','повторите','ваши','координаты'],
+  cut:{
+   2:{s:['?'],k:'q',why:'«Вы нас слышите?»: радист спрашивает, голос поднимается. Знак «?».'},
+   7:{s:['.'],k:'s',why:'«Мы идём курсом на север»: спокойное сообщение. Знак «.».'},
+   9:{s:['!','.'],k:'c',why:'«Включите прожектор»: просьба или приказ. Срочно: «!», спокойно: «.». Подойдёт любой знак, главное объяснить выбор.'},
+   13:{s:['.'],k:'s',why:'«У нас нет карты»: сообщение. Знак «.».'},
+   16:{s:['!','.'],k:'c',why:'«Повторите ваши координаты»: просьба. Срочно: «!», спокойно: «.».'}},
+  no:{
+   1:'«Вы нас»: что вы нас? Мысль ещё не закончена.',
+   4:'«Мы идём»: куда? Мысль не закончена.',
+   5:'«Мы идём курсом»: каким? Мысль не закончена.',
+   6:'«…курсом на»: предлог не может стоять в конце мысли.',
+   8:'«Включите»: что? Мысль не закончена.',
+   11:'«У нас»: что у вас? Мысль не закончена.',
+   12:'«У нас нет»: чего? Мысль не закончена.',
+   14:'«Повторите»: что? Мысль не закончена.',
+   15:'«Повторите ваши»: что ваши? Мысль не закончена.'},
+  okMsg:'Радиограмма восстановлена: два сообщения, вопрос и две просьбы. Теперь определим вид каждого предложения.'},
+
+ {id:'kinds',t:'kinds',b:3,from:'tapeB',title:'Какое это предложение?',intro:'Для каждого предложения выберите, зачем радист это говорит (цель) и как (интонация).'},
+
+ {id:'signs',t:'mc',b:3,title:'Какой знак?',intro:'В скобках сказано, как произнесено предложение. Выберите знак в конце.',mono:1,fix:1,items:[
+   {p:'<span class="big">Какой густой туман<span class="slot">▢</span></span>',cue:'(удивлённо)',o:[{t:'.',why:'Здесь удивление, сильное чувство. Точка для спокойного сообщения.'},{t:'?',why:'Радист не спрашивает, а удивляется.'},{t:'!',ok:1,why:'Верно. Сообщение с сильным чувством: повествовательное, восклицательное.'},{t:'?!',why:'Здесь нет вопроса: радист удивляется.'}]},
+   {p:'<span class="big">Где сейчас находится ваш корабль<span class="slot">▢</span></span>',cue:'(спрашиваем)',o:[{t:'.',why:'Это вопрос: радист спрашивает.'},{t:'?',ok:1,why:'Верно. Вопросительное предложение.'},{t:'!',why:'Сильного чувства нет, радист просто спрашивает.'},{t:'?!',why:'Радист спокоен: достаточно одного «?».'}]},
+   {p:'<span class="big">Радист записывает радиограмму<span class="slot">▢</span></span>',cue:'(спокойно)',o:[{t:'.',ok:1,why:'Верно. Спокойное сообщение: повествовательное, невосклицательное.'},{t:'?',why:'Никто не спрашивает.'},{t:'!',why:'Сильного чувства нет, сказано спокойно.'},{t:'?!',why:'Ни вопроса, ни сильного чувства здесь нет.'}]},
+   {p:'<span class="big">Немедленно зажгите свет<span class="slot">▢</span></span>',cue:'(срочно, это приказ)',o:[{t:'.',why:'Так просят спокойно, а здесь срочный приказ.'},{t:'?',why:'Радист не спрашивает, а приказывает.'},{t:'!',ok:1,why:'Верно. Срочный приказ: побудительное, восклицательное.'},{t:'?!',why:'Это не вопрос, а приказ.'}]},
+   {p:'<span class="big">Неужели вы не видите скалы<span class="slot">▢</span></span>',cue:'(в ужасе; для сильных)',o:[{t:'?',why:'Вопрос верный, но чувство тоже есть: радист в ужасе. Что добавить?'},{t:'!',why:'Сильное чувство есть, но радист ещё и спрашивает.'},{t:'?!',ok:1,why:'Верно. Вопрос с сильным чувством: «?!».'},{t:'.',why:'Это и вопрос, и сильное чувство.'}]}
+ ]},
+
+ {id:'write',t:'write',b:4,title:'Ответ с маяка',intro:'Радист пишет ответ кораблю: четыре предложения, каждое своего вида. Начните их с разных слов. Потом нажмите «Передать ответ».',
+  rows:[
+   {lab:'Сообщите кораблю, что маяк его слышит.',kind:'повествовательное',end:['.'],hint:'Это сообщение: нужна точка.'},
+   {lab:'Спросите, какой у корабля курс.',kind:'вопросительное',end:['?','?!'],hint:'Это вопрос: нужен знак «?».'},
+   {lab:'Дайте указание, как держать курс.',kind:'побудительное',end:['.','!'],hint:'Это указание: подойдёт «.» (спокойно) или «!» (срочно).'},
+   {lab:'Выразите радость: корабль нашёл свет маяка.',kind:'восклицательное',end:['!'],hint:'Сильное чувство: нужен знак «!».'}
+  ],
+  okMsg:'Ответ передан. Четыре предложения, у каждого заглавная буква, нужный знак и своё начало.'}
+];
+const PRIVATE=[]; /*PRIVATE_STEPS*/
+const STEPS=BASE.slice();
+PRIVATE.forEach(p=>STEPS.splice(p.at,0,p.step));
+
+/* ======================= значки ======================= */
+const LIGHT='<svg viewBox="0 0 64 64" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M26 56 29 22h6l3 34z"/><path d="M27.5 40h9M28.5 31h7M24 22h16l-2-6H26z"/><rect x="28" y="9" width="8" height="7"/><path d="M32 6V3M20 12l-8-3M20 16l-9 3M44 12l8-3M44 16l9 3M18 56h28"/></svg>';
+const SPEAKER='<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3.5L13 5v14l-5.5-4.5H4z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
+
+/* ======================= состояние ======================= */
+let S;
+const newState=()=>({phase:'brief',pi:0,mistakes:0,hints:3,msg:null,refocus:null,rev:1,mc:null,tape:null,kn:null,wr:null,seen:{},signsOf:{}});
+const step=()=>STEPS[S.pi];
+const mist=()=>{S.mistakes++;paintStats();};
+
+/* ======================= сообщения ======================= */
+const LABEL={info:'Приём',ok:'Верно',bad:'Не то'};
+function paintPA(){
+  const el=$('#pa');
+  if(!S.msg){el.hidden=true;el.innerHTML='';return;}
+  el.hidden=false;
+  el.className='pa '+S.msg.kind;
+  el.innerHTML=`${SPEAKER}<div class="tx"><span class="lb">${LABEL[S.msg.kind]}</span>${S.msg.html}</div>`;
+  el.classList.remove('pop');void el.offsetWidth;el.classList.add('pop');
+}
+function nudge(){
+  const el=$('#pa');
+  if(el.hidden)return;
+  const r=el.getBoundingClientRect(),behavior=reduceMotion()?'auto':'smooth';
+  if(r.bottom>window.innerHeight-92)window.scrollBy({top:r.bottom-window.innerHeight+104,behavior});
+  else if(r.top<0)window.scrollBy({top:r.top-16,behavior});
+}
+function say(kind,html){S.msg={kind,html};paintPA();setTimeout(nudge,0);}
+function paintStats(){$('#stats').textContent=`Ошибки ${S.mistakes} · Подсказки ${S.hints}`;}
+
+/* ======================= экраны ======================= */
+const head=(title,meta)=>`<div class="sh-head"><span class="pl">${S.pi+1}</span><h2 data-h tabindex="-1">${title}</h2><span class="meta">${meta}</span><span class="wm">${LIGHT}</span></div>`;
+const V={};
+
+V.brief=()=>`
+<div class="sh-head hero"><span class="pl">№</span><h2 data-h tabindex="-1">Радиограмма с маяка</h2><span class="meta">радиорубка, маяк «Северный»</span><span class="wm">${LIGHT}</span></div>
+<div class="sh-body">
+<p class="lead">Ранним утром радист маяка «Северный» принял радиограмму с корабля «Альбатрос». Из-за помех в ней пропали все знаки препинания и заглавные буквы. Капитан ждёт ответа, а от точности зависит, куда пойдёт корабль.</p>
+<p class="lead">Вы радист. Нужно понять, где заканчивается каждая мысль, и поставить нужный знак.</p>
+<ul class="rules"><li>Читайте вслух: конец мысли слышно по голосу.</li><li>Знак ставят в промежутке между словами: нажмите на промежуток.</li><li>Ошибки попадают в журнал, подсказок три.</li></ul>
+<div class="row"><button type="button" class="btn btn-go" data-act="start" data-af>Принять радиограмму</button></div>
+</div>`;
+
+V.explain=st=>{
+  const total=st.points.length,n=st.all?total:Math.min(S.rev,total),last=n>=total;
+  const list=st.points.slice(0,n).map((p,i)=>`<li${i===n-1&&n>1&&!st.all?' class="new"':''}><span class="no">${i+1}</span><div>${p}</div></li>`).join('');
+  const btn=last?`<button type="button" class="btn btn-go" data-act="exdone" data-af>${st.go||'К заданию'}</button>`:`<button type="button" class="btn btn-go" data-act="exmore" data-af>Дальше</button>`;
+  return `${head(st.title,st.meta||'объяснение')}<div class="sh-body">${st.intro?`<p class="task">${st.intro}</p>`:''}<ol class="ex">${list}</ol><div class="row">${btn}</div></div>`;
+};
+
+V.mc=st=>{
+  const m=S.mc,it=st.items[m.i],total=st.items.length;
+  const dots=`<div class="prog" aria-hidden="true">${st.items.map((_,i)=>`<i class="${i<m.i?'d':i===m.i?'c':''}"></i>`).join('')}</div>`;
+  let prompt=it.p;
+  const rightOpt=it.o.find(o=>o.ok);
+  if(prompt.includes('▢'))prompt=prompt.replace('▢',m.lock?esc(rightOpt.t):'&nbsp;').replace('class="slot"',m.lock?'class="slot on"':'class="slot"');
+  const cue=it.cue?`<p class="cue">${it.cue}</p>`:'';
+  let af=false;
+  const opts=m.ord.map(k=>{
+    const o=it.o[k],dis=m.no.includes(k)||m.lock;
+    const a=!dis&&!af?(af=true,' data-af'):'';
+    const cls=['opt'];
+    if(st.mono)cls.push('mono');
+    if(m.no.includes(k))cls.push('no');
+    if(m.lock&&o.ok)cls.push('right');
+    return `<button type="button" class="${cls.join(' ')}" data-act="mc" data-k="${k}"${dis?' disabled':''}${a}>${o.t}</button>`;
+  }).join('');
+  const ctl=m.lock?`<div class="row"><button type="button" class="btn btn-go" data-act="mcnext" data-af>${m.i===total-1?'Дальше':'Следующее'}</button></div>`:'';
+  return `${head(st.title,st.meta||'задание')}<div class="sh-body">${st.intro?`<p class="task">${st.intro}</p>`:''}${dots}<p class="mc-p">${prompt}</p>${cue}<div class="opts">${opts}</div>${ctl}</div>`;
+};
+
+const menuHtml=(st,i)=>{
+  const T=S.tape;
+  const btns=st.signs.map(s=>`<button type="button" data-act="sign" data-i="${i}" data-s="${s}" aria-label="Знак ${s}">${s}</button>`).join('');
+  return `<div class="sgm" role="group" aria-label="Выберите знак">${btns}${T.cuts[i]?`<button type="button" class="x" data-act="sign" data-i="${i}" data-s="" aria-label="Убрать знак">убрать</button>`:''}</div>`;
+};
+function sentencesOf(st,cuts){
+  const out=[];let cur=[];
+  st.words.forEach((w,i)=>{cur.push(w);if(cuts[i]){out.push({i,text:capFirst(cur.join(' ')),sign:cuts[i]});cur=[];}});
+  return out;
+}
+V.tape=st=>{
+  const T=S.tape;
+  const th=`<div class="tape-h"><b>${esc(st.tag||'Радиограмма')}</b><span>${esc(st.route||'«Альбатрос» → маяк «Северный»')}</span></div>`;
+  let h='';
+  st.words.forEach((w,i)=>{
+    const shown=(i===0||T.cuts[i-1])?capFirst(w):w;
+    const sg=T.cuts[i];
+    const cls=['gp'];if(sg)cls.push('has');if(T.flags[i])cls.push(T.flags[i]);if(T.hintGap===i)cls.push('hint');
+    h+=`<span class="tw">${esc(shown)}</span><span class="gw"><button type="button" class="${cls.join(' ')}" data-act="gap" data-i="${i}"${T.ok?' disabled':''} aria-label="Промежуток после слова «${esc(w)}»${sg?', стоит знак '+sg:''}">${sg?`<span class="sg">${sg}</span>`:''}</button>${T.menu===i?menuHtml(st,i):''}</span> `;
+  });
+  let body;
+  if(T.ok){
+    const items=sentencesOf(st,T.cuts).map((s,k)=>`<li><span class="no">${k+1}</span><div class="tx">${esc(s.text)}<b>${esc(s.sign)}</b></div><div class="nt">${esc(st.cut[s.i].why)}</div></li>`).join('');
+    body=`<div class="tape" aria-label="Лента с радиограммой">${th}${h}</div><ol class="restored">${items}</ol><div class="row"><button type="button" class="btn btn-go" data-act="tapenext" data-af>Дальше</button></div>`;
+  }else{
+    body=`<div class="tape" aria-label="Лента с радиограммой">${th}${h}</div><div class="row"><button type="button" class="btn btn-go" data-act="tapecheck">Передать</button><button type="button" class="btn btn-line sm" data-act="tapehint"${S.hints<1?' disabled':''}>Подсказка</button><button type="button" class="btn btn-line sm" data-act="tapereset">Сбросить</button></div>`;
+  }
+  return `${head(st.title,st.meta||'лента')}<div class="sh-body"><p class="task">${st.intro}</p>${body}</div>`;
+};
+
+const KT={s:'повествовательное',q:'вопросительное',c:'побудительное'};
+function kindsSents(st){
+  const src=STEPS.find(x=>x.id===st.from),signs=S.signsOf[src.id]||{};
+  const out=[];let cur=[];
+  src.words.forEach((w,i)=>{
+    cur.push(w);const ex=src.cut[i];
+    if(ex){const sg=signs[i]||ex.s[0];out.push({text:capFirst(cur.join(' '))+sg,k:ex.k,sign:sg});cur=[];}
+  });
+  return out;
+}
+V.kinds=st=>{
+  const K=S.kn;
+  const rows=K.sents.map((s,r)=>{
+    const a=K.ans[r]||{},res=K.res&&K.res[r];
+    const seg=(g,opts)=>`<div class="kn-grp"><span class="kn-lb">${g==='a'?'Цель':'Интонация'}</span><div class="seg">${opts.map(o=>`<button type="button" class="${a[g]===o?'on':''}" data-act="kn" data-r="${r}" data-g="${g}" data-v="${o}"${K.ok?' disabled':''}>${o}</button>`).join('')}</div></div>`;
+    return `<div class="kn-row${res?(res.ok?' good':' bad'):''}"><div class="kn-tx">${esc(s.text)}</div>${seg('a',['повествовательное','вопросительное','побудительное'])}${seg('b',['невосклицательное','восклицательное'])}${res&&!res.ok?`<div class="kn-nt">${esc(res.note)}</div>`:''}</div>`;
+  }).join('');
+  const ctl=K.ok?`<div class="row"><button type="button" class="btn btn-go" data-act="knnext" data-af>Дальше</button></div>`:`<div class="row"><button type="button" class="btn btn-go" data-act="kncheck">Проверить</button></div>`;
+  return `${head(st.title,'вид предложения')}<div class="sh-body"><p class="task">${st.intro}</p><div class="kn">${rows}</div>${ctl}</div>`;
+};
+
+V.write=st=>{
+  const W=S.wr;
+  const rows=st.rows.map((r,i)=>{
+    const res=W.res&&W.res[i];
+    return `<div class="wr-row${res?(res.ok?' good':' bad'):''}"><div class="wr-lb"><span class="no">${i+1}</span><span>${r.lab}</span><em>${r.kind}</em></div><input type="text" class="wr-in" id="wr${i}" data-i="${i}" value="${esc(W.vals[i])}" autocomplete="off" spellcheck="false" aria-label="Предложение ${i+1}"${W.ok?' readonly':''}>${res?`<div class="wr-nt">${esc(res.note)}</div>`:''}</div>`;
+  }).join('');
+  const ctl=W.ok?`<div class="row"><button type="button" class="btn btn-go" data-act="wrnext" data-af>Дальше</button></div>`:`<div class="row"><button type="button" class="btn btn-go" data-act="wrcheck">Передать ответ</button></div>`;
+  return `${head(st.title,'письмо')}<div class="sh-body"><p class="task">${st.intro}</p><div class="wr">${rows}</div>${ctl}</div>`;
+};
+
+V.end=()=>{
+  const rank=S.mistakes<=8?'старший радист':S.mistakes<=18?'радист':'стажёр радиорубки';
+  return `<div class="sh-head hero"><span class="pl">✓</span><h2 data-h tabindex="-1">Радиограмма принята</h2><span class="meta">связь с кораблём установлена</span><span class="wm">${LIGHT}</span></div>
+<div class="sh-body"><div class="verdict"><span class="stamp in">Принято</span></div>
+<p class="lead">Корабль «Альбатрос» получил ответ и вошёл в порт. Капитан благодарит радиста: сообщения были понятны с первого прочтения.</p>
+<h3 class="sub">Что установлено</h3><ol class="found">
+<li><span class="no">1</span><span><b>Предложение — это законченная мысль.</b> Конец слышно по голосу: он опускается. На письме в начале заглавная буква, в конце знак.</span></li>
+<li><span class="no">2</span><span><b>Есть три цели.</b> Сообщаем (повествовательное), спрашиваем (вопросительное), просим или приказываем (побудительное).</span></li>
+<li><span class="no">3</span><span><b>Знак выбирают двумя вопросами:</b> «Зачем я это говорю?» и «С каким чувством?». Сильное чувство — восклицательный знак.</span></li>
+</ol>
+<p class="stats-line">Ошибок: ${S.mistakes}. Подсказок использовано: ${3-S.hints}. Звание: <b>${rank}</b>.</p>
+<div class="row"><button type="button" class="btn btn-go" data-act="again" data-af>Сыграть ещё раз</button></div></div>`;
+};
+
+/* ======================= отрисовка ======================= */
+function viewHtml(){
+  if(S.phase==='brief')return V.brief();
+  if(S.phase==='end')return V.end();
+  const st=step();
+  return V[st.t](st);
+}
+function nowHtml(){
+  if(S.phase==='brief')return '<span class="k">Сейчас</span>Радиограмма принята, ждём расшифровки';
+  if(S.phase==='end')return '<span class="k">Итог</span>связь установлена';
+  const st=step();
+  return `<span class="k">Блок ${st.b-1}</span>${esc(BLOCKS[st.b])} · ${esc(st.title)}`;
+}
+/* корабль плывёт от гавани к маяку, буй загорается за каждый пройденный шаг */
+const shipX=i=>11+58*(i/Math.max(1,STEPS.length-1));
+function paintScene(){
+  const lane=$('#buoys');
+  if(lane.childElementCount!==STEPS.length)lane.innerHTML=STEPS.map((_,i)=>`<i class="bo" style="left:${shipX(i).toFixed(2)}%;--d:-${(i*0.37).toFixed(2)}s"></i>`).join('');
+  [...lane.children].forEach((b,i)=>{
+    const done=!!S.seen[STEPS[i].id]||S.phase==='end',cur=S.phase==='step'&&S.pi===i;
+    b.classList.toggle('d',done);b.classList.toggle('c',cur);
+  });
+  const x=S.phase==='brief'?5:S.phase==='end'?76:shipX(S.pi);
+  $('#ship').style.left=x.toFixed(2)+'%';
+  $('#scene').classList.toggle('arrived',S.phase==='end');
+}
+/* меню знаков не должно выходить за край экрана */
+function placeMenu(){
+  const m=$('.sgm');
+  if(!m)return;
+  m.style.transform='translateX(-50%)';
+  const r=m.getBoundingClientRect(),vw=document.documentElement.clientWidth,pad=8;
+  let dx=0;
+  if(r.left<pad)dx=pad-r.left;
+  else if(r.right>vw-pad)dx=vw-pad-r.right;
+  if(dx)m.style.transform=`translateX(calc(-50% + ${Math.round(dx)}px))`;
+}
+function render(){
+  document.documentElement.dataset.b=S.phase==='step'?String(step().b):'0';
+  $('#now').innerHTML=nowHtml();
+  $('#stage').innerHTML=viewHtml();
+  paintScene();
+  paintStats();paintPA();paintNav();placeMenu();
+  if(S.refocus){
+    const el=(S.refocus==='af'&&$('#stage [data-af]'))||$('#stage [data-h]');
+    if(el)el.focus({preventScroll:true});
+    S.refocus=null;
+  }
+}
+const toTop=()=>window.scrollTo({top:0,behavior:reduceMotion()?'auto':'smooth'});
+function confetti(n){
+  if(reduceMotion())return;
+  const host=$('#stage');
+  const old=host.querySelector('.confetti');if(old)old.remove();
+  const box=document.createElement('div');
+  box.className='confetti';box.setAttribute('aria-hidden','true');
+  const colors=['#ffc933','#0a9aa3','#d4651a','#2f6fda','#e24a3b','#ffffff'];
+  for(let i=0;i<n;i++){
+    const p=document.createElement('i');
+    p.style.left=(Math.random()*100)+'%';
+    p.style.background=colors[i%colors.length];
+    p.style.setProperty('--dx',(Math.random()*160-80)+'px');
+    p.style.setProperty('--r',(Math.random()*720-360)+'deg');
+    p.style.animationDelay=(Math.random()*.6)+'s';
+    p.style.animationDuration=(1.6+Math.random()*1.2)+'s';
+    box.appendChild(p);
+  }
+  host.appendChild(box);
+  setTimeout(()=>box.remove(),3600);
+}
+
+/* ======================= ход урока ======================= */
+function enterStep(){
+  S.rev=1;S.msg=null;
+  const st=step();
+  if(st.t==='mc'){S.mc={i:0,no:[],lock:false,ord:[]};prepItem();}
+  if(st.t==='tape')S.tape={cuts:{},flags:{},checked:false,ok:false,hintGap:null,menu:null};
+  if(st.t==='kinds')S.kn={sents:kindsSents(st),ans:{},res:null,ok:false};
+  if(st.t==='write')S.wr={vals:st.rows.map(()=>''),res:null,ok:false};
+}
+function finishStep(){S.seen[step().id]=1;}
+function nextStep(){
+  finishStep();
+  if(S.pi<STEPS.length-1){S.pi++;enterStep();S.refocus='h';render();toTop();}
+  else{S.phase='end';S.msg=null;S.refocus='h';render();toTop();confetti(90);}
+}
+
+/* объяснение */
+function onExMore(){S.rev++;S.refocus='af';render();}
+
+/* выбор ответа */
+function prepItem(){
+  const st=step(),m=S.mc,it=st.items[m.i];
+  m.no=[];m.lock=false;
+  m.ord=st.fix||it.fix?it.o.map((_,k)=>k):shuffle(it.o.map((_,k)=>k));
+}
+function mcAdvance(){
+  const st=step(),m=S.mc;
+  if(m.i>=st.items.length-1){nextStep();return;}
+  m.i++;prepItem();S.msg=null;S.refocus='af';render();
+}
+function onMC(k){
+  const st=step(),m=S.mc,it=st.items[m.i],o=it.o[k];
+  if(m.lock)return;
+  if(o.ok){m.lock=true;S.refocus='af';render();say('ok',o.why||'Верно.');}
+  else{m.no.push(k);mist();render();say('bad',o.why||'Не то. Подумайте ещё.');}
+}
+
+/* лента: знаки между словами */
+function onGap(i){
+  const st=step(),T=S.tape;
+  if(T.ok)return;
+  T.hintGap=null;
+  if(st.signs.length===1){
+    if(T.cuts[i])delete T.cuts[i];else T.cuts[i]=st.signs[0];
+    T.flags={};T.menu=null;render();
+  }else{
+    T.menu=(T.menu===i)?null:i;render();
+  }
+}
+function onSign(i,s){
+  const T=S.tape;
+  if(s)T.cuts[i]=s;else delete T.cuts[i];
+  T.menu=null;T.flags={};render();
+}
+function signWhy(ex,pl){
+  if(ex.k==='q')return 'Это вопрос: голос поднимается. Нужен знак «?».';
+  if(ex.k==='c')return pl==='?'?'Это не вопрос, а просьба или указание.':'';
+  if(pl==='?')return 'Здесь радист не спрашивает, а сообщает.';
+  if(pl==='!')return 'Здесь нет сильного чувства, это спокойное сообщение. Нужна точка.';
+  return '';
+}
+function tapeEval(st){
+  const T=S.tape,r={good:[],bad:[],missing:[]};
+  st.words.forEach((_,i)=>{
+    const ex=st.cut[i],pl=T.cuts[i];
+    if(ex&&pl){if(ex.s.includes(pl))r.good.push(i);else r.bad.push({i,why:signWhy(ex,pl)});}
+    else if(ex)r.missing.push(i);
+    else if(pl)r.bad.push({i,why:(st.no&&st.no[i])||NOEND});
+  });
+  return r;
+}
+function onTapeCheck(){
+  const st=step(),T=S.tape;
+  if(!Object.keys(T.cuts).length){say('info','Нажмите в промежутках между словами, где заканчивается мысль, и поставьте знак.');return;}
+  T.menu=null;T.hintGap=null;
+  const r=tapeEval(st);
+  T.flags={};r.good.forEach(i=>{T.flags[i]='good';});r.bad.forEach(b=>{T.flags[b.i]='bad';});
+  if(!r.bad.length&&!r.missing.length){
+    T.ok=true;T.flags={};S.signsOf[st.id]=Object.assign({},T.cuts);S.seen[st.id]=1;
+    S.refocus='af';render();say('ok',st.okMsg);return;
+  }
+  mist();
+  let m='';
+  if(r.bad.length){const b=r.bad[0];m+=`После слова «${esc(st.words[b.i])}» неверно: ${esc(b.why)}`;}
+  if(r.missing.length)m+=(m?' ':'')+(r.bad.length?'Кроме того, ещё':'Пока')+` не найдено границ: ${r.missing.length}. Прочитайте вслух: где голос опускается?`;
+  render();say('bad',m);
+}
+function onTapeHint(){
+  const st=step(),T=S.tape;
+  if(S.hints<1||T.ok)return;
+  const r=tapeEval(st);
+  if(!r.missing.length){say('info','Лишних или недостающих знаков в других местах нет, проверьте уже поставленные знаки.');return;}
+  const i=r.missing[0];
+  S.hints--;T.hintGap=i;T.menu=null;
+  render();
+  say('info',`Загляните в промежуток после слова «${esc(st.words[i])}»: там мысль уже закончена.`);
+}
+function onTapeReset(){S.tape.cuts={};S.tape.flags={};S.tape.menu=null;S.tape.hintGap=null;S.msg=null;render();}
+
+/* вид предложения */
+function onKn(r,g,v){
+  const K=S.kn;if(K.ok)return;
+  K.ans[r]=K.ans[r]||{};K.ans[r][g]=v;K.res=null;render();
+}
+function onKnCheck(){
+  const K=S.kn;
+  const miss=K.sents.findIndex((_,r)=>!(K.ans[r]&&K.ans[r].a&&K.ans[r].b));
+  if(miss>=0){say('info','Выберите и цель, и интонацию во всех предложениях.');return;}
+  let bad=0;
+  K.res=K.sents.map((s,r)=>{
+    const a=K.ans[r],wantA=KT[s.k],wantB=(s.sign==='!'||s.sign==='?!')?'восклицательное':'невосклицательное';
+    const notes=[];
+    if(a.a!==wantA)notes.push(s.k==='q'?'Радист спрашивает, значит, предложение вопросительное.':s.k==='c'?'Радист просит или приказывает, значит, предложение побудительное.':'Радист сообщает, значит, предложение повествовательное.');
+    if(a.b!==wantB)notes.push(wantB==='восклицательное'?'В конце стоит «!»: сильное чувство, предложение восклицательное.':'В конце нет «!»: сказано спокойно, предложение невосклицательное.');
+    if(notes.length)bad++;
+    return {ok:!notes.length,note:notes.join(' ')};
+  });
+  if(!bad){K.ok=true;S.seen[step().id]=1;S.refocus='af';render();say('ok','Все пять определены верно. Цель говорит о том, зачем мы говорим, а интонация о том, с каким чувством.');}
+  else{mist();render();say('bad',`Неверно определено предложений: ${bad}. Прочитайте их вслух с нужной интонацией.`);}
+}
+
+/* письмо */
+const firstWord=t=>(t.trim().toLowerCase().replace(/^[«"„]+/,'').match(/^[a-zа-яё0-9-]+/i)||[''])[0];
+function onWrCheck(){
+  const st=step(),W=S.wr;
+  const res=st.rows.map((r,i)=>{
+    const v=(W.vals[i]||'').trim();
+    if(!v)return {ok:false,note:'Напишите предложение.'};
+    if(v.split(/\s+/).length<2)return {ok:false,note:'Нужно предложение хотя бы из двух слов.'};
+    if(!/^[«"„]?[А-ЯЁA-Z]/.test(v))return {ok:false,note:'Начните с заглавной буквы.'};
+    const m=v.match(/[.!?]+$/);
+    if(!m)return {ok:false,note:'В конце нужен знак. '+r.hint};
+    if(/[.!?]["»”]?\s+[«"„]?[А-ЯЁA-Zа-яёa-z]/.test(v.slice(0,v.length-m[0].length)))return {ok:false,note:'В строке больше одного предложения. Оставьте одно.'};
+    if(!r.end.includes(m[0]))return {ok:false,note:`Знак «${m[0]}» не подходит. ${r.hint}`};
+    return {ok:true,note:''};
+  });
+  if(res.every(x=>x.ok)){
+    const seen={};
+    st.rows.forEach((_,i)=>{const w=firstWord(W.vals[i]);(seen[w]=seen[w]||[]).push(i);});
+    Object.keys(seen).forEach(w=>{if(seen[w].length>1)seen[w].forEach(i=>{res[i]={ok:false,note:`Начало совпадает с предложением ${seen[w].filter(x=>x!==i).map(x=>x+1).join(', ')}. Начните это предложение по-другому.`};});});
+  }
+  W.res=res;
+  if(res.every(x=>x.ok)){W.ok=true;S.seen[st.id]=1;S.refocus='af';render();say('ok',st.okMsg);confetti(40);}
+  else{mist();render();say('bad','В ответе есть что исправить: смотрите замечания под строками.');}
+}
+
+/* переход по слайдам (стрелки) */
+function slides(){
+  const L=[{k:'brief',t:'Начало',b:0}];
+  STEPS.forEach((s,pi)=>L.push({k:'step',pi,t:s.title,b:s.b}));
+  L.push({k:'end',t:'Радиограмма принята',b:5});
+  return L;
+}
+function curIdx(L){
+  if(S.phase==='brief')return 0;
+  if(S.phase==='end')return L.length-1;
+  return S.pi+1;
+}
+function goSlide(idx,dir){
+  const L=slides();
+  idx=Math.max(0,Math.min(L.length-1,idx));
+  const T=L[idx];
+  for(let i=1;i<=Math.min(idx,STEPS.length);i++)S.seen[STEPS[i-1].id]=1;   /* всё позади считается пройденным */
+  S.msg=null;
+  if(T.k==='brief')S.phase='brief';
+  else if(T.k==='step'){S.phase='step';S.pi=T.pi;enterStep();if(step().t==='explain'&&dir<0)S.rev=step().points.length;}
+  else S.phase='end';
+  render();toTop();
+  if(T.k==='end')confetti(60);
+}
+function slideStep(dir){
+  const L=slides(),i=curIdx(L);
+  if(S.phase==='step'){
+    const st=step();
+    if(st.t==='explain'&&dir>0&&!st.all&&S.rev<st.points.length){S.rev++;render();return;}
+  }
+  goSlide(i+dir,dir);
+}
+function renderToc(L,cur){
+  let h='',last=-1;
+  L.forEach((x,k)=>{
+    if(x.b!==last){
+      last=x.b;
+      h+=x.b===0?'<h3><i style="--rc:#4aa3ff"></i>Вступление</h3>':x.b===5?'<h3><i style="--rc:#ffb21a"></i>Финал</h3>':`<h3><i style="--rc:${BC[x.b-2]}"></i>Блок ${x.b-1} · ${esc(BLOCKS[x.b])}</h3>`;
+    }
+    h+=`<button type="button" data-act="goto" data-i="${k}"${k===cur?' class="cur" aria-current="step"':''}><span class="no">${k+1}</span><span>${esc(x.t)}</span></button>`;
+  });
+  $('#toc').innerHTML=h;
+  const c=$('#toc .cur');
+  if(c)$('#toc').scrollTop=Math.max(0,c.offsetTop-90);
+}
+function toggleToc(force){
+  const el=$('#toc'),open=force===undefined?el.hidden:force;
+  el.hidden=!open;
+  $('#navMid').setAttribute('aria-expanded',String(open));
+  if(open){const L=slides();renderToc(L,curIdx(L));}
+}
+function paintNav(){
+  const L=slides(),i=curIdx(L),T=L[i];
+  $('#navPrev').disabled=i===0;
+  $('#navNext').disabled=i===L.length-1;
+  $('#navNo').textContent=`${i+1} / ${L.length}`;
+  $('#navTitle').textContent=T.k==='step'?`${BLOCKS[T.b]} · ${T.t}`:T.t;
+  if(!$('#toc').hidden)renderToc(L,i);
+}
+
+/* ======================= события ======================= */
+document.addEventListener('click',e=>{
+  if(!$('#toc').hidden&&!e.target.closest('#toc,#navMid'))toggleToc(false);
+  if(S&&S.tape&&S.tape.menu!==null&&!e.target.closest('.gw')){S.tape.menu=null;render();}
+  const b=e.target.closest('[data-act]');
+  if(!b||b.disabled)return;
+  switch(b.dataset.act){
+    case 'prev':slideStep(-1);break;
+    case 'next':slideStep(1);break;
+    case 'toc':toggleToc();break;
+    case 'goto':{const k=+b.dataset.i,cur=curIdx(slides());toggleToc(false);goSlide(k,k>cur?1:-1);break;}
+    case 'start':S.phase='step';S.pi=0;enterStep();S.refocus='h';render();toTop();break;
+    case 'exmore':onExMore();break;
+    case 'exdone':nextStep();break;
+    case 'mc':onMC(+b.dataset.k);break;
+    case 'mcnext':mcAdvance();break;
+    case 'gap':onGap(+b.dataset.i);break;
+    case 'sign':onSign(+b.dataset.i,b.dataset.s);break;
+    case 'tapecheck':onTapeCheck();break;
+    case 'tapehint':onTapeHint();break;
+    case 'tapereset':onTapeReset();break;
+    case 'tapenext':nextStep();break;
+    case 'kn':onKn(+b.dataset.r,b.dataset.g,b.dataset.v);break;
+    case 'kncheck':onKnCheck();break;
+    case 'knnext':nextStep();break;
+    case 'wrcheck':onWrCheck();break;
+    case 'wrnext':nextStep();break;
+    case 'again':S=newState();render();toTop();break;
+  }
+});
+document.addEventListener('input',e=>{
+  const t=e.target;
+  if(t&&t.classList&&t.classList.contains('wr-in')&&S.wr){S.wr.vals[+t.dataset.i]=t.value;}
+});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){
+    if(!$('#toc').hidden)toggleToc(false);
+    else if(S.tape&&S.tape.menu!==null){S.tape.menu=null;render();}
+    return;
+  }
+  if(e.key==='Enter'&&e.target&&e.target.classList&&e.target.classList.contains('wr-in')){e.preventDefault();onWrCheck();return;}
+  if((e.key==='ArrowRight'||e.key==='ArrowLeft')&&!e.altKey&&!e.ctrlKey&&!e.metaKey&&!e.shiftKey
+     &&!/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)){
+    e.preventDefault();slideStep(e.key==='ArrowRight'?1:-1);
+  }
+});
+
+S=newState();
+render();
+})();
+</script>
+</body>
+</html>

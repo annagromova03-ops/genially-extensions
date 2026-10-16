@@ -1,0 +1,865 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Проверка показаний</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pangolin&family=PT+Sans:wght@400;700&family=Russo+One&display=swap">
+<style>
+:root{
+  --desk:#e6edf7;--paper:#fffdf5;--grid:#cfe0f3;--margin:#f08c8c;
+  --ink:#17235f;--txt:#1d2a38;--mut:#5d6b7e;--card:#ffffff;--line:#d6e0ec;
+  --hl:#ffe45e;--hl2:#ffd21c;--sel:#ffb703;--ok:#c9f2d1;--ok2:#2f9e44;
+  --ask:#bfe0ff;--ask2:#9fd0ff;--ask3:#1c7ed6;
+  --bad:#d6336c;--blue:#2457d6;--blue2:#173fa8;--teal:#0f8b8d;--warn:#f08c00;
+  --sheet:44vh;color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font:16px/1.45 'PT Sans',system-ui,-apple-system,'Segoe UI',sans-serif;color:var(--txt);background:var(--desk);
+  background-image:radial-gradient(1200px 520px at 6% -12%,#f7fbff 0,transparent 60%),radial-gradient(900px 520px at 100% 100%,#d4e2f6 0,transparent 55%);
+  background-attachment:fixed;min-height:100vh}
+.wrap{max-width:1180px;margin:0 auto;padding:16px 16px 28px}
+button{font:inherit;color:inherit}
+
+/* шапка */
+.top{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:12px}
+.logo{width:46px;height:46px;border-radius:14px;background:linear-gradient(135deg,#2457d6,#6d4bd1);display:grid;place-items:center;color:#fff;box-shadow:0 6px 16px rgba(36,87,214,.35);flex:none}
+.top h1{font:400 24px/1.1 'Russo One',sans-serif;margin:0}
+.top .sub{color:var(--mut);font-size:14px;margin-top:2px}
+.prog{margin-left:auto;min-width:240px}
+.prog .row{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-size:14px;color:var(--mut);margin-bottom:5px}
+.prog .row b{color:var(--txt);font-size:16px}
+.bar{height:10px;background:#d3deec;border-radius:99px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#2f9e44,#74c69d);border-radius:99px;transition:width .5s ease}
+.lnk{background:none;border:0;padding:0;color:var(--blue);cursor:pointer;font-size:14px;text-decoration:underline;text-underline-offset:3px}
+.lnk:hover{color:var(--blue2)}
+
+/* виды ошибок */
+.cats{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px}
+.cat{display:inline-flex;align-items:center;gap:8px;border:2px solid var(--line);background:#fff;border-radius:99px;padding:6px 13px 6px 10px;font:700 14px 'PT Sans',sans-serif;cursor:pointer;transition:border-color .15s,opacity .15s}
+.cat .dot{width:12px;height:12px;border-radius:50%;background:var(--cc,#888);flex:none}
+.cat .n{color:var(--mut)}
+.cat:hover{border-color:var(--cc,#888)}
+.cat[aria-pressed="false"]{opacity:.5;background:transparent;border-style:dashed}
+.cat.full .n{color:var(--ok2)}
+
+/* раскладка */
+.layout{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(320px,1fr);gap:20px;align-items:start}
+
+/* страница тетради */
+.paper{position:relative;background-color:var(--paper);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:24px 24px;background-position:0 11px;
+  border-radius:8px;padding:22px 30px 40px 76px;min-height:320px;overflow:hidden;
+  box-shadow:0 1px 0 #fff inset,0 18px 40px rgba(30,50,90,.16),0 2px 6px rgba(30,50,90,.12)}
+.paper::before{content:"";position:absolute;left:56px;top:0;bottom:0;width:2px;background:var(--margin);opacity:.7}
+.paper::after{content:"";position:absolute;left:16px;top:30px;bottom:30px;width:14px;
+  background:radial-gradient(circle,#c4d1e3 0 5px,transparent 6px) 0 0/14px 72px repeat-y}
+.ink{font-family:'Pangolin','Segoe Print','Comic Sans MS',cursive;font-size:25px;line-height:48px;color:var(--ink);position:relative;z-index:1}
+.ink p{margin:0;text-indent:44px}
+.note{margin:12px 8px 12px 18px;padding:2px 20px 2px 16px;border:2.5px solid var(--ink);border-radius:6px 16px 6px 12px;transform:rotate(-.7deg);background:rgba(255,255,255,.6)}
+.note p{text-indent:0}
+.stamp{position:absolute;right:34px;bottom:30px;z-index:3;pointer-events:none;opacity:0;transform:rotate(-13deg);
+  font:400 34px/1 'Russo One',sans-serif;letter-spacing:2px;color:var(--bad);border:5px solid var(--bad);border-radius:10px;padding:8px 18px;background:rgba(255,255,255,.35)}
+.paper.stamped .stamp{animation:stampIn .55s ease-out forwards}
+
+/* маркер */
+.mk{border-radius:5px;padding:1px 3px;margin:0 -1px;-webkit-box-decoration-break:clone;box-decoration-break:clone;cursor:pointer;transition:background .2s,box-shadow .2s;user-select:none;-webkit-user-select:none;outline:none}
+.mk.open{background:linear-gradient(transparent 6%,var(--hl) 6% 94%,transparent 94%)}
+.mk.open:hover,.mk.open:focus-visible{background:linear-gradient(transparent 6%,var(--hl2) 6% 94%,transparent 94%)}
+.mk.open.askonly{background:linear-gradient(transparent 6%,var(--ask) 6% 94%,transparent 94%)}
+.mk.open.askonly:hover,.mk.open.askonly:focus-visible{background:linear-gradient(transparent 6%,var(--ask2) 6% 94%,transparent 94%)}
+.mk.part{border-bottom:3px dashed var(--ok2)}
+.mk.q::before{content:"?";display:inline-block;width:1.2em;height:1.2em;text-align:center;border-radius:50%;background:var(--ask3);color:#fff;font:700 .6em/1.2 'PT Sans',sans-serif;margin-right:4px;vertical-align:.4em;text-indent:0}
+.mk.sel{background:var(--sel)!important;box-shadow:0 0 0 3px rgba(240,140,0,.5);animation:pulse 1.8s ease-in-out infinite}
+.mk.ok{background:linear-gradient(transparent 6%,var(--ok) 6% 94%,transparent 94%);border-bottom:2px solid var(--ok2)}
+.mk.ok.askonly{background:linear-gradient(transparent 6%,#d6ecff 6% 94%,transparent 94%);border-bottom-color:var(--ask3)}
+.mk.ok.del s{text-decoration-color:var(--ok2);text-decoration-thickness:2px;opacity:.7}
+.mk.ok.sel{box-shadow:0 0 0 3px rgba(47,158,68,.45);animation:none;background:var(--ok)!important}
+.mk.fresh{animation:pop .6s ease-out}
+
+/* панель */
+.panel{position:sticky;top:14px;max-height:calc(100vh - 28px);overflow:auto;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px 18px 16px;box-shadow:0 14px 34px rgba(20,40,80,.14)}
+.p-step{font-size:13px;color:var(--mut);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.p-h{font:400 20px/1.2 'Russo One',sans-serif;margin:0 0 8px}
+.lead{margin:0 0 12px;color:#33445a}
+.small{font-size:14px;color:var(--mut)}
+.ctx{font-family:'Pangolin','Segoe Print',cursive;font-size:18px;line-height:1.5;color:var(--ink);background:#f6f9fe;border:1px dashed #b9cbe3;border-radius:10px;padding:8px 12px;margin:0 0 12px}
+.ctx mark{background:var(--hl);border-radius:4px;padding:0 3px;color:inherit}
+.field,.ta{width:100%;font:400 24px/1.3 'Pangolin','Segoe Print',cursive;color:var(--ink);padding:9px 12px;border:2.5px solid #b9cbe3;border-radius:12px;background:#fff;outline:none;transition:border-color .15s,box-shadow .15s}
+.ta{font-size:20px;min-height:78px;resize:vertical}
+.field:focus,.ta:focus{border-color:var(--blue);box-shadow:0 0 0 4px rgba(36,87,214,.18)}
+.field.shake{animation:shake .35s}
+.msg{min-height:22px;margin:8px 0 0;font-weight:700}
+.msg.bad{color:var(--bad)}
+.msg.ok{color:#2b8a3e}
+.btnrow{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;align-items:center}
+.btn{border:0;border-radius:12px;padding:10px 16px;font:700 15px 'PT Sans',sans-serif;cursor:pointer;background:var(--blue);color:#fff;box-shadow:0 3px 0 var(--blue2);transition:transform .08s,box-shadow .08s,background .15s}
+.btn:hover{background:#2f63e6}
+.btn:active{transform:translateY(2px);box-shadow:0 1px 0 var(--blue2)}
+.btn.sec{background:#fff;color:var(--blue2);border:2px solid #b9cbe3;box-shadow:none;padding:8px 14px}
+.btn.sec:hover{border-color:var(--blue);background:#f3f7ff}
+.btn.sec:disabled{opacity:.45;cursor:default}
+.btn.pulse{animation:pulseBtn 1.4s ease-in-out infinite}
+.btn.big{padding:12px 22px;font-size:16px}
+.hint{display:flex;gap:10px;align-items:flex-start;margin-top:10px;background:#ecfaf8;border-left:4px solid var(--teal);border-radius:8px;padding:9px 12px;font-size:15px}
+.hint svg{flex:none;margin-top:1px;color:var(--teal)}
+.askbox{background:#eaf5ff;border-left:4px solid var(--ask3);border-radius:8px;padding:10px 12px;margin:0 0 12px;font-size:16px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.chip{font:400 21px/1.2 'Pangolin','Segoe Print',cursive;color:var(--ink);background:#fff;border:2.5px solid #b9cbe3;border-radius:12px;padding:7px 14px;cursor:pointer;transition:transform .1s,border-color .15s,background .15s}
+.chip:hover:not(:disabled){border-color:var(--blue);background:#f3f7ff;transform:translateY(-1px)}
+.chip:disabled{opacity:.4;text-decoration:line-through;cursor:default;border-style:dashed}
+.okline{display:flex;align-items:center;gap:10px;font:400 22px/1.2 'Russo One',sans-serif;color:#2b8a3e;margin-bottom:6px}
+.okline.ask{color:var(--ask3)}
+.okline svg{flex:none}
+.tag{display:inline-block;font:700 12px 'PT Sans',sans-serif;border-radius:99px;padding:2px 9px;vertical-align:middle;margin-left:6px}
+.tag.self{background:#d3f9d8;color:#2b8a3e}
+.tag.hint{background:#fff3bf;color:#9a6700}
+.tag.show{background:#ffe3e3;color:#c92a2a}
+.tag.ask{background:#d0ebff;color:#1864ab}
+.diff{font:400 24px/1.4 'Pangolin','Segoe Print',cursive;color:var(--ink);margin:6px 0 12px}
+.diff del{background:#ffe3e3;text-decoration:line-through;text-decoration-color:#c92a2a;border-radius:4px;padding:0 4px}
+.diff ins{background:#d3f9d8;text-decoration:none;border-radius:4px;padding:0 4px}
+.diff .arr{color:var(--mut);margin:0 4px}
+.said{font:400 20px/1.35 'Pangolin','Segoe Print',cursive;color:var(--ink);background:#f6f9fe;border-radius:10px;padding:8px 12px;margin:6px 0 12px}
+.rule{background:#fff8e1;border:1px solid #f1d27a;border-radius:14px;padding:11px 14px;margin-top:10px}
+.rule b{display:block;margin-bottom:3px}
+.rule .rx{font-family:'Pangolin','Segoe Print',cursive;font-size:18px;color:var(--ink);margin-top:6px;line-height:1.35}
+.sum{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:10px 0 12px}
+.sbox{background:#f4f7fc;border:1px solid var(--line);border-radius:12px;padding:8px 6px;text-align:center}
+.sbox b{display:block;font:400 26px/1.1 'Russo One',sans-serif}
+.sbox span{font-size:12px;color:var(--mut)}
+.sbox.good{background:#ebfbee;border-color:#b2e4bb}.sbox.good b{color:#2b8a3e}
+.sbox.warn{background:#fff9db;border-color:#f1dd8a}.sbox.warn b{color:#9a6700}
+.sbox.red{background:#fff0f0;border-color:#f0b9b9}.sbox.red b{color:#c92a2a}
+.mcat{border-top:1px solid var(--line);padding-top:10px;margin-top:10px}
+.mcat h4{margin:0 0 6px;font:700 15px 'PT Sans',sans-serif;display:flex;align-items:center;gap:8px}
+.mcat h4 .dot{width:11px;height:11px;border-radius:50%;background:var(--cc,#888)}
+.mcat ul{list-style:none;padding:0;margin:0}
+.mcat li{font-family:'Pangolin','Segoe Print',cursive;font-size:19px;color:var(--ink);padding:1px 0}
+.mcat li .was{background:#ffe3e3;border-radius:4px;padding:0 4px;text-decoration:line-through;text-decoration-color:#c92a2a}
+.mcat li .now{background:#d3f9d8;border-radius:4px;padding:0 4px}
+.mcat li .ans{color:var(--mut);font-size:17px}
+.mcat .mr{font-size:13px;color:var(--mut);margin-top:4px}
+textarea.cp{width:100%;min-height:120px;margin-top:10px;font:14px/1.4 'PT Sans',sans-serif;border:1px solid var(--line);border-radius:10px;padding:8px}
+
+.confetti{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:60}
+.confetti i{position:absolute;top:-16px;width:9px;height:14px;border-radius:2px;animation:cf 2.6s cubic-bezier(.2,.7,.4,1) forwards}
+
+@keyframes pulse{0%,100%{box-shadow:0 0 0 3px rgba(240,140,0,.5)}50%{box-shadow:0 0 0 7px rgba(240,140,0,.15)}}
+@keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.14)}100%{transform:scale(1)}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+@keyframes pulseBtn{0%,100%{box-shadow:0 0 0 0 rgba(36,87,214,.45)}50%{box-shadow:0 0 0 7px rgba(36,87,214,0)}}
+@keyframes stampIn{0%{opacity:0;transform:rotate(-13deg) scale(2.3)}70%{opacity:.95;transform:rotate(-13deg) scale(.94)}100%{opacity:.88;transform:rotate(-13deg) scale(1)}}
+@keyframes cf{to{transform:translate(var(--dx),106vh) rotate(var(--rot));opacity:.9}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.paper.stamped .stamp{opacity:.88}}
+
+@media (max-width:900px){
+  .layout{grid-template-columns:1fr;padding-bottom:calc(var(--sheet) + 12px)}
+  .panel{position:fixed;left:8px;right:8px;bottom:8px;top:auto;max-height:var(--sheet);z-index:30;border-radius:18px 18px 14px 14px;box-shadow:0 -6px 30px rgba(20,40,80,.28)}
+  .idle-extra{display:none}
+  .prog{min-width:0;flex:1 1 100%;margin-left:0}
+}
+@media (max-width:900px) and (max-height:600px){:root{--sheet:58vh}}
+@media (max-width:640px){
+  .wrap{padding:12px 16px 20px}
+  .top h1{font-size:20px}
+  .paper{padding:14px 12px 28px 40px;background-size:21px 21px;background-position:0 9px}
+  .paper::before{left:30px}
+  .paper::after{display:none}
+  .ink{font-size:21px;line-height:42px}
+  .ink p{text-indent:30px}
+  .note{margin:10px 2px 10px 6px;padding:0 10px}
+  .stamp{font-size:24px;right:14px;bottom:16px;padding:6px 12px}
+  .sum{grid-template-columns:repeat(2,1fr)}
+}
+/* невысокие окна на широком экране (например, вставка в слайд) */
+@media (min-width:901px) and (max-height:640px){
+  .wrap{padding-top:10px;padding-bottom:16px}
+  .top{margin-bottom:8px;gap:10px}
+  .logo{width:36px;height:36px;border-radius:11px}
+  .logo svg{width:20px;height:20px}
+  .top h1{font-size:19px}
+  .top .sub{font-size:12px}
+  .prog .row{margin-bottom:3px}
+  .cats{margin-bottom:10px}
+  .cat{padding:4px 11px 4px 8px;font-size:13px}
+  .paper{padding:14px 22px 30px 66px;background-size:21px 21px;background-position:0 9px}
+  .paper::before{left:48px}
+  .ink{font-size:21px;line-height:42px}
+  .ink p{text-indent:36px}
+  .panel{top:8px;max-height:calc(100vh - 16px);padding:14px}
+  .p-h{font-size:18px}
+  .field{font-size:21px;padding:7px 10px}
+  .ctx{font-size:16px;padding:6px 10px;margin-bottom:8px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="logo" id="logo"></div>
+    <div>
+      <h1 id="title">Проверка показаний</h1>
+      <div class="sub" id="sub"></div>
+    </div>
+    <div class="prog">
+      <div class="row"><span>Исправлено: <b id="progTxt">0 из 0</b></span><button class="lnk" data-act="again" id="againTop" type="button">Начать заново</button></div>
+      <div class="bar"><i id="progFill"></i></div>
+    </div>
+  </header>
+  <div class="cats" id="cats" role="group" aria-label="Виды ошибок"></div>
+  <div class="layout">
+    <main class="paper" id="paper">
+      <div class="ink" id="ink"></div>
+      <div class="stamp" aria-hidden="true">ПРОВЕРЕНО</div>
+    </main>
+    <aside class="panel" id="panel" aria-live="polite"></aside>
+  </div>
+</div>
+
+<script>
+(()=>{
+'use strict';
+
+/* ============================================================
+   НАСТРОЙКИ ТЕКСТА
+   ------------------------------------------------------------
+   title  — заголовок, name — чей текст (необязательно), lead — вступление,
+   focus  — какие виды ошибок подсвечены сначала (по умолчанию все).
+   paras  — абзацы. Строка или {k:'note', t:'...'} (записка в рамке).
+            Место в тексте: {{id|как написано}}.
+   errs   — по id (одно место = один шаг):
+     cat    — вид ошибки (spell, end, rep, cap, comma, word, ask или свой из cats)
+     fix    — правильный вариант (строка или массив допустимых)
+     rule   — id правила (строка или массив); hints — свои подсказки;
+     opts   — свои варианты для кнопок; miss — разбор частых промахов
+              [{a:['ответ'], m:'что сказать'}]; x — свой пример к правилу
+     next   — id следующего шага в том же месте (например, сначала
+              орфография, потом точка). В тексте пишется только первый id.
+     ask    — вопрос вместо ошибки: ответ не проверяется, его можно записать.
+     del    — слово лишнее: нужно нажать «Убрать слово» (правильный ответ — убрать).
+     free   — любой другой ответ тоже подходит (замена повтора), с условиями
+              must (регулярное выражение), not (слова, которых не должно быть;
+              фраза из нескольких слов ищется как есть), mustMsg и notMsg (подсказки).
+   Своё можно передать и ссылкой: engine.html?d=<base64 от JSON>.
+   ============================================================ */
+/*CONFIG_START*/
+const DEMO_CONFIG={
+  title:'Проверка текста',
+  lead:'Жёлтым подсвечены места, где что-то не так. Нажми на подсвеченное, подумай и исправь: можно набрать ответ или взять подсказку. Место со значком «?» — это вопрос: объясни, что там написано.',
+  paras:[
+    'Вчера мы ходили в {{d1|Музей}}. {{d2|мой}} друг сказал {{d3|мне что}} он не боится динозавров. Мы смотрели на скелет и {{d4|незнали}}, что сказать. Потом экскурсовод рассказал нам про {{q1|тирекса}} {{d5|по Русски}}. Потом мы купили мороженое и {{d6|купили}} открытки. Потом мы {{d7|мы}} пошли домой.'
+  ],
+  errs:{
+    d1:{cat:'cap',fix:['музей'],rule:'cap_common'},
+    d2:{cat:'cap',fix:['Мой'],rule:'cap_start'},
+    d3:{cat:'comma',fix:['мне, что'],rule:'comma_sub'},
+    d4:{cat:'word',fix:['не знали'],rule:'not_verb'},
+    q1:{ask:'Что это за слово? Как ты его себе представляешь?'},
+    d5:{cat:'word',fix:['по-русски'],rule:['cap_lang','hyph_po'],
+        hints:['Здесь спрятались сразу два вопроса: про букву и про то, как «по» соединяется со словом.','Язык — с большой или с маленькой буквы? И как пишутся слова вроде «по-французски»?'],
+        miss:[{a:['по русски'],m:'С буквой верно! А как «по» соединяется со словом: слитно, раздельно или через дефис?'},{a:['по-Русски'],m:'Дефис есть. А язык в русском пишется с большой или с маленькой?'}]},
+    d6:{cat:'rep',fix:['взяли'],rule:'repeat_syn',free:true,must:'^[а-яё]+$',mustMsg:'Слово стоит в середине предложения: с маленькой буквы и без лишнего.',not:['купили'],notMsg:'«Купили» уже было. Подбери другое слово.',opts:['взяли','выбрали','съели'],
+        hints:['Прочитай всё предложение: какое слово слишком часто повторяется?','Что ещё можно сделать с мороженым? Подбери слово с похожим смыслом.']},
+    d7:{cat:'rep',del:true,rule:'repeat_pron'}
+  }
+};
+/*CONFIG_END*/
+
+/* ---------- библиотека видов ошибок и правил ---------- */
+const BASE_CATS={
+  spell:{n:'Орфография',c:'#d6336c'},
+  end:{n:'Точки: лишняя или пропущена',c:'#2457d6'},
+  rep:{n:'Повторы',c:'#e8590c'},
+  cap:{n:'Заглавные и строчные',c:'#f59f00'},
+  comma:{n:'Запятые',c:'#0f8b8d'},
+  word:{n:'Слитно, раздельно, дефис',c:'#7048e8'},
+  ask:{n:'Вопросы',c:'#339af0'}
+};
+const BASE_RULES={
+  spell_syl:{t:'Прочитай слово по слогам',
+    s:'Когда пишешь слово, проговаривай его по слогам и записывай каждый слог. Так буквы не теряются и не путаются.',
+    x:'пе-ре-е-хал · при-е-хал · у-бий-ство',
+    h:['В слове что-то пропущено или перепутано. Прочитай его по слогам.','Проговори слово медленно и сравни с тем, что написано.']},
+  cap_start:{t:'Начало предложения — с большой буквы',
+    s:'Новое предложение всегда начинается с заглавной буквы, даже если это самое обычное слово, например «мой».',
+    x:'Вчера было жарко. Мой друг купил мороженое.',
+    h:['Посмотри, что стоит прямо перед этим словом.','Перед ним точка, значит, начинается новое предложение. С какой буквы его пишут?']},
+  cap_pron:{t:'«Я» и «мой» — с маленькой буквы',
+    s:'В русском «я» и «мой» — обычные слова. С большой буквы их пишут только в начале предложения. В английском «I» всегда большая, но это английское правило.',
+    x:'Вчера я рано проснулся. Я умылся и пошёл гулять.',
+    h:['Одна заглавная буква оказалась не на своём месте: в середине предложения.','Заглавная нужна в начале предложения и в именах. Это имя или начало предложения?']},
+  cap_common:{t:'Нарицательное — с маленькой, название — с большой',
+    s:'Обычные слова (город, комната, пёс) называют любой предмет из группы, поэтому пишутся с маленькой буквы. С большой пишут только имена и названия: Бим, Омск, Россия.',
+    x:'в музей · из города Омск · в комнату · пёс Бим',
+    h:['Проверь заглавные буквы в этой строчке: все ли имеют право на заглавную?','Это чьё-то имя или название, или обычное слово, которое называет любой такой предмет?']},
+  cap_name:{t:'Имена, клички и названия — с большой буквы',
+    s:'Собственные существительные — имена людей, клички животных, названия городов и стран — пишутся с заглавной буквы.',
+    x:'Бим, Москва, река Волга',
+    h:['Это слово — чьё-то имя или название. Как его нужно писать?','Имена, клички и названия пишут с заглавной буквы.']},
+  cap_lang:{t:'Языки и дни недели — с маленькой буквы',
+    s:'В английском их пишут с большой буквы: English, Monday. В русском — с маленькой: английский, по-английски, понедельник, в понедельник. Не путай два правила!',
+    x:'в понедельник · по-английски · на русском языке',
+    h:['Посмотри на буквы в названии дня недели или языка. Всё ли верно по-русски?','В английском языки и дни недели пишут с большой буквы, а в русском наоборот. Как правильно по-русски?']},
+  hyph_po:{t:'«по-английски» — через дефис',
+    s:'Слова с «по-», которые отвечают на вопрос «как?», пишем через дефис: по-русски, по-английски, по-французски.',
+    x:'сказать по-русски · ответить по-английски',
+    h:['Как «по» соединяется со словом: слитно, раздельно или через дефис?','Слова вроде «по-русски», «по-французски» пишутся одинаково. Вспомни, как именно.']},
+  not_verb:{t:'«Не» с глаголами — раздельно',
+    s:'Частицу «не» с глаголом почти всегда пишем отдельно: не знаю, не пошёл, не видел.',
+    x:'не знаю · не пошёл · не видел',
+    h:['Здесь «не» и глагол. Вместе они или раздельно?','Вспомни: не знаю, не видел, не пошёл. Как пишется «не» с глаголом?']},
+  period_between:{t:'Мысль закончилась — ставим точку',
+    s:'Когда одна мысль закончилась, ставим точку, а следующее предложение начинаем с большой буквы. Проверка: прочитай вслух. На точке голос опускается и хочется сделать вдох.',
+    x:'Мы дошли до реки. Потом мы повернули назад.',
+    h:['Прочитай вслух без остановки. Где хочется перевести дыхание?','Тут закончилась одна мысль и началась другая. Что ставим на стыке и как пишем следующее слово?']},
+  period_end:{t:'В конце предложения — точка',
+    s:'Когда текст или записка закончились, в конце всё равно ставим точку (или ! и ?). Без неё мысль выглядит оборванной.',
+    x:'Он похитил много денег.',
+    h:['Посмотри на самый конец. Мысль закончена, а знак стоит?','Какой знак ставят в конце обычного предложения?']},
+  comma_clause:{t:'«Когда…» — мысль ещё не закончена',
+    s:'Часть «Когда я вышел из дома» ждёт продолжения: хочется узнать, что случилось дальше. Поэтому ставим запятую и продолжаем то же предложение с маленькой буквы.',
+    x:'Когда я вышел из дома, на улице шёл дождь.',
+    h:['Прочитай вслух только первую часть и остановись. Хочется ли узнать, что было дальше?','Мысль не закончена, значит, точка здесь не нужна. Какой знак ставим вместо неё и какой станет следующая буква?']},
+  comma_sub:{t:'Запятая перед «что», «когда» и после такой части',
+    s:'Слова «что» и «когда» начинают новую часть предложения, перед ними ставим запятую. Если такая часть стоит в середине предложения, запятая нужна и после неё.',
+    x:'Он сказал, что придёт. Когда я пришёл домой, было уже темно.',
+    h:['Прочитай вслух: где голос делает маленькую паузу?','Перед «что» и «когда» в таком предложении ставят знак. Какой?']},
+  comma_addr:{t:'Обращение отделяем запятой',
+    s:'Слово, которым обращаемся к человеку, отделяем запятой: Привет, Миша! Слушай, друг, помоги мне.',
+    x:'Привет, ты мне очень помог.',
+    h:['К кому обращается автор? Каким словом?','Обращение (и слова вроде «привет») отделяют от остального предложения знаком. Каким?']},
+  poetomu:{t:'«Поэтому» — одно слово, перед ним запятая',
+    s:'«Поэтому» значит «по этой причине» — это одно слово. Раздельно «по этому» пишем, только если между словами можно вставить ещё одно: по этому длинному мосту. Перед «поэтому» ставим запятую.',
+    x:'Было поздно, поэтому мы пошли домой.',
+    h:['Здесь два вопроса: знак перед «по этому» и само «по этому». Так ли оно пишется?','«Поэтому» = «по этой причине». Можно ли вставить слово между «по» и «этому»?']},
+  repeat_syn:{t:'Не повторяй одно и то же',
+    s:'Если одно и то же слово или выражение стоит в тексте несколько раз подряд, речь звучит бедно. Подбери синоним (слово с близким смыслом) или другую связку.',
+    x:'После этого → потом, затем, позже, через неделю',
+    h:['Прочитай несколько предложений подряд. Что звучит одинаково?','Подбери другое слово или выражение с тем же смыслом: синоним.']},
+  repeat_pron:{t:'Лишнее слово',
+    s:'Если подлежащее уже названо, второй раз повторять его не нужно: речь становится легче. Проверка: прочитай без этого слова. Смысл остался? Значит, оно лишнее.',
+    x:'Он сказал, что прибыл. (не: Он сказал, что он прибыл.)',
+    h:['Прочитай предложение без этого слова. Смысл остался?','Кто это делает, уже понятно из начала предложения. Нужно ли повторять?']},
+  soft_sh:{t:'Мягкий знак после шипящих',
+    s:'У существительных женского рода (ж.р.) на шипящий пишем ь: ночь, мышь, рожь. У существительных мужского рода (м.р.) не пишем: нож, карандаш, ключ, плащ.',
+    x:'ночь (ж.р.) — но: нож (м.р.)',
+    h:['Посмотри на конец слова. Он шипящий. А какого рода это слово?','Ж.р. на шипящий — ь пишем, м.р. — не пишем. Какого рода это слово?']}
+};
+
+/* ---------- настройка ---------- */
+function readCfg(){
+  try{
+    let d=new URLSearchParams(location.search).get('d');
+    if(d){
+      d=d.replace(/ /g,'+').replace(/-/g,'+').replace(/_/g,'/');
+      while(d.length%4)d+='=';
+      const bin=atob(d);
+      return JSON.parse(new TextDecoder().decode(Uint8Array.from(bin,c=>c.charCodeAt(0))));
+    }
+  }catch(e){}
+  return null;
+}
+const CFG=readCfg()||DEMO_CONFIG;
+const CATS=Object.assign({},BASE_CATS,CFG.cats||{});
+const RULES=Object.assign({},BASE_RULES,CFG.rules||{});
+const ERR=CFG.errs||{};
+
+const $=(s,r=document)=>r.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+/* шаги, которые идут один за другим в одном месте текста */
+const TAILS=new Set();
+Object.keys(ERR).forEach(id=>{const n=ERR[id].next;if(n&&ERR[n])TAILS.add(n);});
+
+function parse(t){
+  const re=/\{\{([\w-]+)\|([^}]*)\}\}/g,parts=[];let last=0,m;
+  while((m=re.exec(t))){
+    if(m.index>last)parts.push({k:'t',v:t.slice(last,m.index)});
+    if(ERR[m[1]]&&!TAILS.has(m[1]))parts.push({k:'e',id:m[1],w:m[2]});else parts.push({k:'t',v:m[2]});
+    last=re.lastIndex;
+  }
+  if(last<t.length)parts.push({k:'t',v:t.slice(last)});
+  return parts;
+}
+const PARAS=(CFG.paras||[]).map(p=>{const o=typeof p==='string'?{t:p}:p;return{k:o.k||'p',parts:parse(o.t)};});
+const ORDER=[],W={},CHAIN={},HEAD={};
+PARAS.forEach(p=>p.parts.forEach(x=>{
+  if(x.k!=='e')return;
+  W[x.id]=x.w;
+  const c=[x.id];let n=ERR[x.id].next;
+  while(n&&ERR[n]&&c.indexOf(n)<0){c.push(n);n=ERR[n].next;}
+  CHAIN[x.id]=c;c.forEach(id=>{HEAD[id]=x.id;ORDER.push(id);});
+}));
+ORDER.forEach(id=>{
+  const e=ERR[id];
+  e.fix=(e.fix===undefined||e.fix===null)?null:[].concat(e.fix);
+  e.rule=[].concat(e.rule||[]);
+  e.kind=e.del?'del':((e.ask!==undefined&&!e.fix)?'ask':'fix');
+  if(e.kind==='del'||(e.kind==='fix'&&!e.fix))e.fix=[''];
+});
+
+/* ---------- состояние ---------- */
+const S={mode:'idle',sel:null,st:{},val:{},focus:{},order:{},fresh:null,celebrated:false,copyFallback:''};
+function resetState(){
+  S.mode='idle';S.sel=null;S.val={};S.order={};S.fresh=null;S.celebrated=false;S.copyFallback='';
+  ORDER.forEach(id=>{S.st[id]={ok:false,via:'',tries:0,hints:0,chips:false,bad:{},msg:'',cls:'',from:'',text:'',ans:''};});
+}
+resetState();
+const focusInit=Array.isArray(CFG.focus)?CFG.focus:null;
+Object.keys(CATS).forEach(c=>{S.focus[c]=focusInit?focusInit.indexOf(c)>=0:true;});
+
+const isAsk=id=>ERR[id].kind==='ask';
+const isDel=id=>ERR[id].kind==='del';
+const catOf=id=>{const c=ERR[id].cat;return c&&CATS[c]?c:(isAsk(id)?'ask':'spell');};
+const prevOf=id=>{const c=CHAIN[HEAD[id]],i=c.indexOf(id);return i>0?c[i-1]:null;};
+const nextInChain=id=>{const c=CHAIN[HEAD[id]],n=c[c.indexOf(id)+1];return n&&!S.st[n].ok?n:null;};
+/* текст на месте перед шагом и после шага */
+function shownOf(id){const p=prevOf(id);return p?resultOf(p):W[HEAD[id]];}
+function resultOf(id){return S.st[id].ok?S.st[id].text:shownOf(id);}
+function chunkText(h){let t=W[h];for(const id of CHAIN[h]){if(S.st[id].ok)t=S.st[id].text;else break;}return t;}
+const locActive=h=>CHAIN[h].some(id=>!S.st[id].ok&&S.focus[catOf(id)]!==false);
+const counted=id=>S.st[id].ok||locActive(HEAD[id]);
+const eligible=id=>{const p=prevOf(id);return !p||S.st[p].ok;};
+const isOpen=id=>!S.st[id].ok&&locActive(HEAD[id])&&eligible(id);
+function totals(){
+  const t={tot:0,done:0,self:0,hint:0,show:0,q:0,qd:0};
+  ORDER.forEach(id=>{
+    if(!counted(id))return;const st=S.st[id];
+    if(isAsk(id)){t.q++;if(st.ok)t.qd++;return;}
+    t.tot++;
+    if(st.ok){t.done++;if(st.via==='self')t.self++;else if(st.via==='show')t.show++;else t.hint++;}
+  });
+  return t;
+}
+const allDone=()=>{const t=totals();return (t.tot+t.q)>0&&t.done===t.tot&&t.qd===t.q;};
+function nextId(from){
+  const open=ORDER.filter(isOpen);
+  if(!open.length)return null;
+  if(from==null)return open[0];
+  const i=ORDER.indexOf(from);
+  for(let k=1;k<=ORDER.length;k++){const id=ORDER[(i+k)%ORDER.length];if(isOpen(id))return id;}
+  return open[0];
+}
+
+/* ---------- проверка ответа ---------- */
+function norm(s){
+  return String(s).replace(/[‐-―−]/g,'-').replace(/ё/g,'е').replace(/Ё/g,'Е')
+    .replace(/\s+/g,' ').trim().replace(/\s*([,.!?;:])\s*/g,'$1 ').trim();
+}
+const tidy=s=>String(s).replace(/[‐-―−]/g,'-').replace(/\s+/g,' ').trim().replace(/\s*([,.!?;:])\s*/g,'$1 ').trim();
+const lc=s=>s.toLowerCase();
+const core=s=>lc(String(s)).replace(/ё/g,'е').replace(/[^a-zа-я0-9]+/g,'');
+/* есть ли в ответе слово (или фраза) s */
+function hasWord(n,s){
+  const t=lc(n),w=lc(norm(s));
+  return /\s/.test(w)?t.indexOf(w)>=0:t.split(/[^а-яa-z0-9-]+/).indexOf(w)>=0;
+}
+function accepts(id,v){
+  const e=ERR[id],n=norm(v);
+  if(!n)return null;
+  for(const f of e.fix){if(norm(f)===n)return f;}
+  if(e.free&&lc(n)!==lc(norm(shownOf(id)))
+     &&!(e.not||[]).some(s=>hasWord(n,s))
+     &&(!e.must||new RegExp(e.must).test(n)))return tidy(v);
+  return null;
+}
+function explain(id,v){
+  const e=ERR[id],st=S.st[id],n=norm(v),base=norm(shownOf(id));
+  if(n===base||(e.free&&lc(n)===lc(base)))return e.free?'Это то же самое. Подбери другое слово.':'Пока без изменений. Что здесь не так?';
+  for(const m of (e.miss||[])){if((m.a||[]).some(a=>norm(a)===n))return m.m;}
+  if(e.free){
+    if((e.not||[]).some(s=>hasWord(n,s)))return e.notMsg||'Эта фраза уже была в тексте. Подбери другое слово.';
+    if(e.must&&!new RegExp(e.must).test(n))return e.mustMsg||'Проверь, как должен выглядеть ответ.';
+  }else{
+    if(e.fix.some(f=>lc(norm(f))===lc(n)))return 'Почти! Посмотри внимательно на заглавные и строчные буквы.';
+    if(e.fix.some(f=>core(f)===core(v)))return 'Слова верные, но со знаками (или дефисом) что-то не так. Прочитай вслух ещё раз.';
+  }
+  return ['Пока не получилось. Прочитай вслух и подумай ещё.','Не совсем так. Можно взять подсказку.','Ещё не то. Присмотрись к этому месту.'][(st.tries-1)%3];
+}
+function hintsOf(id){
+  const e=ERR[id];
+  if(e.hints&&e.hints.length)return e.hints;
+  const r=RULES[e.rule[0]];
+  return (r&&r.h)||['Прочитай это место вслух и подумай, что здесь не так.','Подумай, какое правило тут работает.'];
+}
+function optsOf(id){
+  if(S.order[id])return S.order[id];
+  const e=ERR[id],f=e.fix[0],w=shownOf(id);
+  let set=(e.opts&&e.opts.length)?e.opts.slice():[];
+  const add=x=>{if(x&&set.indexOf(x)<0)set.push(x);};
+  if(set.length){add(f);if(!e.free)add(w);}
+  else if(e.free){set=e.fix.slice(0,4);}
+  else{
+    add(f);add(w);
+    const c0=f.charAt(0);
+    add((c0===c0.toUpperCase()?c0.toLowerCase():c0.toUpperCase())+f.slice(1));
+    if(/, /.test(f))add(f.replace(/, (.)/,(m,a)=>'. '+a.toUpperCase()));
+    else if(/\. /.test(f))add(f.replace(/\. (.)/,(m,a)=>', '+a.toLowerCase()));
+    add(f.replace(/[,.!?]\s*/g,' ').replace(/\s+/g,' ').trim());
+    if(/-/.test(f))add(f.replace(/-/g,' '));
+    set=set.slice(0,4);
+  }
+  for(let i=set.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[set[i],set[j]]=[set[j],set[i]];}
+  return S.order[id]=set;
+}
+
+/* ---------- действия ---------- */
+function select(id){
+  S.sel=id;S.mode=S.st[id].ok?'done':'edit';render();
+  if(S.mode==='edit')setTimeout(focusField,30);
+  scrollToMark(HEAD[id]);
+}
+let scrollTimer=0;
+function glideTo(y){
+  clearInterval(scrollTimer);
+  const from=window.scrollY,delta=y-from;
+  if(Math.abs(delta)<2||matchMedia('(prefers-reduced-motion: reduce)').matches){window.scrollTo(0,y);return;}
+  const dur=Math.min(450,200+Math.abs(delta)*.25),t0=performance.now();
+  scrollTimer=setInterval(()=>{
+    const k=Math.min(1,(performance.now()-t0)/dur);
+    window.scrollTo(0,from+delta*(1-Math.pow(1-k,3)));
+    if(k>=1)clearInterval(scrollTimer);
+  },16);
+}
+function scrollToMark(h){
+  const el=document.querySelector('.mk[data-head="'+h+'"]');
+  if(!el)return;
+  const r=el.getBoundingClientRect(),vh=window.innerHeight||600;
+  const panel=document.getElementById('panel');
+  const sheet=getComputedStyle(panel).position==='fixed';
+  const bottom=sheet?Math.max(140,panel.getBoundingClientRect().top):vh;
+  if(r.top<60||r.bottom>bottom-30)glideTo(Math.max(0,window.scrollY+r.top-(bottom-r.height)/2));
+}
+function focusField(){
+  const f=document.getElementById('fix')||document.getElementById('ans');
+  if(f){f.focus();if(f.select)f.select();}
+}
+function solve(id,how,matched){
+  const st=S.st[id],e=ERR[id];
+  st.from=shownOf(id);
+  st.text=(matched!==undefined&&matched!==null)?matched:(isAsk(id)?st.from:e.fix[0]);
+  st.ok=true;
+  st.via=isAsk(id)?'ask':(how==='show'?'show':((st.hints>0||st.chips||how==='chip')?'hint':'self'));
+  st.msg='';S.sel=id;S.mode='done';S.fresh=id;
+  render();
+  setTimeout(()=>{S.fresh=null;const el=document.querySelector('.mk.fresh');if(el)el.classList.remove('fresh');},900);
+  setTimeout(()=>{const nb=document.querySelector('[data-act="next"]');if(nb)nb.focus({preventScroll:true});},70);
+}
+function onCheck(){
+  const id=S.sel,st=S.st[id],inp=document.getElementById('fix');
+  const v=inp?inp.value:'';S.val[id]=v;
+  if(!v.trim()){st.msg='Напиши, как нужно исправить.';st.cls='bad';render();setTimeout(focusField,30);return;}
+  const m=accepts(id,v);
+  if(m!==null){solve(id,false,m);return;}
+  st.tries++;st.msg=explain(id,v);st.cls='bad';
+  render();
+  const f=document.getElementById('fix');if(f)f.classList.add('shake');
+  setTimeout(focusField,30);
+}
+function onAskOk(){
+  const id=S.sel,ta=document.getElementById('ans');
+  S.st[id].ans=ta?ta.value.trim():'';
+  solve(id,'ask',null);
+}
+function onHint(){
+  const id=S.sel,st=S.st[id],hs=hintsOf(id);
+  if(st.hints<hs.length)st.hints++;
+  render();setTimeout(focusField,30);
+}
+function onChips(){S.st[S.sel].chips=true;render();}
+function onChip(val){
+  const id=S.sel,st=S.st[id],m=accepts(id,val);
+  if(m!==null){S.val[id]=val;solve(id,'chip',m);return;}
+  st.tries++;st.bad[val]=1;st.msg='Этот вариант не подходит. Подумай ещё.';st.cls='bad';render();
+}
+function onShow(){solve(S.sel,'show',ERR[S.sel].fix[0]);}
+function onDelYes(){solve(S.sel,false,'');}
+function onDelNo(){
+  const st=S.st[S.sel];
+  st.tries++;st.msg='Прочитай предложение без этого слова: смысл остался?';st.cls='bad';render();
+}
+function goNext(){
+  if(S.mode==='done'&&S.sel){const nx=nextInChain(S.sel);if(nx){select(nx);return;}}
+  const id=nextId(S.sel);
+  if(id==null){if(allDone())showFinal();else{S.sel=null;S.mode='idle';render();}return;}
+  select(id);
+}
+function showFinal(){
+  S.mode='final';S.sel=null;render();
+  if(!S.celebrated){S.celebrated=true;confetti();}
+}
+function toggleCat(c){
+  S.focus[c]=!S.focus[c];
+  if(S.sel&&S.mode==='edit'&&!locActive(HEAD[S.sel])){S.sel=null;S.mode='idle';}
+  if(S.mode==='idle'&&allDone())S.mode='final';
+  if(S.mode==='final'&&!allDone())S.mode='idle';
+  render();
+}
+function again(){resetState();render();glideTo(0);}
+
+/* ---------- отрисовка ---------- */
+const ICO={
+  glass:'<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21"/><path d="M8 10.5h5M10.5 8v5" stroke-width="1.8"/></svg>',
+  bulb:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.6 10.8c.7.6 1.1 1.4 1.1 2.2h5c0-.8.4-1.6 1.1-2.2A6 6 0 0 0 12 3z"/></svg>',
+  check:'<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" stroke-width="2"/><path d="m7.5 12.5 3 3 6-7"/></svg>'
+};
+const PRAISE=['Верно!','Точно!','Именно так!','Отлично, замечено!','Есть!'];
+
+function renderText(){
+  let h='';
+  PARAS.forEach(p=>{
+    const inner=p.parts.map(x=>{
+      if(x.k==='t')return esc(x.v);
+      const hd=x.id,ch=CHAIN[hd],text=chunkText(hd);
+      const done=ch.every(id=>S.st[id].ok),some=ch.some(id=>S.st[id].ok);
+      const sel=ch.indexOf(S.sel)>=0?' sel':'';
+      const askonly=(ch.length===1&&isAsk(hd)&&catOf(hd)==='ask')?' askonly':'';
+      const fresh=ch.indexOf(S.fresh)>=0?' fresh':'';
+      if(done){
+        const last=ch[ch.length-1],gone=text==='';
+        return '<span class="mk ok'+askonly+(gone?' del':'')+sel+fresh+'" data-id="'+last+'" data-head="'+hd+'" role="button" tabindex="0" aria-label="Готово: '+esc(gone?W[hd]+' (убрано)':text)+'">'+(gone?'<s>'+esc(W[hd])+'</s>':esc(text))+'</span>';
+      }
+      if(!locActive(hd))return esc(text);
+      const cur=ch.find(id=>!S.st[id].ok);
+      return '<span class="mk open'+askonly+(some?' part':'')+(isAsk(cur)?' q':'')+sel+fresh+'" data-id="'+cur+'" data-head="'+hd+'" role="button" tabindex="0" aria-label="Подсвеченное место: '+esc(text)+'. Нажмите, чтобы разобрать">'+esc(text)+'</span>';
+    }).join('');
+    h+=p.k==='note'?'<div class="note"><p>'+inner+'</p></div>':'<p>'+inner+'</p>';
+  });
+  document.getElementById('ink').innerHTML=h;
+  document.getElementById('paper').classList.toggle('stamped',S.mode==='final'||(allDone()&&S.celebrated));
+}
+function renderCats(){
+  const keys=Object.keys(CATS).filter(c=>ORDER.some(id=>catOf(id)===c));
+  document.getElementById('cats').innerHTML=keys.map(c=>{
+    const ids=ORDER.filter(id=>catOf(id)===c),done=ids.filter(id=>S.st[id].ok).length;
+    return '<button type="button" class="cat'+(done===ids.length?' full':'')+'" data-cat="'+esc(c)+'" aria-pressed="'+(S.focus[c]!==false)+'" style="--cc:'+esc(CATS[c].c)+'"><span class="dot"></span>'+esc(CATS[c].n)+' <span class="n">'+done+'/'+ids.length+'</span></button>';
+  }).join('');
+}
+function renderProg(){
+  const t=totals();
+  document.getElementById('progTxt').textContent=t.done+' из '+t.tot;
+  document.getElementById('progFill').style.width=(t.tot?Math.round(100*t.done/t.tot):0)+'%';
+}
+function ctxHtml(id){
+  const hd=HEAD[id];
+  for(const p of PARAS){
+    if(!p.parts.some(x=>x.k==='e'&&x.id===hd))continue;
+    let before='',after='',hit=false;
+    p.parts.forEach(x=>{
+      if(x.k==='e'&&x.id===hd){hit=true;return;}
+      const t=x.k==='t'?x.v:chunkText(x.id);
+      if(hit)after+=t;else before+=t;
+    });
+    if(before.length>46)before='…'+before.slice(-46).replace(/^\S*\s/,'');
+    if(after.length>46)after=after.slice(0,46).replace(/\s\S*$/,'')+'…';
+    return esc(before)+'<mark>'+esc(shownOf(id))+'</mark>'+esc(after);
+  }
+  return esc(shownOf(id));
+}
+function ruleCards(id){
+  const e=ERR[id];
+  return e.rule.map((rid,i)=>{
+    const r=RULES[rid];if(!r)return '';
+    const x=(i===0&&e.x)?e.x:r.x;
+    return '<div class="rule"><b>'+esc(r.t)+'</b>'+esc(r.s)+(x?'<div class="rx">'+esc(x)+'</div>':'')+'</div>';
+  }).join('');
+}
+const viaTag=v=>v==='self'?'<span class="tag self">сам</span>':(v==='show'?'<span class="tag show">показано</span>':(v==='ask'?'<span class="tag ask">ответ</span>':'<span class="tag hint">с подсказкой</span>'));
+const stepNote=id=>{const c=CHAIN[HEAD[id]];return c.length>1?' · шаг '+(c.indexOf(id)+1)+' из '+c.length:'';};
+
+function panelIdle(){
+  const t=totals();
+  if(!t.tot&&!t.q){
+    return '<div class="p-h">Выбери, что проверять</div><p class="lead">Включи хотя бы один вид ошибок над текстом, и подсветка появится.</p>';
+  }
+  return '<div class="p-h">Нажми на подсвеченное место</div>'
+    +'<p class="lead">'+esc(CFG.lead||'Жёлтым подсвечены места, где что-то не так. Нажми на подсвеченное, подумай и исправь: можно набрать ответ или взять подсказку. Место со значком «?» — это вопрос: объясни, что там написано.')+'</p>'
+    +'<div class="btnrow"><button class="btn big" type="button" data-act="start">Начать с первого места</button></div>'
+    +'<p class="small idle-extra" style="margin:14px 0 0">Виды ошибок над текстом можно включать и выключать: тогда подсвечены только выбранные.</p>';
+}
+function panelAsk(id){
+  const st=S.st[id],e=ERR[id];
+  return '<div class="p-step">Вопрос'+esc(stepNote(id))+'</div><div class="p-h">'+esc(e.title||'Что это за слово?')+'</div>'
+    +'<div class="ctx">'+ctxHtml(id)+'</div>'
+    +'<div class="askbox">'+esc(e.ask)+'</div>'
+    +'<textarea id="ans" class="ta" rows="2" placeholder="Можно ответить вслух или записать здесь" aria-label="Ответ">'+esc(st.ans||'')+'</textarea>'
+    +'<div class="btnrow"><button class="btn" type="button" data-act="askok">Готово</button>'
+    +'<button class="lnk" type="button" data-act="skip">Другое место</button></div>';
+}
+function panelDel(id){
+  const st=S.st[id],e=ERR[id],hs=hintsOf(id),n=totals(),pos=ORDER.filter(x=>counted(x)&&!isAsk(x)).indexOf(id)+1;
+  let h='<div class="p-step">Место '+pos+' из '+n.tot+esc(stepNote(id))+'</div><div class="p-h">'+esc(e.title||'Нужно ли это слово?')+'</div>'
+    +'<div class="ctx">'+ctxHtml(id)+'</div>'
+    +'<p class="lead">'+esc(e.q||'Прочитай предложение без подсвеченного слова. Нужно оно здесь?')+'</p>'
+    +'<div class="msg '+(st.cls||'')+'">'+esc(st.msg||'')+'</div>'
+    +'<div class="btnrow"><button class="btn" type="button" data-act="delyes">Убрать слово</button>'
+    +'<button class="btn sec" type="button" data-act="delno">Оставить</button>'
+    +'<button class="btn sec'+(st.tries>=2&&st.hints===0?' pulse':'')+'" type="button" data-act="hint"'+(st.hints>=hs.length?' disabled':'')+'>Подсказка ('+st.hints+'/'+hs.length+')</button></div>';
+  for(let i=0;i<st.hints;i++)h+='<div class="hint">'+ICO.bulb+'<div>'+esc(hs[i])+'</div></div>';
+  h+='<div class="btnrow" style="margin-top:14px"><button class="lnk" type="button" data-act="skip">Другое место</button>'
+    +((st.tries>=2||st.hints>=hs.length)?'<button class="lnk" type="button" data-act="show">Показать ответ</button>':'')+'</div>';
+  return h;
+}
+function panelEdit(id){
+  if(isAsk(id))return panelAsk(id);
+  if(isDel(id))return panelDel(id);
+  const st=S.st[id],hs=hintsOf(id),n=totals(),pos=ORDER.filter(x=>counted(x)&&!isAsk(x)).indexOf(id)+1;
+  const val=(S.val[id]!==undefined)?S.val[id]:shownOf(id);
+  let h='<div class="p-step">Место '+pos+' из '+n.tot+esc(stepNote(id))+'</div><div class="p-h">'+(ERR[id].free?'Как сказать по-другому?':'Как здесь исправить?')+'</div>'
+    +'<div class="ctx">'+ctxHtml(id)+'</div>'
+    +'<input id="fix" class="field" type="text" value="'+esc(val)+'" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" lang="ru" aria-label="Исправленный вариант">'
+    +'<div class="msg '+(st.cls||'')+'">'+esc(st.msg||'')+'</div>'
+    +'<div class="btnrow"><button class="btn" type="button" data-act="check">Проверить</button>'
+    +'<button class="btn sec'+(st.tries>=2&&st.hints===0?' pulse':'')+'" type="button" data-act="hint"'+(st.hints>=hs.length?' disabled':'')+'>Подсказка ('+st.hints+'/'+hs.length+')</button>'
+    +(st.chips?'':'<button class="btn sec" type="button" data-act="chips">Варианты</button>')+'</div>';
+  for(let i=0;i<st.hints;i++)h+='<div class="hint">'+ICO.bulb+'<div>'+esc(hs[i])+'</div></div>';
+  if(st.chips){
+    h+='<div class="chips">'+optsOf(id).map(o=>'<button type="button" class="chip" data-act="chip" data-v="'+esc(o)+'"'+(st.bad[o]?' disabled':'')+'>'+esc(o)+'</button>').join('')+'</div>';
+  }
+  h+='<div class="btnrow" style="margin-top:14px"><button class="lnk" type="button" data-act="skip">Другое место</button>'
+    +((st.tries>=2||st.hints>=hs.length)?'<button class="lnk" type="button" data-act="show">Показать ответ</button>':'')+'</div>';
+  return h;
+}
+function panelDone(id){
+  const st=S.st[id],e=ERR[id],nx=nextInChain(id),last=!nx&&!nextId(id);
+  const btn=(nx?'Следующий шаг':(last?'Показать итог':'Дальше'))+' →';
+  if(isAsk(id)){
+    return '<div class="okline ask">'+ICO.check+'<span>Записано</span>'+viaTag('ask')+'</div>'
+      +'<div class="said"><b style="font-family:\'PT Sans\',sans-serif;font-size:14px;color:var(--mut)">'+esc(st.from)+'</b><br>'+(st.ans?esc(st.ans):'<span class="small">ответ вслух, без записи</span>')+'</div>'
+      +'<div class="btnrow"><button class="btn big" type="button" data-act="next">'+btn+'</button></div>';
+  }
+  const label=st.via==='show'?'Запомним это место':PRAISE[ORDER.indexOf(id)%PRAISE.length];
+  return '<div class="okline">'+ICO.check+'<span>'+label+'</span>'+viaTag(st.via)+'</div>'
+    +'<div class="diff"><del>'+esc(st.from)+'</del><span class="arr">→</span><ins>'+(st.text===''?'слово убрано':esc(st.text))+'</ins></div>'
+    +ruleCards(id)
+    +'<div class="btnrow"><button class="btn big" type="button" data-act="next">'+btn+'</button></div>';
+}
+function panelFinal(){
+  const t=totals();
+  let h='<div class="p-h">Показания проверены!</div>'
+    +'<p class="lead">Прочитай исправленный текст вслух: теперь он читается легко.</p>'
+    +'<div class="sum"><div class="sbox"><b>'+t.done+'</b><span>исправлено</span></div>'
+    +'<div class="sbox good"><b>'+t.self+'</b><span>сам</span></div>'
+    +'<div class="sbox warn"><b>'+t.hint+'</b><span>с подсказкой</span></div>'
+    +'<div class="sbox red"><b>'+t.show+'</b><span>показано</span></div></div>';
+  Object.keys(CATS).forEach(c=>{
+    const ids=ORDER.filter(id=>catOf(id)===c&&S.st[id].ok);
+    if(!ids.length)return;
+    const asks=ids.every(isAsk);
+    const rules=[];ids.forEach(id=>ERR[id].rule.forEach(r=>{if(RULES[r]&&rules.indexOf(r)<0)rules.push(r);}));
+    h+='<div class="mcat" style="--cc:'+esc(CATS[c].c)+'"><h4><span class="dot"></span>'+esc(CATS[c].n)+'</h4><ul>'
+      +ids.map(id=>{
+        const st=S.st[id];
+        if(isAsk(id))return '<li><span class="now">'+esc(st.from)+'</span> <span class="ans">'+(st.ans?'— '+esc(st.ans):'— ответил вслух')+'</span></li>';
+        return '<li><span class="was">'+esc(st.from)+'</span> → <span class="now">'+(st.text===''?'убрано':esc(st.text))+'</span>'+(st.via==='self'?'':viaTag(st.via))+'</li>';
+      }).join('')
+      +'</ul>'+(asks?'':'<div class="mr">'+rules.map(r=>esc(RULES[r].t)).join(' · ')+'</div>')+'</div>';
+  });
+  const left=ORDER.filter(id=>!S.st[id].ok&&!counted(id)).length;
+  if(left)h+='<p class="small" style="margin-top:12px">Ещё '+left+' мест осталось в выключенных видах ошибок: можно включить их сверху и продолжить.</p>';
+  h+='<div class="btnrow"><button class="btn" type="button" data-act="copy">Скопировать итог</button><button class="btn sec" type="button" data-act="again">Заново</button></div>';
+  if(S.copyFallback)h+='<textarea class="cp" readonly>'+esc(S.copyFallback)+'</textarea>';
+  return h;
+}
+function renderPanel(){
+  let h;
+  if(S.mode==='edit'&&S.sel)h=panelEdit(S.sel);
+  else if(S.mode==='done'&&S.sel)h=panelDone(S.sel);
+  else if(S.mode==='final')h=panelFinal();
+  else h=panelIdle();
+  document.getElementById('panel').innerHTML=h;
+}
+function render(){renderText();renderCats();renderProg();renderPanel();}
+
+function summaryText(){
+  const t=totals();
+  let s=(CFG.title||'Проверка текста')+(CFG.name?': '+CFG.name:'')+'\n';
+  s+='Исправлено '+t.done+' из '+t.tot+': сам — '+t.self+', с подсказкой — '+t.hint+', показано — '+t.show+'.\n';
+  Object.keys(CATS).forEach(c=>{
+    const ids=ORDER.filter(id=>catOf(id)===c&&S.st[id].ok);
+    if(!ids.length)return;
+    s+='\n'+CATS[c].n+':\n';
+    ids.forEach(id=>{
+      const st=S.st[id];
+      if(isAsk(id)){s+='• '+st.from+' — '+(st.ans||'ответил вслух')+'\n';return;}
+      s+='• '+st.from+' → '+(st.text===''?'(убрано)':st.text)+(st.via==='self'?'':(st.via==='show'?' (показано)':' (с подсказкой)'))+'\n';
+    });
+  });
+  return s;
+}
+function copySummary(){
+  const text=summaryText();
+  const fb=()=>{S.copyFallback=text;renderPanel();};
+  try{
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(()=>{const b=document.querySelector('[data-act="copy"]');if(b)b.textContent='Скопировано';},fb);
+      return;
+    }
+  }catch(e){}
+  fb();
+}
+function confetti(){
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  const box=document.createElement('div');box.className='confetti';document.body.appendChild(box);
+  const cols=['#ffb703','#2457d6','#2f9e44','#d6336c','#9c36b5','#0f8b8d'];
+  for(let i=0;i<72;i++){
+    const s=document.createElement('i');
+    s.style.left=(Math.random()*100)+'%';s.style.background=cols[i%cols.length];
+    s.style.animationDelay=(Math.random()*.7)+'s';
+    s.style.setProperty('--dx',(Math.random()*180-90)+'px');
+    s.style.setProperty('--rot',(Math.random()*720-360)+'deg');
+    box.appendChild(s);
+  }
+  setTimeout(()=>box.remove(),3800);
+}
+
+/* ---------- события ---------- */
+document.addEventListener('click',e=>{
+  const mk=e.target.closest&&e.target.closest('.mk');
+  if(mk){select(mk.dataset.id);return;}
+  const cat=e.target.closest&&e.target.closest('[data-cat]');
+  if(cat){toggleCat(cat.dataset.cat);return;}
+  const b=e.target.closest&&e.target.closest('[data-act]');
+  if(!b)return;
+  switch(b.dataset.act){
+    case 'start':goNext();break;
+    case 'check':onCheck();break;
+    case 'askok':onAskOk();break;
+    case 'delyes':onDelYes();break;
+    case 'delno':onDelNo();break;
+    case 'hint':onHint();break;
+    case 'chips':onChips();break;
+    case 'chip':onChip(b.dataset.v);break;
+    case 'show':onShow();break;
+    case 'skip':{const id=nextId(S.sel);if(id&&id!==S.sel)select(id);break;}
+    case 'next':goNext();break;
+    case 'again':again();break;
+    case 'copy':copySummary();break;
+  }
+});
+document.addEventListener('input',e=>{
+  if(e.target&&e.target.id==='fix'&&S.sel)S.val[S.sel]=e.target.value;
+});
+document.addEventListener('keydown',e=>{
+  const t=e.target;
+  if(t&&t.id==='fix'&&e.key==='Enter'){e.preventDefault();onCheck();return;}
+  if(t&&t.id==='ans'&&e.key==='Enter'&&!e.shiftKey){e.preventDefault();onAskOk();return;}
+  if(t&&t.classList&&t.classList.contains('mk')&&(e.key==='Enter'||e.key===' ')){e.preventDefault();select(t.dataset.id);return;}
+  if(e.key==='Escape'&&S.mode==='edit'){S.sel=null;S.mode=allDone()?'final':'idle';render();return;}
+  if(e.key==='Enter'&&S.mode==='done'&&(!t||t===document.body)){goNext();}
+});
+
+/* ---------- запуск ---------- */
+document.getElementById('logo').innerHTML=ICO.glass;
+document.getElementById('title').textContent=CFG.title||'Проверка текста';
+document.getElementById('sub').textContent=CFG.name?('Автор: '+CFG.name):'';
+document.title=CFG.title||document.title;
+render();
+})();
+</script>
+</body>
+</html>

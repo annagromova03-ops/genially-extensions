@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Мастерская изобретателя</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Oswald:wght@500;600;700&display=swap">
+<style>
+/* Layout concept: an inventor's workshop. The header is a pegboard wall with a hanging lamp, tools, a wooden bench with turning gears and a pinned blueprint of a robot: the robot gets one more part for every finished step, so by the end of the lesson it is assembled and switches on. Every step is a drafting sheet (pale squared paper under a colored ruler-edged header); words are tags that can be tapped and underlined; replies come from a small control panel with an indicator lamp. */
+*{box-sizing:border-box}
+:root{
+  color-scheme:light;
+  --gutter:clamp(14px,4vw,34px);
+  --wall:#d9e5e8;--wall-d:#c0d2d6;
+  --wood:#a8703d;--wood-d:#6f4423;--wood-dd:#3d2412;
+  --blue:#1a5f94;--blue-d:#103f66;
+  --brass:#d6a64a;--brass-d:#8a6416;--lamp:#ffd36a;
+  --orange:#ff8a1f;--mint:#17a58a;--amber:#e0900a;
+  --ink:#10283d;--ink-soft:#4d6578;--line:#c5d9e6;--paper:#f8fbfd;
+  --c:#1f62a8;--c-deep:#143f6e;--ct:#e1ecfa;
+  --ok:#17935f;--bad:#d8433a;--focus:#1d6fe0;
+  --f-head:"Oswald","Arial Narrow",system-ui,sans-serif;
+  --f-ui:"IBM Plex Sans","Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+  --f-mono:"IBM Plex Mono","Courier New",monospace;
+}
+/* у каждого блока урока свой цвет */
+html[data-b="1"]{--c:#0e8c88;--c-deep:#096360;--ct:#dcf3f1}
+html[data-b="2"]{--c:#1f62a8;--c-deep:#143f6e;--ct:#e1ecfa}
+html[data-b="3"]{--c:#d4650f;--c-deep:#984607;--ct:#fff0e2}
+html[data-b="4"]{--c:#3f8f3a;--c-deep:#2a6327;--ct:#e5f5e3}
+html[data-b="5"]{--c:#b83a4b;--c-deep:#852633;--ct:#fde8eb}
+html[data-b="6"]{--c:#8c6a1c;--c-deep:#5f4710;--ct:#f8efd6}
+[hidden]{display:none!important}
+html{height:100%;background:var(--wall)}
+body{position:relative;min-height:100%;margin:0;padding-inline:var(--gutter);padding-block:0 128px;color:var(--ink);font:400 17px/1.55 var(--f-ui);background-color:var(--wall);background-image:radial-gradient(circle at 10px 10px,rgba(60,90,100,.26) 2.4px,transparent 3px);background-size:28px 28px;-webkit-text-size-adjust:100%}
+h1,h2,h3,p,ol,ul{margin:0}
+.wrap{position:relative;max-width:980px;margin:0 auto;padding-top:16px}
+
+/* ---------- шапка-мастерская ---------- */
+.shop{--H:clamp(236px,31vw,292px);--bw:calc(var(--H)*.611);position:relative;isolation:isolate;height:var(--H);overflow:hidden;border:3px solid var(--wood-dd);border-radius:18px;box-shadow:0 6px 0 #2a190b,0 18px 30px rgba(42,25,11,.3);background-color:#cddadd;background-image:radial-gradient(circle at 10px 10px,rgba(60,90,100,.3) 2.4px,transparent 3px),linear-gradient(180deg,#e6f0f2,#c9d9dc);background-size:28px 28px,auto}
+.glow{position:absolute;z-index:0;left:33%;top:-24%;width:44%;height:130%;background:radial-gradient(ellipse at 50% 22%,rgba(255,226,140,.7),rgba(255,226,140,0) 62%);pointer-events:none}
+.tools{position:absolute;z-index:1;left:59%;top:7%;width:17.5%;height:auto}
+.lamp{position:absolute;z-index:2;left:50.5%;top:-4px;width:clamp(44px,7vw,70px);height:auto;transform-origin:50% 0;animation:sway 6s ease-in-out infinite}
+.bench{position:absolute;z-index:3;left:0;right:0;bottom:0;height:21%;border-top:4px solid #4d2e16;background-color:var(--wood);background-image:repeating-linear-gradient(90deg,rgba(60,30,10,.1) 0 2px,transparent 2px 11px),linear-gradient(180deg,#bd8049 0,#bd8049 16%,#9b6334 16%,#8c582c)}
+.gear{position:absolute;z-index:4;animation:spin 16s linear infinite}
+.gear svg{display:block}
+.g1{left:3%;bottom:15%}
+.g2{left:calc(3% + 54px);bottom:16%;animation-direction:reverse;animation-duration:11s}
+.g3{left:40%;bottom:15%;animation-duration:13s}
+.bp{position:absolute;z-index:5;right:2.2%;top:8%;width:var(--bw);aspect-ratio:200/262;background-color:var(--blue);background-image:linear-gradient(rgba(255,255,255,.14) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.14) 1px,transparent 1px);background-size:16px 16px;border:3px solid #fff;outline:2px solid var(--blue-d);border-radius:6px;box-shadow:0 8px 16px rgba(16,40,61,.4);transform:rotate(1.2deg)}
+.bp svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.bp .cap{position:absolute;left:0;right:0;bottom:3px;text-align:center;font:600 9px/1 var(--f-head);letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.85)}
+.pin{position:absolute;z-index:6;width:11px;height:11px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ff9a8a,#d8433a 60%,#8f241c);box-shadow:0 2px 2px rgba(0,0,0,.4)}
+.pin.a{left:5px;top:5px}.pin.b{right:5px;top:5px}
+.pt .sh{fill:transparent;stroke:rgba(255,255,255,.75);stroke-width:1.5;stroke-dasharray:4 3;transition:fill .3s}
+.pt.on .sh{fill:var(--f);stroke:#0d2a44;stroke-width:2;stroke-dasharray:none;animation:popin .5s ease-out}
+.pt .sh.pos{transform-box:fill-box;transform-origin:50% 50%}
+.pt .lt{fill:transparent}
+.pt.on .lt{fill:var(--f)}
+.eyes.on .sh{fill:#6ff3ff}
+.shop.done .eyes .sh{fill:#b9fbff;filter:drop-shadow(0 0 5px #6ff3ff);animation:blink 3s ease-in-out infinite}
+.shop.done .hand-r{transform-box:fill-box;transform-origin:20% 90%;animation:wave 1s ease-in-out infinite alternate}
+.bubble{position:absolute;z-index:7;right:calc(2.2% + var(--bw) + 10px);top:12%;max-width:150px;padding:6px 10px;background:#fff;color:var(--ink);border:2px solid var(--ink);border-radius:12px 12px 4px 12px;font:600 13px/1.25 var(--f-head);opacity:0;transform:scale(.9);transform-origin:100% 100%;transition:opacity .4s,transform .4s}
+.shop.done .bubble{opacity:1;transform:none}
+.sc-text{position:absolute;z-index:8;left:clamp(14px,3vw,26px);top:clamp(12px,2.4vw,20px);display:grid;gap:8px;justify-items:start;max-width:48%}
+.sc-row{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px}
+.plate{padding:4px 10px;background:linear-gradient(180deg,#f3d58a,#d6a64a);color:#3a2a06;font:600 11px/1 var(--f-head);letter-spacing:.16em;border-radius:3px;box-shadow:0 2px 0 var(--brass-d),inset 0 1px 0 rgba(255,255,255,.55)}
+.sc-stats{padding:3px 10px;background:rgba(255,255,255,.92);color:var(--ink);border-radius:99px;font:600 11.5px/1.4 var(--f-head);letter-spacing:.04em}
+.sign{position:relative;padding:8px 16px 9px;background:linear-gradient(180deg,#b27846,#93602f);border:3px solid var(--wood-dd);border-radius:8px;box-shadow:0 4px 0 #2a190b,inset 0 1px 0 rgba(255,255,255,.25)}
+.sign::before,.sign::after{content:"";position:absolute;top:50%;width:7px;height:7px;margin-top:-3px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff3c4,#d6a64a 60%,#8a6416)}
+.sign::before{left:5px}.sign::after{right:5px}
+.sign h1{font:700 clamp(20px,4.1vw,38px)/1.05 var(--f-head);letter-spacing:.03em;text-transform:uppercase;color:#fff8e6;text-shadow:0 2px 0 rgba(0,0,0,.35);text-wrap:balance}
+
+.now{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;margin:14px 2px 0;font:500 clamp(12px,2.4vw,14.5px)/1.35 var(--f-ui);color:var(--ink)}
+.now .k{padding:3px 10px;background:var(--wood-dd);color:#fff3d6;border-radius:6px;font:600 .86em var(--f-head);letter-spacing:.1em;text-transform:uppercase}
+
+/* ---------- кнопки ---------- */
+.btn{all:unset;box-sizing:border-box;cursor:pointer;display:inline-flex;align-items:center;gap:8px;min-height:46px;padding:0 20px;font:600 15px/1 var(--f-head);letter-spacing:.08em;text-transform:uppercase;text-align:center;border-radius:8px}
+.btn:focus-visible,.opt:focus-visible,.wd:focus-visible,.seg button:focus-visible,.nv:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.btn-go{background:var(--c);color:#fff;box-shadow:0 4px 0 var(--c-deep)}
+.btn-go:hover{filter:brightness(1.08)}
+.btn-go:active{transform:translateY(3px);box-shadow:0 1px 0 var(--c-deep)}
+.btn-line{border:2px solid var(--c);color:var(--c-deep);background:#fff}
+.btn-line:hover:not(:disabled){background:var(--ct)}
+.btn-line:disabled{opacity:.4;cursor:default}
+.btn.sm{min-height:38px;padding:0 14px;font-size:13px}
+.lnk{all:unset;cursor:pointer;color:var(--c-deep);font:500 14px/1.3 var(--f-ui);text-decoration:underline;text-underline-offset:3px}
+
+/* ---------- лист-чертёж ---------- */
+.sheet{position:relative;margin-top:12px;background-color:var(--paper);background-image:linear-gradient(rgba(26,95,148,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(26,95,148,.07) 1px,transparent 1px);background-size:24px 24px;color:var(--ink);border:3px solid var(--c);border-radius:14px;box-shadow:0 6px 0 var(--c-deep),0 18px 34px rgba(16,40,61,.16);overflow:hidden}
+.sh-head{position:relative;overflow:hidden;display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding:12px clamp(16px,3vw,28px) 24px;background:var(--c);color:#fff}
+.sh-head.hero{background:linear-gradient(90deg,#0e8c88,#1f62a8 50%,#d4650f)}
+.sh-head::after{content:"";position:absolute;left:0;right:0;bottom:0;height:12px;opacity:.7;pointer-events:none;background-image:linear-gradient(90deg,#fff 0 2px,transparent 2px),linear-gradient(90deg,#fff 0 2px,transparent 2px);background-size:12px 6px,60px 12px;background-repeat:repeat-x;background-position:left bottom,left bottom}
+.sh-head>*{position:relative;z-index:1}
+.sh-head .wm{position:absolute;z-index:0;right:14px;top:42%;width:60px;height:60px;transform:translateY(-50%);opacity:.25;pointer-events:none}
+.sh-head .wm svg{width:100%;height:100%;animation:spin 30s linear infinite}
+.nut{display:inline-grid;place-items:center;width:38px;height:42px;background:linear-gradient(160deg,#f3d58a,#d6a64a 60%,#b98a2b);color:#3a2a06;font:700 18px/1 var(--f-head);clip-path:polygon(25% 3%,75% 3%,100% 50%,75% 97%,25% 97%,0 50%);filter:drop-shadow(0 2px 0 rgba(0,0,0,.3))}
+.sh-head h2{font:700 clamp(17px,3vw,23px)/1.15 var(--f-head);letter-spacing:.05em;text-transform:uppercase;text-wrap:balance;outline:none}
+.sh-head .meta{margin-left:auto;margin-right:70px;font:500 12px/1.3 var(--f-head);letter-spacing:.08em;text-transform:uppercase;opacity:.92}
+.sh-body{padding:clamp(16px,3vw,28px)}
+.lead{max-width:62ch;margin-bottom:12px;font-size:18px}
+.task{max-width:68ch;margin-bottom:14px;color:var(--ink-soft)}
+.rules{display:grid;gap:9px;margin:6px 0 22px;padding:0;list-style:none}
+.rules li{display:flex;gap:11px}
+.rules li::before{content:"";flex:none;width:14px;height:14px;margin-top:.42em;background:var(--orange);border:2px solid var(--wood-dd);clip-path:polygon(25% 3%,75% 3%,100% 50%,75% 97%,25% 97%,0 50%)}
+.row{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;margin-top:14px}
+.sub{margin:16px 0 8px;font:600 15px/1 var(--f-head);letter-spacing:.1em;text-transform:uppercase;color:var(--c-deep)}
+.tag{display:inline-block;margin-left:8px;padding:2px 10px;background:var(--c);color:#fff;border-radius:6px;font:600 11px/1.5 var(--f-head);letter-spacing:.1em;text-transform:uppercase;vertical-align:middle}
+
+/* ---------- объяснение ---------- */
+.ex{display:grid;gap:14px;margin:0 0 6px;padding:0;list-style:none}
+.ex>li{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;align-items:start;font-size:18px;line-height:1.6}
+.ex>li>.no{display:grid;place-items:center;width:30px;height:32px;margin-top:2px;background:var(--c);color:#fff;font:700 14px/1 var(--f-head);clip-path:polygon(25% 3%,75% 3%,100% 50%,75% 97%,25% 97%,0 50%)}
+.ex>li.new{animation:rise .35s ease-out}
+.ex u{text-decoration-thickness:3px;text-underline-offset:4px}
+.ex u.dbl{text-decoration-style:double}
+.qa{display:grid;gap:4px;margin:8px 0 2px;padding:10px 14px;list-style:none;font-size:17px;line-height:1.5;background:#fff;border:1px solid var(--line);border-left:5px solid var(--c);border-radius:8px;font-size:17px}
+.qa b{color:var(--c-deep)}
+.qa em{font-style:normal;color:var(--ink-soft)}
+
+/* ---------- выбор ответа ---------- */
+.prog{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px}
+.prog i{width:22px;height:7px;background:var(--line);border-radius:4px}
+.prog i.d{background:var(--c)}
+.prog i.c{background:var(--lamp);outline:2px solid var(--wood-dd)}
+.mc-p{margin:4px 0 6px;font-size:19px}
+.big{font:500 clamp(22px,4vw,30px)/1.35 var(--f-ui)}
+.cue{margin:0 0 8px;color:var(--ink-soft);font-style:italic}
+.opts{display:flex;flex-wrap:wrap;gap:10px;margin-top:6px}
+.opt{all:unset;box-sizing:border-box;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;min-height:50px;padding:8px 18px;background:#fff;color:var(--ink);border:2px solid var(--c);border-radius:10px;font:600 17px/1.3 var(--f-ui);box-shadow:0 3px 0 var(--c-deep)}
+.opt:hover:not(:disabled){background:var(--ct)}
+.opt:active:not(:disabled){transform:translateY(2px);box-shadow:0 1px 0 var(--c-deep)}
+.opt.no{opacity:.4;cursor:not-allowed;text-decoration:line-through;box-shadow:none}
+.opt.right{background:#d8f1e4;border-color:var(--ok);box-shadow:0 3px 0 var(--ok)}
+.opt:disabled{cursor:default}
+
+/* ---------- слова-бирки ---------- */
+.sent{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:flex-end;margin:10px 0 14px;font:500 clamp(20px,3.2vw,28px)/1.4 var(--f-ui)}
+.wg{display:inline-flex;align-items:flex-end}
+.wd{all:unset;box-sizing:border-box;position:relative;cursor:pointer;padding:4px 12px 6px;margin-bottom:18px;background:#fff;color:var(--ink);border:2px solid #9db9cc;border-radius:10px;font:inherit;box-shadow:0 3px 0 #b7cddb;transition:transform .08s,background .15s}
+.wd:hover:not(:disabled){background:var(--ct);border-color:var(--c)}
+.wd:active:not(:disabled){transform:translateY(2px);box-shadow:0 1px 0 #b7cddb}
+.wd:disabled{cursor:default}
+.wd.s{border-color:var(--mint);background:#e2fbf4;text-decoration:underline;text-decoration-thickness:3px;text-underline-offset:6px;text-decoration-color:var(--mint)}
+.wd.p{border-color:var(--amber);background:#fff5dc;text-decoration:underline double;text-decoration-thickness:2px;text-underline-offset:6px;text-decoration-color:var(--amber)}
+.wd.s::after,.wd.p::after{position:absolute;left:50%;top:100%;margin-top:3px;transform:translateX(-50%);font:600 10px/1 var(--f-head);letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;text-decoration:none}
+.wd.s::after{content:"подлежащее";color:var(--mint)}
+.wd.p::after{content:"сказуемое";color:var(--amber)}
+.wd.good{box-shadow:0 0 0 3px rgba(23,147,95,.4),0 3px 0 #b7cddb}
+.wd.bad{box-shadow:0 0 0 3px rgba(216,67,58,.45),0 3px 0 #b7cddb;animation:shake .35s}
+.wd.hint{animation:pulse 1s ease-in-out 4}
+.wd.gone{opacity:.4;text-decoration:line-through;box-shadow:none;background:#eef3f6;cursor:default}
+.wd.found{border-color:var(--ok);background:#e3f6ec}
+.wd.err{border-color:var(--bad);background:#ffe9e7}
+.pn{align-self:flex-end;margin:0 0 20px 2px;font-weight:500}
+.result{margin:6px 0 4px;padding:10px 14px;background:#fff;border:1px solid var(--line);border-left:6px solid var(--ok);border-radius:10px;font-size:17px}
+.result b{color:var(--c-deep)}
+.note{margin:6px 0 2px;color:var(--ink-soft);font-size:15px}
+
+/* ---------- ряды с вопросами ---------- */
+.kn{display:grid;gap:10px;margin:8px 0 6px}
+.kn-row{display:grid;gap:8px;padding:10px 14px;background:#fff;border:1px solid var(--line);border-left:6px solid var(--c);border-radius:10px}
+.kn-row.good{border-left-color:var(--ok);background:#f0faf4}
+.kn-row.bad{border-left-color:var(--bad);background:#fff3f2}
+.kn-grp{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.kn-lb{min-width:110px;font:600 12px/1.2 var(--f-head);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft)}
+.rw-line{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 10px;font-size:19px}
+.rw-line .arr{color:var(--ink-soft)}
+.rw-line .w{font-weight:600}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{all:unset;box-sizing:border-box;cursor:pointer;padding:6px 13px;background:#fff;border:2px solid var(--line);border-radius:10px;font:600 15px/1.2 var(--f-ui)}
+.seg button:hover:not(:disabled){border-color:var(--c)}
+.seg button.on{background:var(--c);border-color:var(--c-deep);color:#fff}
+.seg button:disabled{cursor:default}
+
+/* ---------- разминка и письмо ---------- */
+.wm-box{display:grid;gap:10px;margin:6px 0 4px}
+.wm-in{width:100%;resize:vertical;padding:12px 14px;background:#fff;color:var(--ink);border:2px solid #9db9cc;border-radius:12px;font:500 clamp(20px,3.4vw,28px)/1.4 var(--f-ui)}
+.wm-in:focus{outline:3px solid var(--focus);outline-offset:1px;border-color:var(--c)}
+.wm-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;font:600 14px/1 var(--f-head);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft)}
+.wm-row b{font-size:20px;color:var(--c-deep)}
+.wm-dots{display:flex;gap:4px}
+.wm-dots i{width:20px;height:9px;background:var(--line);border-radius:3px;transition:background .2s}
+.wm-dots i.d{background:var(--c)}
+.wm-ph{margin-left:auto;padding:3px 10px;background:var(--c);color:#fff;border-radius:6px}
+.wr-in{width:100%;resize:vertical;padding:10px 12px;background:#fff;color:var(--ink);border:2px solid #9db9cc;border-radius:10px;font:500 clamp(18px,2.8vw,22px)/1.45 var(--f-ui)}
+.wr-in:focus{outline:3px solid var(--focus);outline-offset:1px;border-color:var(--c)}
+.wr-in.good{border-color:var(--ok);background:#f0faf4}
+.wr-in.bad{border-color:var(--bad);background:#fff3f2}
+
+/* ---------- финал ---------- */
+.found{display:grid;gap:10px;margin:0 0 14px;padding:0;list-style:none}
+.found li{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start;font-size:16px;line-height:1.55}
+.found .no{display:grid;place-items:center;width:28px;height:30px;margin-top:1px;background:var(--c);color:#fff;font:700 13px/1 var(--f-head);clip-path:polygon(25% 3%,75% 3%,100% 50%,75% 97%,25% 97%,0 50%)}
+.hw{margin:14px 0;padding:12px 16px;background:#fff7e3;border:2px dashed var(--brass);border-radius:12px;font-size:16px}
+.hw b{color:var(--brass-d)}
+.stats-line{margin:6px 0 4px;font:500 15px/1.6 var(--f-mono)}
+.verdict{display:flex;justify-content:flex-end;margin:2px 0 18px}
+.stamp{display:inline-block;padding:.12em .35em;border:5px solid var(--bad);color:var(--bad);font:700 clamp(26px,6vw,46px)/1 var(--f-head);letter-spacing:.08em;text-transform:uppercase;transform:rotate(-7deg);opacity:.9;border-radius:6px}
+.stamp.in{animation:stampIn .55s cubic-bezier(.2,.9,.3,1.2) both}
+
+/* ---------- панель сообщений ---------- */
+.pa{display:flex;gap:14px;align-items:flex-start;margin-top:16px;padding:14px 18px;background:#102a43;color:#eaf4fb;border:3px solid #5b7a96;border-radius:12px;box-shadow:0 5px 0 #081a2b}
+.pa .led{flex:none;width:16px;height:16px;margin-top:5px;border-radius:50%;background:#ffc233;box-shadow:0 0 0 3px rgba(255,194,51,.25),0 0 12px 2px rgba(255,194,51,.7)}
+.pa .lb{display:block;margin-bottom:2px;font:600 12px/1.2 var(--f-head);letter-spacing:.14em;text-transform:uppercase;color:#ffc233}
+.pa .tx{font-size:16.5px;line-height:1.5}
+.pa.ok{border-color:#3fd69a}
+.pa.ok .led{background:#3fd69a;box-shadow:0 0 0 3px rgba(63,214,154,.25),0 0 12px 2px rgba(63,214,154,.7)}
+.pa.ok .lb{color:#3fd69a}
+.pa.bad{border-color:#ff7b6e}
+.pa.bad .led{background:#ff6b5e;box-shadow:0 0 0 3px rgba(255,107,94,.25),0 0 12px 2px rgba(255,107,94,.7)}
+.pa.bad .lb{color:#ff9a8f}
+.pa.pop{animation:pop .3s ease-out}
+
+.confetti{position:absolute;inset:0;z-index:5;overflow:hidden;pointer-events:none}
+.confetti i{position:absolute;top:-16px;width:9px;height:15px;border-radius:2px;opacity:0;animation:cf 2.2s ease-in forwards}
+@keyframes cf{0%{opacity:1;transform:translate(0,0) rotate(0)}100%{opacity:0;transform:translate(var(--dx),460px) rotate(var(--r))}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes sway{0%,100%{transform:rotate(-2.5deg)}50%{transform:rotate(2.5deg)}}
+@keyframes popin{0%{transform:scale(.7);opacity:.2}60%{transform:scale(1.08)}100%{transform:none;opacity:1}}
+@keyframes blink{0%,92%,100%{opacity:1}96%{opacity:.25}}
+@keyframes wave{from{transform:rotate(-12deg)}to{transform:rotate(22deg)}}
+@keyframes shake{20%{transform:translateX(-4px)}40%{transform:translateX(4px)}60%{transform:translateX(-3px)}80%{transform:translateX(3px)}}
+@keyframes pulse{50%{box-shadow:0 0 0 6px rgba(255,194,51,.6)}}
+@keyframes pop{from{transform:scale(.97);opacity:.6}to{transform:none;opacity:1}}
+@keyframes rise{from{transform:translateY(8px);opacity:0}to{transform:none;opacity:1}}
+@keyframes stampIn{0%{transform:rotate(-14deg) scale(2.2);opacity:0}60%{transform:rotate(-7deg) scale(.96);opacity:1}100%{transform:rotate(-7deg) scale(1);opacity:.9}}
+
+/* ---------- стрелки и список слайдов ---------- */
+.nav{position:fixed;z-index:15;left:50%;bottom:max(12px,env(safe-area-inset-bottom));transform:translateX(-50%);display:flex;align-items:stretch;width:min(560px,calc(100% - 2*var(--gutter)));background:linear-gradient(180deg,#b27846,#8c5a2c);border:3px solid var(--wood-dd);border-radius:14px;box-shadow:0 5px 0 #2a190b,0 14px 28px rgba(42,25,11,.4);overflow:hidden}
+.nv{all:unset;box-sizing:border-box;cursor:pointer;display:grid;place-items:center;flex:none;width:64px;min-height:58px;color:#ffe9a8}
+.nv svg{width:30px;height:30px;fill:none;stroke:currentColor;stroke-width:3.2;stroke-linecap:round;stroke-linejoin:round}
+.nv:hover:not(:disabled){background:rgba(0,0,0,.14)}
+.nv:active:not(:disabled){transform:translateY(2px)}
+.nv:disabled{opacity:.35;cursor:default}
+.nv-mid{all:unset;box-sizing:border-box;cursor:pointer;flex:1;min-width:0;display:grid;align-content:center;gap:3px;padding:6px 10px;text-align:center;border-inline:2px solid rgba(61,36,18,.55);color:#ffeec4;font:500 12px/1.25 var(--f-head);letter-spacing:.08em;text-transform:uppercase}
+.nv-mid:hover{background:rgba(0,0,0,.14)}
+.nv-mid b{color:#fff;font-weight:700;font-size:17px;letter-spacing:.14em}
+.nv-mid span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nv:focus-visible,.nv-mid:focus-visible{outline:3px solid #fff;outline-offset:-4px}
+.toc{position:fixed;z-index:16;left:50%;bottom:calc(max(12px,env(safe-area-inset-bottom)) + 80px);transform:translateX(-50%);width:min(560px,calc(100% - 2*var(--gutter)));max-height:min(62vh,540px);overflow:auto;padding:4px 12px 12px;background:var(--paper);color:var(--ink);border:3px solid var(--c);border-radius:14px;box-shadow:0 14px 36px rgba(16,40,61,.4)}
+.toc h3{display:flex;align-items:center;gap:8px;margin:12px 0 5px;font:600 12.5px/1.2 var(--f-head);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft)}
+.toc h3 i{flex:none;width:12px;height:12px;background:var(--rc);clip-path:polygon(25% 3%,75% 3%,100% 50%,75% 97%,25% 97%,0 50%)}
+.toc button{all:unset;box-sizing:border-box;cursor:pointer;display:flex;gap:10px;align-items:baseline;width:100%;padding:7px 10px;border-radius:8px;font:400 16px/1.3 var(--f-ui)}
+.toc button:hover{background:var(--ct)}
+.toc button.cur{background:var(--lamp);color:#3a2a06;font-weight:700}
+.toc button:focus-visible{outline:3px solid var(--focus);outline-offset:-3px}
+.toc .no{flex:none;min-width:2ch;font:500 12.5px/1.3 var(--f-mono);color:var(--ink-soft)}
+.toc button.cur .no{color:#3a2a06}
+
+@media (max-width:640px){
+  .nv{width:56px}
+  .shop{--H:clamp(236px,66vw,272px);border-radius:14px}
+  .sc-text{max-width:47%}
+  .sign{padding:6px 10px 7px}
+  .sign h1{font-size:clamp(18px,5.4vw,22px)}
+  .tools,.glow,.lamp{display:none}
+  .bubble{top:6%;max-width:120px;font-size:12px}
+  .sh-head .meta{margin-left:0;margin-right:0;width:100%}
+  .kn-lb{min-width:100%}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="shop" id="shop" aria-label="Мастерская изобретателя">
+    <div class="glow" aria-hidden="true"></div>
+    <svg class="tools" viewBox="0 0 220 110" aria-hidden="true" focusable="false">
+      <g fill="#56707f">
+        <circle cx="34" cy="8" r="3.5" fill="#8aa0ab"/><circle cx="110" cy="8" r="3.5" fill="#8aa0ab"/><circle cx="184" cy="8" r="3.5" fill="#8aa0ab"/>
+      </g>
+      <g transform="translate(34 16) rotate(14)"><rect x="-5" y="22" width="10" height="66" rx="5" fill="#56707f"/><circle cx="0" cy="14" r="14" fill="#56707f"/><rect x="-5" y="-6" width="10" height="16" fill="#cddadd"/></g>
+      <g transform="translate(110 14) rotate(-9)"><rect x="-4" y="16" width="8" height="74" rx="3" fill="#a8703d"/><rect x="-19" y="0" width="38" height="17" rx="3" fill="#56707f"/><rect x="-19" y="0" width="11" height="17" fill="#3f5563"/></g>
+      <g transform="translate(184 16) rotate(8)"><path d="M-3 0H3L7 32H-7Z" fill="#56707f"/><path d="M-8 32H-2L-7 88H-14Z" fill="#e24a3b"/><path d="M8 32H2L7 88H14Z" fill="#e24a3b"/></g>
+    </svg>
+    <svg class="lamp" viewBox="0 0 80 110" aria-hidden="true" focusable="false">
+      <line x1="40" y1="0" x2="40" y2="40" stroke="#3a2a1a" stroke-width="2"/>
+      <path d="M10 82L28 40H52L70 82Z" fill="#d6a64a" stroke="#8a6416" stroke-width="2" stroke-linejoin="round"/>
+      <ellipse cx="40" cy="84" rx="14" ry="9" fill="#fff3b0"/>
+    </svg>
+    <div class="bench" aria-hidden="true"></div>
+    <div class="gear g1" id="gear1" aria-hidden="true"></div>
+    <div class="gear g2" id="gear2" aria-hidden="true"></div>
+    <div class="gear g3" id="gear3" aria-hidden="true"></div>
+    <div class="bp" aria-hidden="true">
+      <svg viewBox="0 0 200 262" focusable="false">
+        <g class="pt" style="--f:#ff8a1f"><rect class="sh" x="60" y="228" width="38" height="16" rx="6"/></g>
+        <g class="pt" style="--f:#ff8a1f"><rect class="sh" x="102" y="228" width="38" height="16" rx="6"/></g>
+        <g class="pt" style="--f:#9fb4c4"><rect class="sh" x="72" y="190" width="20" height="40" rx="6"/></g>
+        <g class="pt" style="--f:#9fb4c4"><rect class="sh" x="108" y="190" width="20" height="40" rx="6"/></g>
+        <g class="pt" style="--f:#d6a64a"><rect class="sh" x="68" y="174" width="64" height="18" rx="6"/></g>
+        <g class="pt" style="--f:#c6d6e2"><rect class="sh" x="58" y="102" width="84" height="74" rx="10"/></g>
+        <g class="pt" style="--f:#33506b"><rect class="sh" x="76" y="116" width="48" height="32" rx="5"/><circle class="lt" cx="88" cy="132" r="4" style="--f:#ff6b5e"/><circle class="lt" cx="100" cy="132" r="4" style="--f:#ffd23f"/><circle class="lt" cx="112" cy="132" r="4" style="--f:#3fd69a"/></g>
+        <g class="pt" style="--f:#9fb4c4"><rect class="sh" x="34" y="106" width="18" height="58" rx="8"/></g>
+        <g class="pt" style="--f:#9fb4c4"><rect class="sh" x="148" y="106" width="18" height="58" rx="8"/></g>
+        <g class="pt" style="--f:#ff8a1f"><circle class="sh" cx="43" cy="174" r="11"/></g>
+        <g class="pt hand-r" style="--f:#ff8a1f"><circle class="sh" cx="157" cy="174" r="11"/></g>
+        <g class="pt" style="--f:#7f93a3"><rect class="sh" x="92" y="90" width="16" height="12" rx="3"/></g>
+        <g class="pt" style="--f:#c6d6e2"><rect class="sh" x="64" y="36" width="72" height="56" rx="14"/></g>
+        <g class="pt" style="--f:#d6a64a"><path class="sh" d="M100 36V16"/><circle class="sh" cx="100" cy="12" r="6"/></g>
+        <g class="pt eyes" style="--f:#6ff3ff"><circle class="sh" cx="84" cy="62" r="8"/><circle class="sh" cx="116" cy="62" r="8"/><rect class="sh" x="88" y="78" width="24" height="5" rx="2.5"/></g>
+      </svg>
+      <i class="pin a"></i><i class="pin b"></i>
+      <span class="cap">Чертёж № 1 · помощник</span>
+    </div>
+    <div class="bubble" id="bubble" aria-hidden="true">Робот включился!</div>
+    <div class="sc-text">
+      <div class="sc-row"><span class="plate">МАСТЕРСКАЯ ИЗОБРЕТАТЕЛЯ</span><span class="sc-stats" id="stats"></span></div>
+      <div class="sign"><h1>Как устроено предложение</h1></div>
+    </div>
+  </header>
+  <div class="now" id="now"></div>
+  <main>
+    <article class="sheet" id="stage"></article>
+    <div class="pa" id="pa" role="status" aria-live="polite" hidden></div>
+  </main>
+</div>
+<nav class="nav" id="nav" aria-label="Переход по слайдам">
+  <button type="button" class="nv" id="navPrev" data-act="prev" aria-label="Предыдущий слайд" title="Назад (стрелка влево)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 4 7 12l8 8"/></svg></button>
+  <button type="button" class="nv-mid" id="navMid" data-act="toc" aria-expanded="false" aria-controls="toc" title="Список слайдов"><b id="navNo"></b><span id="navTitle"></span></button>
+  <button type="button" class="nv" id="navNext" data-act="next" aria-label="Следующий слайд" title="Дальше (стрелка вправо)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 4 8 8-8 8"/></svg></button>
+</nav>
+<div class="toc" id="toc" aria-label="Список слайдов" hidden></div>
+
+<script>
+(function(){
+'use strict';
+
+/* ======================= помощники ======================= */
+const $=(s,r)=>(r||document).querySelector(s);
+const $$=(s,r)=>Array.prototype.slice.call((r||document).querySelectorAll(s));
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+const reduceMotion=()=>window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+const capFirst=w=>w.replace(/[а-яёa-z]/i,c=>c.toUpperCase());
+const wc=t=>(String(t).trim().match(/\S+/g)||[]).length;
+/* «Старый робот чинил пылесос.» -> слова и знак после слова */
+const tokens=s=>s.split(/\s+/).filter(Boolean).map(x=>{const m=x.match(/^(.*?)([.,!?;:]*)$/);return {w:m[1],p:m[2]};});
+const BLOCKS={1:'Разминка и повторение',2:'Основа предложения',3:'Второстепенные члены',4:'Распространённые предложения',5:'Простые и сложные',6:'Орфография'};
+const BC=['#0e8c88','#1f62a8','#d4650f','#3f8f3a','#b83a4b','#8c6a1c'];
+const TYPE={'какой?':'определение','что?':'дополнение','где?':'обстоятельство','когда?':'обстоятельство','как?':'обстоятельство','куда?':'обстоятельство'};
+
+/* ======================= CASE: весь контент урока =======================
+   Типы шагов: warm (разминка), explain (карточки с пунктами), mc (выбор ответа), reduce (убрать слова),
+   bases (отметить подлежащее и сказуемое, при type — простое или сложное), rows (вопрос от слова к слову),
+   ext (письмо с проверкой), spell (найти слово с ошибкой и выбрать верное написание). */
+const STEPS=[
+ {id:'warm',t:'warm',b:1,title:'Растяни и сократи',
+  intro:'Добавляйте в предложение по одному слову по очереди, пока оно остаётся понятным. Когда слов станет десять, убирайте по одному, пока не останется самое короткое, но понятное предложение.',
+  start:'Робот спит.',goal:10},
+
+ {id:'what',t:'explain',b:1,title:'Что такое предложение',points:[
+   '<b>Предложение</b> — это слово или несколько слов, которые выражают законченную мысль. В начале стоит заглавная буква, в конце знак: точка, вопросительный или восклицательный.',
+   'Предложения бывают разными <b>по цели</b> (повествовательные, вопросительные, побудительные) и <b>по интонации</b> (восклицательные и невосклицательные). Сегодня разберём, <b>из чего предложение построено</b>.']},
+
+ {id:'what2',t:'mc',b:1,title:'Предложение или нет?',intro:'Решите, выражает ли запись законченную мысль.',fix:1,items:[
+   {p:'<span class="big">Робот спит.</span>',o:[{t:'предложение',ok:1,why:'Верно. Мысль закончена: ясно, кто и что делает.'},{t:'не предложение',why:'Мысль здесь закончена: сказано, кто и что делает.'}]},
+   {p:'<span class="big">Старый ржавый робот</span>',o:[{t:'предложение',why:'Мысль не закончена: что с этим роботом?'},{t:'не предложение',ok:1,why:'Верно. Это только название предмета, мысль не закончена.'}]},
+   {p:'<span class="big">Часы тикают.</span>',o:[{t:'предложение',ok:1,why:'Верно. Есть о чём говорится и что говорится.'},{t:'не предложение',why:'Мысль закончена: часы, и они тикают.'}]},
+   {p:'<span class="big">В углу мастерской</span>',o:[{t:'предложение',why:'Что в углу мастерской? Мысль не закончена.'},{t:'не предложение',ok:1,why:'Верно. Сказано только где, а о чём речь, неизвестно.'}]}
+ ]},
+
+ {id:'reduce',t:'reduce',b:2,title:'Что остаётся?',
+  intro:'Нажимайте на слова, чтобы убрать их. Предложение должно остаться законченной мыслью. Какие слова можно убрать, а какие нет?',
+  words:[{w:'Маленький',rm:1},{w:'робот',no:'Без слова «робот» непонятно, о ком речь.'},{w:'быстро',rm:1},{w:'бежал',no:'Без слова «бежал» непонятно, что делает робот: мысль не закончена.'},{w:'по мастерской',rm:1}],
+  punct:'.',
+  okMsg:'Остались два слова: «Робот бежал». Больше убрать нельзя, иначе пропадёт мысль. Эти два слова и есть основа предложения.'},
+
+ {id:'core',t:'explain',b:2,title:'Подлежащее и сказуемое',go:'К заданию',points:[
+   'Два слова, которые остались, — это <b>главные члены предложения</b>. Вместе они составляют <b>грамматическую основу</b>: на ней держится всё предложение, как механизм на двигателе.',
+   '<b>Подлежащее</b> — о ком или о чём говорится. Отвечает на вопросы <b>кто? что?</b> (робот). Чаще всего это существительное или местоимение в начальной форме. Подчёркиваем <u>одной чертой</u>.',
+   '<b>Сказуемое</b> — что говорится о подлежащем. Отвечает на вопросы <b>что делает? что сделал?</b> (бежал). Чаще всего это глагол. Подчёркиваем <u class="dbl">двумя чертами</u>.',
+   '<b>Как искать основу.</b> Сначала найдите сказуемое: что происходит? Потом задайте вопрос «кто это делает?» и получите подлежащее. Порядок слов не важен: в предложении «Пылесос чинил робот» подлежащее всё равно «робот».']},
+
+ {id:'find',t:'bases',b:2,title:'Найди основу',
+  intro:'Нажмите на слово один раз, чтобы отметить подлежащее (одна черта), и ещё раз, чтобы отметить сказуемое (две черты). Потом нажмите «Проверить».',items:[
+   {s:'Старый робот быстро чинил ржавый пылесос.',subj:[1],pred:[3],why:'Основа: робот чинил. Остальные слова поясняют основу.'},
+   {s:'В мастерской громко тикали часы.',subj:[4],pred:[3],why:'Подлежащее стоит после сказуемого: часы тикали.'},
+   {s:'Из трубы повалил чёрный дым.',subj:[4],pred:[2],why:'Основа: дым повалил. Подлежащее снова в конце предложения.'},
+   {s:'Изобретатель придумал летающий чайник.',subj:[0],pred:[1],why:'Основа: изобретатель придумал. «Чайник» отвечает на вопрос «что придумал?», но не он выполняет действие.'},
+   {s:'Ржавый пылесос чинил маленький робот.',subj:[4],pred:[2],trap:{1:'Слово «пылесос» стоит первым, но чинил его не он. Спросите от сказуемого: кто чинил?'},why:'Ловушка порядка слов: основа «робот чинил».'},
+   {s:'Чайник улетел.',subj:[0],pred:[1],why:'Предложение из одной основы: чайник улетел.'},
+   {s:'Старый робот был умным.',subj:[1],pred:[2,3],bonus:1,why:'Сказуемое «был умным» говорит не о действии, а о признаке. Подлежащее «робот».'}
+ ]},
+
+ {id:'repair',t:'mc',b:2,title:'Починка',intro:'В каждом сломанном предложении не хватает главного члена. Выберите вариант, который его чинит.',items:[
+   {p:'<span class="big">Робот в углу мастерской.</span>',o:[
+     {t:'Робот стоял в углу мастерской.',ok:1,why:'Верно. Добавили сказуемое «стоял»: теперь есть основа «робот стоял».'},
+     {t:'Большой робот в углу мастерской.',why:'Добавили слово «большой», но сказуемого всё ещё нет: непонятно, что делает робот.'},
+     {t:'Робот в углу большой мастерской.',why:'Это тоже уточнение. Что делает робот, по-прежнему не сказано.'}]},
+   {p:'<span class="big">Быстро собрал летающий чайник.</span>',o:[
+     {t:'Изобретатель быстро собрал летающий чайник.',ok:1,why:'Верно. Добавили подлежащее «изобретатель»: он собрал.'},
+     {t:'Очень быстро собрал летающий чайник.',why:'Добавили «очень», но подлежащего нет: кто собрал?'},
+     {t:'Быстро собрал большой летающий чайник.',why:'Добавили «большой», а кто собрал, не сказано.'}]},
+   {p:'<span class="big">Ржавый старый.</span>',o:[
+     {t:'Ржавый старый пылесос загудел.',ok:1,why:'Верно. Теперь есть подлежащее «пылесос» и сказуемое «загудел».'},
+     {t:'Ржавый старый пылесос.',why:'Есть подлежащее «пылесос», но сказуемого нет: что делает пылесос?'},
+     {t:'Ржавый старый загудел.',why:'Есть сказуемое, но нет подлежащего: «ржавый старый» описывает предмет, которого в предложении нет.'}]}
+ ]},
+
+ {id:'minor',t:'explain',b:3,title:'Остальные слова',go:'К заданию',points:[
+   'Вернёмся к предложению «Маленький робот быстро чинил ржавый пылесос». Основа: <b>робот чинил</b>. Остальные слова — <b>второстепенные члены</b>: они поясняют главные члены и друг друга.',
+   'К ним можно задать вопрос от слова, которое они поясняют:<ul class="qa"><li><b>робот</b> <em>(какой?)</em> → маленький</li><li><b>чинил</b> <em>(как?)</em> → быстро</li><li><b>чинил</b> <em>(что?)</em> → пылесос</li><li><b>пылесос</b> <em>(какой?)</em> → ржавый</li></ul>',
+   'Второстепенных членов три вида. Названия достаточно запомнить, что они есть: <b>определение</b> отвечает на вопросы какой? чей?; <b>дополнение</b> — кого? что? кому? чему?; <b>обстоятельство</b> — где? когда? как? куда? почему?']},
+
+ {id:'ask',t:'rows',b:3,title:'Вопросы к словам',
+  intro:'Основа этого предложения отмечена. Для каждого из остальных слов выберите вопрос, который задают от слова-хозяина.',
+  s:'Старый изобретатель вчера собрал в сарае летающий чайник.',subj:[1],pred:[3],
+  rows:[{head:'изобретатель',w:'старый',q:'какой?'},{head:'собрал',w:'вчера',q:'когда?'},{head:'собрал',w:'в сарае',q:'где?'},{head:'собрал',w:'чайник',q:'что?'},{head:'чайник',w:'летающий',q:'какой?'}],
+  okMsg:'Всё верно. Названия видов появились сами: старый и летающий — определения, вчера и в сарае — обстоятельства, чайник — дополнение.'},
+
+ {id:'ext',t:'explain',b:4,title:'Распространённые и нераспространённые',go:'К заданию',points:[
+   '<b>Нераспространённое</b> предложение состоит только из главных членов: <i>Робот спит.</i> <b>Распространённое</b> — в нём есть хотя бы один второстепенный член: <i>Старый робот тихо спит в углу.</i>',
+   'Предложения распространяют, чтобы сказать точнее: какой, где, когда, как. Вспомните разминку: мы растягивали предложение и сокращали его до основы.']},
+
+ {id:'ext2',t:'mc',b:4,title:'Какое предложение?',intro:'Определите, какое предложение: нераспространённое или распространённое.',fix:1,items:[
+   {p:'<span class="big">Часы тикают.</span>',o:[{t:'нераспространённое',ok:1,why:'Верно. Только основа: часы тикают.'},{t:'распространённое',why:'Второстепенных членов здесь нет: только подлежащее и сказуемое.'}]},
+   {p:'<span class="big">Ночью часы громко тикали.</span>',o:[{t:'нераспространённое',why:'Есть второстепенные члены: «ночью» и «громко».'},{t:'распространённое',ok:1,why:'Верно. Кроме основы «часы тикали», есть «ночью» и «громко».'}]},
+   {p:'<span class="big">Чайник улетел.</span>',o:[{t:'нераспространённое',ok:1,why:'Верно. Только основа: чайник улетел.'},{t:'распространённое',why:'Здесь только подлежащее и сказуемое.'}]},
+   {p:'<span class="big">Чайник улетел в окно.</span>',o:[{t:'нераспространённое',why:'Есть второстепенный член «в окно».'},{t:'распространённое',ok:1,why:'Верно. К основе добавлено «в окно»: улетел куда?'}]}
+ ]},
+
+ {id:'extend',t:'ext',b:4,title:'Распространи',
+  intro:'Возьмите предложение «Чайник улетел.» и добавьте второстепенные члены: не меньше трёх новых слов. Основа «чайник улетел» должна остаться.',
+  base:'Чайник улетел.',min:5,must:['чайник','улетел'],
+  example:'Вчера вечером мой старый чайник неожиданно улетел в открытое окно.'},
+
+ {id:'simple',t:'explain',b:5,title:'Одна основа или две',go:'К заданию',points:[
+   'Вспомните предложение «Когда туман рассеялся, капитан увидел берег.» Сколько в нём основ? Две: <b>туман рассеялся</b> и <b>капитан увидел</b>.',
+   '<b>Простое</b> предложение — одна основа. <b>Сложное</b> — две основы или больше. Части сложного предложения разделяются запятой (расставлять запятые мы пока не тренируем).',
+   'Поэтому после «Когда туман рассеялся» нельзя ставить точку: это только половина сложного предложения.',
+   '<b>Как считать.</b> Найдите все сказуемые и к каждому подберите подлежащее. Сколько пар, столько основ. <b>Ловушка:</b> в предложении «Изобретатель взял отвёртку и открыл дверцу» подлежащее одно, сказуемых два, основа одна, а значит, предложение простое.']},
+
+ {id:'count',t:'bases',b:5,title:'Сколько основ?',type:1,
+  intro:'Отметьте подлежащие и сказуемые, затем выберите: предложение простое или сложное.',items:[
+   {s:'Старый робот чинил пылесос.',subj:[1],pred:[2],type:'простое',why:'Одна основа: робот чинил. Простое предложение.'},
+   {s:'Когда робот включился, часы замолчали.',subj:[1,3],pred:[2,4],type:'сложное',why:'Две основы: робот включился и часы замолчали. Сложное предложение.'},
+   {s:'Чайник улетел, а изобретатель побежал за ним.',subj:[0,3],pred:[1,4],type:'сложное',why:'Две основы: чайник улетел и изобретатель побежал. Сложное предложение.'},
+   {s:'Изобретатель взял отвёртку и открыл дверцу.',subj:[0],pred:[1,4],type:'простое',trapType:'Подлежащее одно: изобретатель. Сказуемых два, но основа одна, поэтому предложение простое.',why:'Одно подлежащее и два сказуемых образуют одну основу: предложение простое.'},
+   {s:'Ночью в мастерской громко тикали часы.',subj:[5],pred:[4],type:'простое',why:'Одна основа: часы тикали. Подлежащее стоит после сказуемого. Простое предложение.'},
+   {s:'Робот остановился, потому что сели батарейки.',subj:[0,5],pred:[1,4],type:'сложное',why:'Две основы: робот остановился и батарейки сели. Сложное предложение.'}
+ ]},
+
+ {id:'spell',t:'spell',b:6,title:'Контроль качества',optional:1,
+  intro:'В каждой записке на чертежах есть одна орфографическая ошибка. Нажмите на слово с ошибкой, потом выберите верное написание.',items:[
+   {s:'Старый мастер работал всю ноч.',e:4,base:'мастер работал',o:[{t:'ночь',ok:1,why:'Слово женского рода на шипящий: на конце пишется ь (моя ночь).'},{t:'ноч',why:'Так написано в записке: не хватает ь. «Ночь» — ж.р., на конце ь пишется.'},{t:'ночъ',why:'Буква ъ здесь не пишется.'}]},
+   {s:'Робот крутил голубое калесо.',e:3,base:'робот крутил',o:[{t:'колесо',ok:1,why:'Безударная гласная проверяется ударной: колёса.'},{t:'калесо',why:'Так написано в записке. Проверьте: колёса, значит «колесо».'},{t:'колиса',why:'Проверочное слово «колёса» показывает, что в корне пишется о.'}]},
+   {s:'Радосный изобретатель смеялся над своим роботом.',e:0,base:'изобретатель смеялся',o:[{t:'радостный',ok:1,why:'Непроизносимая согласная: проверочное слово «радость».'},{t:'радосный',why:'Так написано в записке. Проверьте: радость, значит «радостный».'},{t:'радастный',why:'Гласная в корне проверяется словом «радость»: пишется о, и согласная т тоже нужна.'}]},
+   {s:'Група роботов вышла из мастерской.',e:0,base:'группа вышла',o:[{t:'группа',ok:1,why:'Удвоенная согласная: слово «группа» нужно запомнить.'},{t:'група',why:'Так написано в записке: не хватает второй п.'},{t:'грууппа',why:'Удваивается согласная п, а не гласная.'}]},
+   {s:'Гость приехал из города казань.',e:4,base:'гость приехал',o:[{t:'Казань',ok:1,why:'Название города пишется с заглавной буквы.'},{t:'казань',why:'Так написано в записке: название города нужно писать с заглавной.'},{t:'КАЗАНЬ',why:'Все буквы заглавными писать не нужно: только первую.'}]},
+   {s:'Помощник превёз ящик с деталями.',e:1,base:'помощник привёз',o:[{t:'привёз',ok:1,why:'Приставка при- означает приближение: привёз к мастерской.'},{t:'превёз',why:'Так написано в записке. Слова «превёз» нет, нужна приставка при-.'},{t:'привёс',why:'Приставка верная, но слово «привёз» оканчивается на з: привезти.'}]}
+ ]}
+];
+
+/* ======================= значки и рисование ======================= */
+function gearPath(cx,cy,r,teeth){
+  const step=2*Math.PI/teeth,ri=r*.8,pts=[];
+  for(let k=0;k<teeth;k++){
+    const a=k*step;
+    const p=(rad,ang)=>[cx+rad*Math.cos(ang),cy+rad*Math.sin(ang)];
+    pts.push(p(ri,a),p(r,a+step*.12),p(r,a+step*.38),p(ri,a+step*.5));
+  }
+  return 'M'+pts.map(q=>q[0].toFixed(1)+' '+q[1].toFixed(1)).join('L')+'Z';
+}
+function gearSvg(r,teeth,fill,hole){
+  const s=(r+3)*2,c=r+3;
+  return `<svg viewBox="0 0 ${s} ${s}" width="${s}" height="${s}" aria-hidden="true" focusable="false"><path d="${gearPath(c,c,r,teeth)}" fill="${fill}" stroke="#3d2412" stroke-width="2" stroke-linejoin="round"/><circle cx="${c}" cy="${c}" r="${hole}" fill="#6f4423" stroke="#3d2412" stroke-width="2"/></svg>`;
+}
+const GEAR_ICON=`<svg viewBox="0 0 64 64" fill="none" stroke="#fff" stroke-width="2.2" stroke-linejoin="round" aria-hidden="true"><path d="${gearPath(32,32,28,10)}"/><circle cx="32" cy="32" r="9"/></svg>`;
+const LAMP_LED='<span class="led" aria-hidden="true"></span>';
+
+/* ======================= состояние ======================= */
+let S;
+const newState=()=>({phase:'brief',pi:0,mistakes:0,hints:3,msg:null,refocus:null,rev:1,seen:{},warm:null,mc:null,red:null,bs:null,rw:null,ex:null,sp:null});
+const step=()=>STEPS[S.pi];
+const mist=()=>{S.mistakes++;paintStats();};
+
+/* ======================= сообщения ======================= */
+const LABEL={info:'Внимание',ok:'Верно',bad:'Не то'};
+function paintPA(){
+  const el=$('#pa');
+  if(!S.msg){el.hidden=true;el.innerHTML='';return;}
+  el.hidden=false;
+  el.className='pa '+S.msg.kind;
+  el.innerHTML=`${LAMP_LED}<div class="tx"><span class="lb">${LABEL[S.msg.kind]}</span>${S.msg.html}</div>`;
+  el.classList.remove('pop');void el.offsetWidth;el.classList.add('pop');
+}
+function nudge(){
+  const el=$('#pa');
+  if(el.hidden)return;
+  const r=el.getBoundingClientRect(),behavior=reduceMotion()?'auto':'smooth';
+  if(r.bottom>window.innerHeight-92)window.scrollBy({top:r.bottom-window.innerHeight+104,behavior});
+  else if(r.top<0)window.scrollBy({top:r.top-16,behavior});
+}
+function say(kind,html){S.msg={kind,html};paintPA();setTimeout(nudge,0);}
+function paintStats(){$('#stats').textContent=`Ошибки ${S.mistakes} · Подсказки ${S.hints}`;}
+
+/* ======================= экраны ======================= */
+const head=(title,meta)=>`<div class="sh-head"><span class="nut">${S.pi+1}</span><h2 data-h tabindex="-1">${title}</h2><span class="meta">${meta}</span><span class="wm">${GEAR_ICON}</span></div>`;
+const V={};
+
+V.brief=()=>`
+<div class="sh-head hero"><span class="nut">№</span><h2 data-h tabindex="-1">Мастерская изобретателя</h2><span class="meta">чиним предложения</span><span class="wm">${GEAR_ICON}</span></div>
+<div class="sh-body">
+<p class="lead">В мастерской изобретателя поломались механические помощники: из-за перепутанных проводов они говорят «сломанными» предложениями. Вы ученик изобретателя. Чтобы починить предложение, нужно понять, как оно устроено.</p>
+<p class="lead">За каждый выполненный шаг на чертеже появляется новая деталь. К концу урока робот-помощник будет собран и включится.</p>
+<ul class="rules"><li>Сначала объяснение, потом задания.</li><li>Ошибки не страшны: они попадают в журнал, подсказок три.</li><li>Стрелки внизу переключают слайды.</li></ul>
+<div class="row"><button type="button" class="btn btn-go" data-act="start" data-af>Начать работу</button></div>
+</div>`;
+
+V.warm=st=>{
+  const W=S.warm,n=wc(W.text);
+  const dots=Array.from({length:st.goal},(_,i)=>`<i class="${i<n?'d':''}"></i>`).join('');
+  return `${head(st.title,'устно')}<div class="sh-body"><p class="task">${st.intro}</p>
+<div class="wm-box"><textarea id="wtext" class="wm-in" rows="2" spellcheck="false" aria-label="Предложение">${esc(W.text)}</textarea>
+<div class="wm-row"><span>Слов: <b id="wcnt">${n}</b></span><span class="wm-dots" id="wdots" aria-hidden="true">${dots}</span><span class="wm-ph" id="wph">${W.phase==='grow'?'Растягиваем':'Сокращаем'}</span></div></div>
+<div class="row"><button type="button" class="btn btn-go" data-act="exdone" data-af>Дальше</button></div></div>`;
+};
+
+V.explain=st=>{
+  const total=st.points.length,n=st.all?total:Math.min(S.rev,total),last=n>=total;
+  const list=st.points.slice(0,n).map((p,i)=>`<li${i===n-1&&n>1&&!st.all?' class="new"':''}><span class="no">${i+1}</span><div>${p}</div></li>`).join('');
+  const btn=last?`<button type="button" class="btn btn-go" data-act="exdone" data-af>${st.go||'К заданию'}</button>`:`<button type="button" class="btn btn-go" data-act="exmore" data-af>Дальше</button>`;
+  return `${head(st.title,'объяснение')}<div class="sh-body"><ol class="ex">${list}</ol><div class="row">${btn}</div></div>`;
+};
+
+V.mc=st=>{
+  const m=S.mc,it=st.items[m.i],total=st.items.length;
+  const dots=`<div class="prog" aria-hidden="true">${st.items.map((_,i)=>`<i class="${i<m.i?'d':i===m.i?'c':''}"></i>`).join('')}</div>`;
+  const cue=it.cue?`<p class="cue">${it.cue}</p>`:'';
+  let af=false;
+  const opts=m.ord.map(k=>{
+    const o=it.o[k],dis=m.no.includes(k)||m.lock;
+    const a=!dis&&!af?(af=true,' data-af'):'';
+    const cls=['opt'];
+    if(m.no.includes(k))cls.push('no');
+    if(m.lock&&o.ok)cls.push('right');
+    return `<button type="button" class="${cls.join(' ')}" data-act="mc" data-k="${k}"${dis?' disabled':''}${a}>${o.t}</button>`;
+  }).join('');
+  const ctl=m.lock?`<div class="row"><button type="button" class="btn btn-go" data-act="mcnext" data-af>${m.i===total-1?'Дальше':'Следующее'}</button></div>`:'';
+  return `${head(st.title,'задание')}<div class="sh-body">${st.intro?`<p class="task">${st.intro}</p>`:''}${dots}<p class="mc-p">${it.p}</p>${cue}<div class="opts">${opts}</div>${ctl}</div>`;
+};
+
+function chipsHtml(toks,marks,flags,hint,dis){
+  return toks.map((t,i)=>{
+    const m=marks[i]||0,cls=['wd'];
+    if(m===1)cls.push('s');
+    if(m===2)cls.push('p');
+    if(flags&&flags[i])cls.push(flags[i]);
+    if(hint&&hint.includes(i))cls.push('hint');
+    return `<span class="wg"><button type="button" class="${cls.join(' ')}" data-act="wd" data-i="${i}"${dis?' disabled':''}>${esc(t.w)}</button>${t.p?`<span class="pn">${esc(t.p)}</span>`:''}</span>`;
+  }).join(' ');
+}
+
+V.reduce=st=>{
+  const R=S.red;
+  const chips=st.words.map((x,i)=>{
+    const gone=R.gone.includes(i);
+    return `<button type="button" class="wd${gone?' gone':''}" data-act="rd" data-i="${i}"${gone||R.ok?' disabled':''}>${esc(x.w)}</button>`;
+  }).join(' ')+`<span class="pn">${st.punct}</span>`;
+  const left=st.words.filter((x,i)=>!R.gone.includes(i)).map(x=>x.w).join(' ');
+  const res=R.ok?`<div class="result"><b>Осталось:</b> ${esc(capFirst(left))}${st.punct}</div>`:'';
+  const ctl=R.ok?`<button type="button" class="btn btn-go" data-act="rdnext" data-af>Дальше</button>`:`<button type="button" class="btn btn-line sm" data-act="rdreset"${R.gone.length?'':' disabled'}>Вернуть слова</button>`;
+  return `${head(st.title,'эксперимент')}<div class="sh-body"><p class="task">${st.intro}</p><div class="sent" aria-label="Предложение">${chips}</div>${res}<div class="row">${ctl}</div></div>`;
+};
+
+V.bases=st=>{
+  const B=S.bs,it=st.items[B.i],toks=tokens(it.s),total=st.items.length;
+  const dots=`<div class="prog" aria-hidden="true">${st.items.map((_,i)=>`<i class="${i<B.i?'d':i===B.i?'c':''}"></i>`).join('')}</div>`;
+  const chips=chipsHtml(toks,B.marks,B.flags,B.hintIdx,B.ok);
+  const typ=st.type?`<div class="kn-grp"><span class="kn-lb">Предложение</span><div class="seg">${['простое','сложное'].map(v=>`<button type="button" class="${B.typ===v?'on':''}" data-act="typ" data-v="${v}"${B.ok?' disabled':''}>${v}</button>`).join('')}</div></div>`:'';
+  const res=B.ok?`<div class="result">${esc(it.why)}</div>`:'';
+  const ctl=B.ok?`<div class="row"><button type="button" class="btn btn-go" data-act="bsnext" data-af>${B.i===total-1?'Дальше':'Следующее'}</button></div>`
+    :`<div class="row"><button type="button" class="btn btn-go" data-act="bscheck">Проверить</button><button type="button" class="btn btn-line sm" data-act="bshint"${S.hints<1?' disabled':''}>Подсказка</button><button type="button" class="btn btn-line sm" data-act="bsreset">Сбросить</button></div>`;
+  return `${head(st.title,'задание')}<div class="sh-body"><p class="task">${st.intro}</p>${dots}${it.bonus?'<p class="note"><span class="tag" style="margin:0">Для сильных</span></p>':''}<div class="sent" aria-label="Предложение">${chips}</div>${typ}${res}${ctl}</div>`;
+};
+
+V.rows=st=>{
+  const W=S.rw,toks=tokens(st.s),marks=[];
+  st.subj.forEach(i=>{marks[i]=1;});st.pred.forEach(i=>{marks[i]=2;});
+  const chips=chipsHtml(toks,marks,null,null,true);
+  const qs=['какой?','что?','где?','когда?','как?','куда?'];
+  const rows=st.rows.map((r,i)=>{
+    const a=W.ans[i],res=W.res&&W.res[i];
+    const shown=W.ok||(res&&res.ok);
+    return `<div class="kn-row${res?(res.ok?' good':' bad'):''}"><div class="rw-line"><b>${esc(r.head)}</b><span class="arr">→</span><span class="w">${esc(r.w)}</span>${shown?`<span class="tag">${TYPE[r.q]}</span>`:''}</div><div class="seg">${qs.map(q=>`<button type="button" class="${a===q?'on':''}" data-act="rq" data-r="${i}" data-q="${q}"${W.ok?' disabled':''}>${q}</button>`).join('')}</div></div>`;
+  }).join('');
+  const ctl=W.ok?`<div class="row"><button type="button" class="btn btn-go" data-act="rwnext" data-af>Дальше</button></div>`:`<div class="row"><button type="button" class="btn btn-go" data-act="rwcheck">Проверить</button></div>`;
+  return `${head(st.title,'задание')}<div class="sh-body"><p class="task">${st.intro}</p><div class="sent" aria-label="Предложение">${chips}</div><div class="kn">${rows}</div>${ctl}</div>`;
+};
+
+V.ext=st=>{
+  const X=S.ex;
+  let shown='';
+  if(X.ok){
+    const stems=st.must.map(m=>m.slice(0,m.length-1));
+    shown='<div class="sent">'+tokens(X.val).map(t=>{
+      const lw=t.w.toLowerCase();
+      const cls=['wd'];
+      if(lw.indexOf(stems[0])===0)cls.push('s');
+      else if(lw.indexOf(stems[1])===0)cls.push('p');
+      return `<span class="wg"><span class="${cls.join(' ')}" style="cursor:default">${esc(t.w)}</span>${t.p?`<span class="pn">${esc(t.p)}</span>`:''}</span>`;
+    }).join(' ')+'</div>';
+  }
+  const area=`<textarea id="extx" class="wr-in${X.ok?' good':X.tries?' bad':''}" rows="3" spellcheck="false" placeholder="Напишите распространённое предложение" aria-label="Распространённое предложение"${X.ok?' readonly':''}>${esc(X.val)}</textarea>`;
+  const ctl=X.ok?`<div class="row"><button type="button" class="btn btn-go" data-act="exnext" data-af>Дальше</button></div>`
+    :`<div class="row"><button type="button" class="btn btn-go" data-act="excheck">Проверить</button>${X.tries?'<button type="button" class="lnk" data-act="exok">Засчитать вручную</button>':''}</div>`;
+  return `${head(st.title,'письмо')}<div class="sh-body"><p class="task">${st.intro}</p><p class="lead" style="margin-bottom:8px"><b>${esc(st.base)}</b></p>${X.ok?'':area}${X.ok?`<p class="note">Основа на месте: подлежащее подчёркнуто одной чертой, сказуемое двумя. Остальные слова второстепенные.</p>${shown}`:''}${ctl}</div>`;
+};
+
+V.spell=st=>{
+  const P=S.sp,it=st.items[P.i],toks=tokens(it.s),total=st.items.length;
+  const dots=`<div class="prog" aria-hidden="true">${st.items.map((_,i)=>`<i class="${i<P.i?'d':i===P.i?'c':''}"></i>`).join('')}</div>`;
+  const chips=toks.map((t,i)=>{
+    let cls='wd';
+    if(P.phase==='done'&&i===it.e)cls+=' found';
+    else if(P.phase==='fix'&&i===it.e)cls+=' err';
+    return `<span class="wg"><button type="button" class="${cls}" data-act="sw" data-i="${i}"${P.phase!=='find'?' disabled':''}>${esc(P.phase==='done'&&i===it.e?P.fixed:t.w)}</button>${t.p?`<span class="pn">${esc(t.p)}</span>`:''}</span>`;
+  }).join(' ');
+  let tail='';
+  if(P.phase==='find')tail='<p class="note">Нажмите на слово, в котором ошибка.</p>';
+  if(P.phase==='fix'){
+    tail=`<p class="note">Выберите верное написание.</p><div class="opts">${P.ord.map(k=>{const o=it.o[k],dis=P.no.includes(k);return `<button type="button" class="opt${dis?' no':''}" data-act="so" data-k="${k}"${dis?' disabled':''}>${o.t}</button>`;}).join('')}</div>`;
+  }
+  if(P.phase==='done')tail=`${P.showBase?`<div class="result"><b>Основа:</b> ${esc(it.base)}</div>`:''}<div class="row"><button type="button" class="btn btn-go" data-act="snext" data-af>${P.i===total-1?'Дальше':'Следующее'}</button>${P.showBase?'':'<button type="button" class="btn btn-line sm" data-act="sbase">Показать основу</button>'}</div>`;
+  return `${head(st.title,'резерв')}<div class="sh-body"><p class="task">${st.intro}</p>${dots}<div class="sent">${chips}</div>${tail}</div>`;
+};
+
+V.end=()=>{
+  const rank=S.mistakes<=6?'главный механик':S.mistakes<=14?'механик':'подмастерье';
+  return `<div class="sh-head hero"><span class="nut">✓</span><h2 data-h tabindex="-1">Робот собран</h2><span class="meta">все предложения починены</span><span class="wm">${GEAR_ICON}</span></div>
+<div class="sh-body"><div class="verdict"><span class="stamp in">Починено</span></div>
+<p class="lead">Робот-помощник включился и говорит исправным предложением. Вы разобрали, как устроено предложение.</p>
+<h3 class="sub">Что мы узнали</h3><ol class="found">
+<li><span class="no">1</span><span><b>Предложение — это законченная мысль.</b> Основа предложения: подлежащее (кто? что?) и сказуемое (что делает?).</span></li>
+<li><span class="no">2</span><span><b>Второстепенные члены</b> поясняют главные: какой? что? где? когда? как? Если они есть, предложение распространённое, если нет, нераспространённое.</span></li>
+<li><span class="no">3</span><span><b>Простое предложение</b> — одна основа, <b>сложное</b> — две основы или больше. Поэтому в «Когда туман рассеялся, капитан увидел берег» точка ставится только в конце.</span></li>
+</ol>
+<div class="hw"><b>Домашнее задание «Паспорт изобретения».</b> Придумайте своё изобретение (механизм, робот, транспорт) и напишите о нём четыре предложения: нераспространённое простое; распространённое простое; сложное из двух частей; распространённое сложное. В каждом подчеркните основу: подлежащее одной чертой, сказуемое двумя, и подпишите, какое это предложение.</div>
+<p class="stats-line">Ошибок: ${S.mistakes}. Подсказок использовано: ${3-S.hints}. Звание: <b>${rank}</b>.</p>
+<div class="row"><button type="button" class="btn btn-go" data-act="again" data-af>Пройти ещё раз</button></div></div>`;
+};
+
+/* ======================= отрисовка ======================= */
+function viewHtml(){
+  if(S.phase==='brief')return V.brief();
+  if(S.phase==='end')return V.end();
+  const st=step();
+  return V[st.t==='explain'?'explain':st.t](st);
+}
+function nowHtml(){
+  if(S.phase==='brief')return '<span class="k">Сейчас</span>Знакомимся с мастерской';
+  if(S.phase==='end')return '<span class="k">Итог</span>робот собран';
+  const st=step();
+  return `<span class="k">Блок ${st.b}</span>${esc(BLOCKS[st.b])} · ${esc(st.title)}`;
+}
+const PARTS=15;
+function paintShop(){
+  const n=STEPS.length;
+  let built=0;
+  if(S.phase==='end')built=PARTS;
+  else if(S.phase==='step'){const d=STEPS.filter(s=>S.seen[s.id]).length;built=Math.min(PARTS,Math.round(PARTS*d/n));}
+  $$('.bp .pt').forEach((g,i)=>g.classList.toggle('on',i<built));
+  $('#shop').classList.toggle('done',S.phase==='end');
+}
+function render(){
+  document.documentElement.dataset.b=S.phase==='step'?String(step().b):'0';
+  $('#now').innerHTML=nowHtml();
+  $('#stage').innerHTML=viewHtml();
+  paintStats();paintPA();paintNav();paintShop();
+  if(S.refocus){
+    const el=(S.refocus==='af'&&$('#stage [data-af]'))||$('#stage [data-h]');
+    if(el)el.focus({preventScroll:true});
+    S.refocus=null;
+  }
+}
+const toTop=()=>window.scrollTo({top:0,behavior:reduceMotion()?'auto':'smooth'});
+function confetti(n){
+  if(reduceMotion())return;
+  const host=$('#stage');
+  const old=host.querySelector('.confetti');if(old)old.remove();
+  const box=document.createElement('div');
+  box.className='confetti';box.setAttribute('aria-hidden','true');
+  const colors=['#ff8a1f','#d6a64a','#1f62a8','#0e8c88','#3f8f3a','#ffffff'];
+  for(let i=0;i<n;i++){
+    const p=document.createElement('i');
+    p.style.left=(Math.random()*100)+'%';
+    p.style.background=colors[i%colors.length];
+    p.style.setProperty('--dx',(Math.random()*160-80)+'px');
+    p.style.setProperty('--r',(Math.random()*720-360)+'deg');
+    p.style.animationDelay=(Math.random()*.6)+'s';
+    p.style.animationDuration=(1.6+Math.random()*1.2)+'s';
+    box.appendChild(p);
+  }
+  host.appendChild(box);
+  setTimeout(()=>box.remove(),3600);
+}
+
+/* ======================= ход урока ======================= */
+function enterStep(){
+  S.rev=1;S.msg=null;
+  const st=step();
+  if(st.t==='warm')S.warm={text:st.start,phase:'grow',done:false};
+  if(st.t==='mc'){S.mc={i:0,no:[],lock:false,ord:[]};prepItem();}
+  if(st.t==='reduce')S.red={gone:[],ok:false};
+  if(st.t==='bases')S.bs=newBases();
+  if(st.t==='rows')S.rw={ans:{},res:null,ok:false};
+  if(st.t==='ext')S.ex={val:'',ok:false,tries:0};
+  if(st.t==='spell'){S.sp={i:0,phase:'find',no:[],ord:[],fixed:'',showBase:false};prepSpell();}
+}
+function finishStep(){S.seen[step().id]=1;}
+function nextStep(){
+  finishStep();
+  if(S.pi<STEPS.length-1){S.pi++;enterStep();S.refocus='h';render();toTop();}
+  else{S.phase='end';S.msg=null;S.refocus='h';render();toTop();confetti(90);}
+}
+
+/* объяснение и разминка */
+function onExMore(){S.rev++;S.refocus='af';render();}
+
+/* выбор ответа */
+function prepItem(){
+  const st=step(),m=S.mc,it=st.items[m.i];
+  m.no=[];m.lock=false;
+  m.ord=st.fix?it.o.map((_,k)=>k):shuffle(it.o.map((_,k)=>k));
+}
+function mcAdvance(){
+  const st=step(),m=S.mc;
+  if(m.i>=st.items.length-1){nextStep();return;}
+  m.i++;prepItem();S.msg=null;S.refocus='af';render();
+}
+function onMC(k){
+  const st=step(),m=S.mc,it=st.items[m.i],o=it.o[k];
+  if(m.lock)return;
+  if(o.ok){m.lock=true;if(m.i===st.items.length-1)S.seen[st.id]=1;S.refocus='af';render();say('ok',o.why||'Верно.');}
+  else{m.no.push(k);mist();render();say('bad',o.why||'Не то. Подумайте ещё.');}
+}
+
+/* эксперимент: убрать слова */
+function onRd(i){
+  const st=step(),R=S.red,x=st.words[i];
+  if(R.ok||R.gone.includes(i))return;
+  if(x.rm){
+    R.gone.push(i);
+    const left=st.words.filter((y,k)=>y.rm&&!R.gone.includes(k)).length;
+    if(!left){R.ok=true;S.seen[st.id]=1;S.refocus='af';render();say('ok',st.okMsg);return;}
+    render();say('info',`Убрали «${esc(x.w)}»: мысль не пропала. Что ещё можно убрать?`);
+  }else{mist();render();say('bad',x.no);}
+}
+
+/* основа: отметить подлежащее и сказуемое */
+function newBases(){return {i:0,marks:[],flags:{},ok:false,typ:'',hintIdx:null};}
+function onWd(i){
+  const st=step(),B=S.bs;
+  if(B.ok)return;
+  B.marks[i]=((B.marks[i]||0)+1)%3;
+  B.flags={};B.hintIdx=null;
+  render();
+}
+function evalBases(it,marks){
+  const exp={};
+  it.subj.forEach(i=>{exp[i]=1;});it.pred.forEach(i=>{exp[i]=2;});
+  const good=[],bad=[],miss=[];
+  marks.forEach((m,i)=>{if(m){if(exp[i]===m)good.push(i);else bad.push(i);}});
+  Object.keys(exp).forEach(i=>{if(!marks[i])miss.push(+i);});
+  return {good,bad,miss};
+}
+function onBsCheck(){
+  const st=step(),B=S.bs,it=st.items[B.i],toks=tokens(it.s);
+  if(!B.marks.some(Boolean)){say('info','Отметьте подлежащее (одно нажатие) и сказуемое (два нажатия).');return;}
+  const r=evalBases(it,B.marks);
+  B.flags={};r.good.forEach(i=>{B.flags[i]='good';});r.bad.forEach(i=>{B.flags[i]='bad';});B.hintIdx=null;
+  if(r.bad.length||r.miss.length){
+    mist();render();
+    let m='';
+    if(r.bad.length){
+      const i=r.bad[0];
+      if(it.trap&&it.trap[i])m=it.trap[i];
+      else if(B.marks[i]===1)m=`«${esc(toks[i].w)}» не подлежащее. Найдите сказуемое и спросите: кто это делает?`;
+      else m=`«${esc(toks[i].w)}» не сказуемое. Сказуемое говорит, что делает или что происходит с подлежащим.`;
+    }
+    if(r.miss.length)m+=(m?' ':'')+`Отмечено не всё: не хватает ${r.miss.length}.`;
+    say('bad',m);return;
+  }
+  if(st.type){
+    if(!B.typ){render();say('info','Основы найдены верно. Теперь выберите: предложение простое или сложное?');return;}
+    if(B.typ!==it.type){mist();render();say('bad',it.trapType||(it.type==='простое'?'Основа одна, поэтому предложение простое.':'Основ две или больше, поэтому предложение сложное.'));return;}
+  }
+  B.ok=true;if(B.i===st.items.length-1)S.seen[st.id]=1;S.refocus='af';render();say('ok',it.why);
+}
+function onBsHint(){
+  const st=step(),B=S.bs,it=st.items[B.i];
+  if(S.hints<1||B.ok)return;
+  S.hints--;B.hintIdx=it.pred.slice();
+  render();say('info','Начните со сказуемого: что здесь происходит? Слова в рамке — подсказка.');
+}
+function bsAdvance(){
+  const st=step(),B=S.bs;
+  if(B.i>=st.items.length-1){nextStep();return;}
+  const i=B.i+1;S.bs=newBases();S.bs.i=i;S.msg=null;S.refocus='af';render();
+}
+
+/* вопросы к словам */
+function onRq(r,q){
+  const W=S.rw;if(W.ok)return;
+  W.ans[r]=q;W.res=null;render();
+}
+function onRwCheck(){
+  const st=step(),W=S.rw;
+  const miss=st.rows.findIndex((_,i)=>!W.ans[i]);
+  if(miss>=0){say('info','Выберите вопрос для каждого слова.');return;}
+  let bad=0;
+  W.res=st.rows.map((r,i)=>{const ok=W.ans[i]===r.q;if(!ok)bad++;return {ok};});
+  if(!bad){W.ok=true;S.seen[st.id]=1;S.refocus='af';render();say('ok',st.okMsg);}
+  else{mist();render();say('bad',`Неверно выбранных вопросов: ${bad}. Задайте вопрос от слова-хозяина: «чинил (как?)», «робот (какой?)».`);}
+}
+
+/* письмо: распространить предложение */
+function onExCheck(){
+  const st=step(),X=S.ex,ta=$('#extx');
+  X.val=ta?ta.value.trim():X.val;
+  const v=X.val,words=wc(v),lw=v.toLowerCase();
+  const miss=st.must.filter(m=>lw.indexOf(m.slice(0,m.length-1))<0);
+  let msg='';
+  if(!v)msg='Напишите предложение.';
+  else if(!/^[А-ЯЁA-Z«"]/.test(v))msg='Начните предложение с заглавной буквы.';
+  else if(!/[.!?]$/.test(v))msg='В конце нужен знак.';
+  else if(miss.length)msg=`Основа должна остаться: в предложении должны быть слова «${esc(st.must[0])}» и «${esc(st.must[1])}».`;
+  else if(words<st.min)msg=`Добавьте ещё слов: нужно не меньше трёх новых. Сейчас слов ${words}, а нужно хотя бы ${st.min}.`;
+  if(msg){X.tries++;mist();render();say('bad',msg);return;}
+  X.ok=true;S.seen[st.id]=1;S.refocus='af';render();say('ok','Хорошо. Основа на месте, а все новые слова — второстепенные члены.');
+}
+function onExOk(){const X=S.ex,ta=$('#extx');if(ta)X.val=ta.value.trim()||step().example;X.ok=true;S.seen[step().id]=1;S.refocus='af';render();say('ok','Засчитано.');}
+
+/* орфография (резерв) */
+function prepSpell(){
+  const st=step(),P=S.sp,it=st.items[P.i];
+  P.phase='find';P.no=[];P.fixed='';P.showBase=false;
+  P.ord=shuffle(it.o.map((_,k)=>k));
+}
+function onSw(i){
+  const st=step(),P=S.sp,it=st.items[P.i];
+  if(P.phase!=='find')return;
+  if(i===it.e){P.phase='fix';S.msg=null;render();say('info','Верно, ошибка здесь. Выберите правильное написание.');}
+  else{mist();say('bad',`В слове «${esc(tokens(it.s)[i].w)}» ошибки нет. Посмотрите внимательнее.`);}
+}
+function onSo(k){
+  const st=step(),P=S.sp,it=st.items[P.i],o=it.o[k];
+  if(P.phase!=='fix')return;
+  if(o.ok){P.phase='done';P.fixed=o.t;if(P.i===st.items.length-1)S.seen[st.id]=1;S.refocus='af';render();say('ok',o.why);}
+  else{P.no.push(k);mist();render();say('bad',o.why);}
+}
+function spAdvance(){
+  const st=step(),P=S.sp;
+  if(P.i>=st.items.length-1){nextStep();return;}
+  P.i++;prepSpell();S.msg=null;S.refocus='af';render();
+}
+
+/* переход по слайдам (стрелки) */
+function slides(){
+  const L=[{k:'brief',t:'Начало',b:0}];
+  STEPS.forEach((s,pi)=>L.push({k:'step',pi,t:s.title+(s.optional?' (резерв)':''),b:s.b}));
+  L.push({k:'end',t:'Робот собран',b:7});
+  return L;
+}
+function curIdx(L){
+  if(S.phase==='brief')return 0;
+  if(S.phase==='end')return L.length-1;
+  return S.pi+1;
+}
+function goSlide(idx,dir){
+  const L=slides();
+  idx=Math.max(0,Math.min(L.length-1,idx));
+  const T=L[idx];
+  for(let i=1;i<=Math.min(idx,STEPS.length);i++)S.seen[STEPS[i-1].id]=1;
+  S.msg=null;
+  if(T.k==='brief')S.phase='brief';
+  else if(T.k==='step'){S.phase='step';S.pi=T.pi;enterStep();if(step().t==='explain'&&dir<0)S.rev=step().points.length;}
+  else S.phase='end';
+  render();toTop();
+  if(T.k==='end')confetti(60);
+}
+function slideStep(dir){
+  const L=slides(),i=curIdx(L);
+  if(S.phase==='step'){
+    const st=step();
+    if(st.t==='explain'&&dir>0&&!st.all&&S.rev<st.points.length){S.rev++;render();return;}
+  }
+  goSlide(i+dir,dir);
+}
+function renderToc(L,cur){
+  let h='',last=-1;
+  L.forEach((x,k)=>{
+    if(x.b!==last){
+      last=x.b;
+      h+=x.b===0?'<h3><i style="--rc:#d6a64a"></i>Вступление</h3>':x.b===7?'<h3><i style="--rc:#ff8a1f"></i>Финал</h3>':`<h3><i style="--rc:${BC[x.b-1]}"></i>Блок ${x.b} · ${esc(BLOCKS[x.b])}</h3>`;
+    }
+    h+=`<button type="button" data-act="goto" data-i="${k}"${k===cur?' class="cur" aria-current="step"':''}><span class="no">${k+1}</span><span>${esc(x.t)}</span></button>`;
+  });
+  $('#toc').innerHTML=h;
+  const c=$('#toc .cur');
+  if(c)$('#toc').scrollTop=Math.max(0,c.offsetTop-90);
+}
+function toggleToc(force){
+  const el=$('#toc'),open=force===undefined?el.hidden:force;
+  el.hidden=!open;
+  $('#navMid').setAttribute('aria-expanded',String(open));
+  if(open){const L=slides();renderToc(L,curIdx(L));}
+}
+function paintNav(){
+  const L=slides(),i=curIdx(L),T=L[i];
+  $('#navPrev').disabled=i===0;
+  $('#navNext').disabled=i===L.length-1;
+  $('#navNo').textContent=`${i+1} / ${L.length}`;
+  $('#navTitle').textContent=T.k==='step'?`${BLOCKS[T.b]} · ${T.t}`:T.t;
+  if(!$('#toc').hidden)renderToc(L,i);
+}
+
+/* ======================= события ======================= */
+document.addEventListener('click',e=>{
+  if(!$('#toc').hidden&&!e.target.closest('#toc,#navMid'))toggleToc(false);
+  const b=e.target.closest('[data-act]');
+  if(!b||b.disabled)return;
+  switch(b.dataset.act){
+    case 'prev':slideStep(-1);break;
+    case 'next':slideStep(1);break;
+    case 'toc':toggleToc();break;
+    case 'goto':{const k=+b.dataset.i,cur=curIdx(slides());toggleToc(false);goSlide(k,k>cur?1:-1);break;}
+    case 'start':S.phase='step';S.pi=0;enterStep();S.refocus='h';render();toTop();break;
+    case 'exmore':onExMore();break;
+    case 'exdone':nextStep();break;
+    case 'mc':onMC(+b.dataset.k);break;
+    case 'mcnext':mcAdvance();break;
+    case 'rd':onRd(+b.dataset.i);break;
+    case 'rdreset':S.red={gone:[],ok:false};S.msg=null;render();break;
+    case 'rdnext':nextStep();break;
+    case 'wd':onWd(+b.dataset.i);break;
+    case 'typ':S.bs.typ=b.dataset.v;S.bs.flags={};render();break;
+    case 'bscheck':onBsCheck();break;
+    case 'bshint':onBsHint();break;
+    case 'bsreset':{const B=S.bs;B.marks=[];B.flags={};B.typ='';B.hintIdx=null;S.msg=null;render();break;}
+    case 'bsnext':bsAdvance();break;
+    case 'rq':onRq(+b.dataset.r,b.dataset.q);break;
+    case 'rwcheck':onRwCheck();break;
+    case 'rwnext':nextStep();break;
+    case 'excheck':onExCheck();break;
+    case 'exok':onExOk();break;
+    case 'exnext':nextStep();break;
+    case 'sw':onSw(+b.dataset.i);break;
+    case 'so':onSo(+b.dataset.k);break;
+    case 'sbase':S.sp.showBase=true;render();break;
+    case 'snext':spAdvance();break;
+    case 'again':S=newState();render();toTop();break;
+  }
+});
+document.addEventListener('input',e=>{
+  const t=e.target;
+  if(t&&t.id==='wtext'&&S.warm){
+    const W=S.warm,st=step();
+    W.text=t.value;
+    const n=wc(W.text);
+    $('#wcnt').textContent=n;
+    $$('#wdots i').forEach((d,i)=>d.classList.toggle('d',i<n));
+    if(W.phase==='grow'&&n>=st.goal){W.phase='shrink';$('#wph').textContent='Сокращаем';say('ok','Десять слов, хватит. Теперь убирайте по одному слову, пока не останется самое короткое, но понятное предложение.');}
+    else if(W.phase==='shrink'&&n<=2&&!W.done){W.done=true;say('ok','Остались два слова. Почему именно они? Ответ найдём в следующем блоке.');}
+  }
+  if(t&&t.id==='extx'&&S.ex)S.ex.val=t.value;
+});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){if(!$('#toc').hidden)toggleToc(false);return;}
+  if((e.key==='ArrowRight'||e.key==='ArrowLeft')&&!e.altKey&&!e.ctrlKey&&!e.metaKey&&!e.shiftKey
+     &&!/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)){
+    e.preventDefault();slideStep(e.key==='ArrowRight'?1:-1);
+  }
+});
+
+/* шестерёнки на верстаке */
+$('#gear1').innerHTML=gearSvg(30,12,'#d6a64a',8);
+$('#gear2').innerHTML=gearSvg(21,9,'#9fb4c4',6);
+$('#gear3').innerHTML=gearSvg(24,10,'#ff8a1f',7);
+
+S=newState();
+render();
+})();
+</script>
+</body>
+</html>

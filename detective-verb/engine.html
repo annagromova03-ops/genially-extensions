@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Дело №1. Шкатулка</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bad+Script&family=Golos+Text:wght@400;500;600&family=Oswald:wght@500;700&family=PT+Mono&display=swap">
+<style>
+/* Layout concept: a case file on a dark desk. Tape band, case title and steps on top; four suspect dossiers show the state of the investigation; one paper sheet per step; sticky-note feedback under it; notebook drawer from the side. */
+*{box-sizing:border-box}
+:root{
+  color-scheme:dark;
+  --gutter:clamp(16px,4vw,36px);
+  --desk:#1b2528;--desk-hi:#263438;--desk-line:#3a4c52;
+  --on-desk:#dde4dc;--on-desk-soft:#9db0a9;
+  --paper:#e5e8db;--paper-2:#d4d9c5;--ink:#161b1e;--ink-soft:#4b5654;
+  --marker:#f2c12e;--marker-deep:#b88a0c;--stamp:#c23b2d;--ok:#2e8567;--pen:#26468c;--focus:#8fc6ff;
+  --f-ui:"Golos Text","Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+  --f-type:"PT Mono","Courier New",Courier,monospace;
+  --f-stamp:"Oswald","Arial Narrow","Franklin Gothic Medium",Impact,sans-serif;
+  --f-hand:"Bad Script","Segoe Script","Comic Sans MS",cursive;
+}
+[hidden]{display:none!important}
+html{background:var(--desk)}
+body{margin:0;background:var(--desk);color:var(--on-desk);font:400 16px/1.55 var(--f-ui);padding-inline:var(--gutter);padding-block:0 56px;-webkit-text-size-adjust:100%}
+h1,h2,h3,p,ol,ul{margin:0}
+.tape{height:10px;margin-inline:calc(var(--gutter) * -1);background:repeating-linear-gradient(135deg,var(--marker) 0 14px,#12171a 14px 28px)}
+.wrap{max-width:1040px;margin:0 auto}
+
+/* evidence marker */
+.mk{display:inline-grid;place-items:center;min-width:1.9em;height:1.5em;padding:0 .35em;background:linear-gradient(#f6cf4a,#e0a912);color:#14191b;font:700 14px/1 var(--f-stamp);letter-spacing:.02em;clip-path:polygon(10% 0,90% 0,100% 100%,0 100%)}
+
+/* header */
+.top{display:flex;flex-wrap:wrap;align-items:center;gap:14px 28px;padding-block:18px 16px}
+.case{display:flex;align-items:baseline;gap:12px}
+.case-no{font:700 13px/1 var(--f-stamp);letter-spacing:.18em;text-transform:uppercase;color:var(--on-desk-soft)}
+.case-name{font:700 clamp(26px,5vw,38px)/1 var(--f-stamp);letter-spacing:.06em;text-transform:uppercase}
+.steps{display:flex;flex-wrap:wrap;gap:8px 18px;list-style:none;padding:0}
+.steps li{display:flex;align-items:center;gap:8px;color:var(--on-desk-soft);font:500 13px/1 var(--f-stamp);letter-spacing:.12em;text-transform:uppercase}
+.steps .mk{filter:grayscale(1) brightness(.5)}
+.steps li.cur{color:var(--on-desk)}
+.steps li.cur .mk{filter:none}
+.steps li.done .mk{filter:none;opacity:.55}
+.tools{margin-left:auto;display:flex;align-items:center;gap:14px;font:400 13px/1 var(--f-type);color:var(--on-desk-soft)}
+.tools .btn{color:var(--on-desk)}
+.dot{display:inline-block;width:8px;height:8px;margin-left:8px;border-radius:50%;background:var(--marker)}
+
+/* buttons */
+.btn{all:unset;box-sizing:border-box;cursor:pointer;display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 18px;font:700 14px/1 var(--f-stamp);letter-spacing:.12em;text-transform:uppercase;text-align:center;border-radius:2px}
+.btn:focus-visible,.opt:focus-visible,.w:focus-visible,.seg:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.btn-ink{background:var(--ink);color:var(--paper);box-shadow:0 3px 0 #000}
+.btn-ink:active{transform:translateY(2px);box-shadow:0 1px 0 #000}
+.btn-line{border:1.5px solid currentColor}
+.sheet .btn-line,.notes .btn-line{color:var(--ink)}
+.btn.sm{min-height:36px;padding:0 12px;font-size:12px}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+
+/* dossiers */
+.dossiers{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:20px}
+.dos{--ph:72px;position:relative;min-width:0;display:grid;grid-template-columns:var(--ph) minmax(0,1fr);gap:10px;align-items:center;padding:8px;background:var(--desk-hi);border:1px solid var(--desk-line)}
+.photo{position:relative;aspect-ratio:1;overflow:hidden;background-color:var(--desk-line);background-image:repeating-linear-gradient(to bottom,transparent 0 9px,rgba(255,255,255,.1) 9px 10px)}
+.photo svg{position:absolute;left:50%;bottom:0;height:96%;transform:translateX(-50%)}
+.av .sh,.av .hd{fill:#cdd5cb}
+.av .dt{fill:#26343a}
+.av .st{fill:none;stroke:#26343a;stroke-width:2;stroke-linecap:round}
+.dos-t{min-width:0}
+.dos h3{font:600 14px/1.2 var(--f-ui)}
+.dos p{margin-top:2px;font:400 12px/1.3 var(--f-type);color:var(--on-desk-soft)}
+.dos.cleared .photo svg{filter:grayscale(1);opacity:.4}
+.dos.cleared .dos-t{opacity:.5}
+.dos.cleared .photo::after{content:"";position:absolute;inset:0;background:linear-gradient(to top right,transparent calc(50% - 1.5px),var(--stamp) calc(50% - 1.5px) calc(50% + 1.5px),transparent calc(50% + 1.5px))}
+.dos.cleared.fresh .photo::after{animation:draw .7s ease-out both}
+.dos.guilty{border-color:var(--stamp);box-shadow:0 0 0 2px var(--stamp)}
+.stampx{position:absolute;left:50%;bottom:3px;transform:translateX(-50%) rotate(-7deg);padding:2px 4px;border:1.5px solid #ff8f80;background:rgba(27,37,40,.85);color:#ff8f80;font:700 9px/1 var(--f-stamp);letter-spacing:.08em;white-space:nowrap}
+
+/* paper sheet */
+.sheet{position:relative;padding:clamp(18px,3.4vw,34px);border-radius:2px;outline:none;color:var(--ink);background-color:var(--paper);background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .1 0 0 0 0 .12 0 0 0 0 .1 0 0 0 .1 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");box-shadow:0 1px 0 rgba(255,255,255,.35) inset,0 14px 30px rgba(0,0,0,.38)}
+.sh-head{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;margin-bottom:16px;padding-bottom:12px;border-bottom:2px solid var(--ink)}
+.sh-head h2{font:700 clamp(20px,3.6vw,28px)/1.1 var(--f-stamp);letter-spacing:.07em;text-transform:uppercase;text-wrap:balance;outline:none}
+.sh-head .meta{margin-left:auto;font:400 12.5px/1.3 var(--f-type);color:var(--ink-soft)}
+.lead{max-width:62ch;margin-bottom:12px;font:400 16.5px/1.65 var(--f-type)}
+.task{max-width:62ch;margin-bottom:16px;color:var(--ink-soft)}
+.rules{display:grid;gap:8px;margin:6px 0 22px;padding:0;list-style:none;font:400 15px/1.5 var(--f-type)}
+.rules li{display:flex;gap:10px}
+.rules li::before{content:"";flex:none;width:11px;height:10px;margin-top:.4em;background:var(--marker);clip-path:polygon(10% 0,90% 0,100% 100%,0 100%)}
+.row{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;margin-top:10px}
+.count{font:400 13.5px/1 var(--f-type);color:var(--ink-soft)}
+.timeline{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 10px;margin-bottom:12px;font:400 13.5px/1.3 var(--f-type);color:var(--ink-soft)}
+.timeline b{padding:2px 8px;background:var(--ink);color:var(--paper);font-weight:400}
+
+/* culprit's note and typed documents */
+.note{position:relative;margin:6px 0 18px;padding:18px clamp(16px,3vw,28px) 14px clamp(30px,5vw,48px);border-left:2px solid rgba(194,59,45,.5);background-color:#f0efe3;background-image:repeating-linear-gradient(to bottom,transparent 0 calc(1.95em - 1px),rgba(38,70,140,.2) calc(1.95em - 1px) 1.95em);color:var(--pen);font:400 clamp(21px,3.4vw,28px)/1.95 var(--f-hand);transform:rotate(-.5deg);box-shadow:0 6px 16px rgba(0,0,0,.2)}
+.doc{margin:6px 0 18px;padding:16px 18px;border:1px solid var(--paper-2);background:rgba(255,255,255,.35);font:400 clamp(14.5px,2vw,16.5px)/2 var(--f-type)}
+.verdict-line{margin:6px 0 4px;padding:10px 14px;border-left:4px solid var(--ok);background:rgba(46,133,103,.12);font:400 15px/1.6 var(--f-type)}
+.sub{margin:18px 0 10px;font:700 15px/1 var(--f-stamp);letter-spacing:.12em;text-transform:uppercase}
+
+/* words in texts */
+.w{all:unset;cursor:pointer;display:inline;padding:0 .1em;margin:0 -.1em;border-radius:3px;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+.w:not(:disabled):hover{background:rgba(242,193,46,.5)}
+.w:disabled{cursor:default}
+.w.picked{background:rgba(242,193,46,.8);box-shadow:0 0 0 2px var(--stamp) inset}
+.w.verb-hint{text-decoration:underline dotted;text-decoration-thickness:2px;text-underline-offset:.22em}
+.w.active{background:rgba(194,59,45,.16);box-shadow:0 0 0 2px var(--stamp) inset}
+.w.fixed{cursor:default;color:var(--pen);font-weight:700;text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:.2em}
+.w.miss{display:inline-block;animation:shake .35s}
+.chg{background:rgba(242,193,46,.6);border-radius:3px;padding:0 .1em}
+
+/* lab toggles */
+.segs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:6px}
+.seg{all:unset;box-sizing:border-box;cursor:pointer;min-height:40px;display:inline-flex;align-items:center;padding:0 14px;border:1.5px solid var(--ink);font:500 14px/1.2 var(--f-ui);color:var(--ink)}
+.seg.on{background:var(--ink);color:var(--paper)}
+
+/* questions and options */
+.q{margin-top:16px;padding-top:14px;border-top:1px dashed var(--ink-soft)}
+.q-t{margin-bottom:10px;font-weight:600}
+.opts{display:flex;flex-wrap:wrap;gap:10px}
+.opt{all:unset;box-sizing:border-box;cursor:pointer;display:inline-flex;align-items:center;min-height:48px;padding:8px 18px;border:2px solid var(--ink);border-radius:2px;background:var(--paper);color:var(--ink);font:500 18px/1.25 var(--f-type);box-shadow:0 3px 0 var(--ink)}
+.opt:hover{background:#f1dc86}
+.opt:active{transform:translateY(2px);box-shadow:0 1px 0 var(--ink)}
+.opt.txt{font:500 15.5px/1.35 var(--f-ui);text-align:left}
+.opt.big{justify-content:center;min-width:104px;font-size:clamp(18px,3vw,24px)}
+.opt.no{opacity:.4;cursor:not-allowed;text-decoration:line-through;box-shadow:none}
+
+/* gaps */
+.sent{margin:10px 0 20px;font:400 clamp(17px,2.6vw,22px)/2.2 var(--f-type)}
+.gap{display:inline-block;min-width:3.4ch;margin:0 .1em;padding:0 .25em;border-bottom:3px dashed var(--ink-soft);text-align:center;line-height:1.25;vertical-align:baseline}
+.gap .ph{visibility:hidden}
+.gap .lab{font-size:.62em;color:var(--ink-soft);letter-spacing:0}
+.gap.active{border-bottom-color:var(--stamp);animation:pulse 1.3s ease-in-out infinite}
+.gap.done{border-bottom:3px solid var(--pen);color:var(--pen);font-weight:700}
+.gap.revealed{border-bottom:3px solid var(--stamp);color:var(--stamp);font-weight:700}
+.prog{display:flex;gap:6px;margin-bottom:14px}
+.prog i{width:22px;height:6px;background:var(--paper-2)}
+.prog i.d{background:var(--ink)}
+.prog i.c{background:var(--marker);outline:1px solid var(--ink)}
+.who{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 12px;margin-bottom:6px}
+.who .role{padding:3px 8px;background:var(--ink);color:var(--paper);font:700 12px/1.2 var(--f-stamp);letter-spacing:.14em;text-transform:uppercase}
+.who b{font:600 16px/1.3 var(--f-ui)}
+.scroll{overflow-x:auto;max-width:100%}
+.tbl{width:100%;max-width:600px;margin:8px 0 18px;border-collapse:collapse;font:400 14.5px/1.5 var(--f-type)}
+.tbl th,.tbl td{padding:6px 10px;border:1px solid var(--ink-soft);text-align:left}
+.tbl th{background:var(--paper-2);font:700 12px/1.2 var(--f-stamp);letter-spacing:.1em;text-transform:uppercase}
+.found{display:grid;gap:10px;margin:0 0 16px;padding:0;list-style:none}
+.found li{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start;font:400 14.5px/1.55 var(--f-type)}
+.stats-line{margin:6px 0 4px;font:400 14.5px/1.6 var(--f-type)}
+.verdict{display:flex;justify-content:flex-end;margin:4px 0 34px}
+.stamp{display:inline-block;padding:.12em .35em;border:5px solid var(--stamp);color:var(--stamp);font:700 clamp(30px,7vw,58px)/1 var(--f-stamp);letter-spacing:.1em;text-transform:uppercase;transform:rotate(-8deg);mix-blend-mode:multiply;opacity:.92}
+.stamp.in{animation:stampIn .55s cubic-bezier(.2,.9,.3,1.2) both}
+
+/* sticky note */
+.sticky{position:relative;max-width:580px;margin:18px 0 0 clamp(0px,2vw,18px);padding:16px 18px 14px;background:#f4d35e;color:#1b1f21;font:500 15.5px/1.5 var(--f-ui);box-shadow:0 8px 18px rgba(0,0,0,.35);transform:rotate(-.8deg)}
+.sticky::before{content:"";position:absolute;left:50%;top:-9px;width:74px;height:18px;transform:translateX(-50%) rotate(2deg);background:rgba(255,255,255,.4)}
+.sticky.bad{background:#f2a99f}
+.sticky.ok{background:#a8d9b7}
+.sticky.pop{animation:pop .28s ease-out}
+
+/* notebook */
+.scrim{position:fixed;inset:0;z-index:20;background:rgba(10,14,15,.55)}
+.notes{position:fixed;z-index:30;top:0;right:0;bottom:0;width:min(400px,100%);padding:20px 20px 28px;overflow:auto;background-color:#e9ebdf;background-image:repeating-linear-gradient(to bottom,transparent 0 31px,rgba(38,70,140,.14) 31px 32px);color:var(--ink);box-shadow:-12px 0 32px rgba(0,0,0,.5);transform:translateX(104%);visibility:hidden;transition:transform .25s ease,visibility 0s linear .25s}
+.notes.open{transform:none;visibility:visible;transition:transform .25s ease}
+.notes-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
+.notes-head h2{font:700 20px/1.1 var(--f-stamp);letter-spacing:.08em;text-transform:uppercase}
+.notes-list{display:grid;gap:16px;padding:0;list-style:none}
+.n h3{margin-bottom:4px;font:700 15px/1.2 var(--f-stamp);letter-spacing:.1em;text-transform:uppercase}
+.n p{font:400 14px/1.7 var(--f-type)}
+.n.lock .bar{display:block;height:22px;margin-bottom:4px;background:var(--ink)}
+.n.lock small{font:400 12px/1.4 var(--f-type);color:var(--ink-soft)}
+
+@keyframes draw{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 0)}}
+@keyframes shake{20%{transform:translateX(-4px)}40%{transform:translateX(4px)}60%{transform:translateX(-3px)}80%{transform:translateX(3px)}}
+@keyframes pulse{50%{border-bottom-color:var(--marker-deep)}}
+@keyframes pop{from{transform:rotate(-.8deg) scale(.96);opacity:.5}to{transform:rotate(-.8deg) scale(1);opacity:1}}
+@keyframes stampIn{0%{transform:rotate(-14deg) scale(2.2);opacity:0}60%{transform:rotate(-8deg) scale(.96);opacity:1}100%{transform:rotate(-8deg) scale(1);opacity:.92}}
+
+@media (max-width:980px){
+  .dossiers{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:700px){
+  .dos{--ph:56px}
+  .tools{margin-left:0}
+  .steps .lb{display:none}
+  .steps li.cur .lb{display:inline}
+  .sh-head .meta{margin-left:0;width:100%}
+}
+@media (max-width:640px){
+  .notes{top:auto;left:0;right:0;width:100%;max-height:80%;border-radius:14px 14px 0 0;transform:translateY(104%)}
+  .notes.open{transform:none}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
+}
+</style>
+</head>
+<body>
+<div class="tape" aria-hidden="true"></div>
+<div class="wrap">
+  <header class="top">
+    <div class="case"><span class="case-no">Дело №1</span><h1 class="case-name">Шкатулка</h1></div>
+    <ol class="steps" id="steps" aria-label="Ход расследования"></ol>
+    <div class="tools">
+      <span id="stats"></span>
+      <button type="button" class="btn btn-line sm" id="btnNotes" data-act="notes" aria-expanded="false" aria-controls="notes">Блокнот<span class="dot" id="noteDot" hidden></span></button>
+    </div>
+  </header>
+  <section class="dossiers" id="dossiers" aria-label="Подозреваемые"></section>
+  <main>
+    <article class="sheet" id="stage"></article>
+    <div class="sticky" id="sticky" role="status" aria-live="polite" hidden></div>
+  </main>
+</div>
+<div class="scrim" id="scrim" data-act="notes" hidden></div>
+<aside class="notes" id="notes" aria-label="Блокнот эксперта">
+  <div class="notes-head"><h2>Блокнот эксперта</h2><button type="button" class="btn btn-line sm" id="notesClose" data-act="notes">Закрыть</button></div>
+  <ol class="notes-list" id="notesList"></ol>
+</aside>
+
+<script>
+(function(){
+'use strict';
+
+/* ======================= CASE: весь контент дела ======================= */
+const CASE={
+  suspects:[
+    {id:'grigory',name:'Григорий Павлович',role:'охранник',av:'guard'},
+    {id:'artem',name:'Артём',role:'практикант',av:'student'},
+    {id:'vera',name:'Вера Николаевна',role:'хранитель фондов',av:'keeper'},
+    {id:'mila',name:'Мила',role:'экскурсовод',av:'guide'}
+  ],
+  culprit:'vera',
+  menCleared:['grigory','artem'],
+
+  /* kind: pres/fut/past — глаголы, n — существительное, adj, pron, prep, adv, o — прочее; третий элемент — формы для лаборатории */
+  note:[
+    ['ПЛАН','o'],['.'],
+    ['Поздно','adv'],['вечером','n'],['возвращаюсь','pres',{m:'возвращался',f:'возвращалась'}],['в','prep'],['музей','n'],['.'],
+    ['Нахожу','pres',{m:'Находил',f:'Находила'}],['ключ','n'],['под','prep'],['тяжёлой','adj'],['вазой','n'],[','],
+    ['открываю','pres',{m:'открывал',f:'открывала'}],['сейф','n'],['и','o'],['беру','pres',{m:'брал',f:'брала'}],['старинную','adj'],['шкатулку','n'],['.'],
+    ['Выхожу','pres',{m:'Выходил',f:'Выходила'}],['через','prep'],['чёрный','adj'],['ход','n'],['.'],
+    ['Охранник','n'],['ничего','pron'],['не','o'],['заметит','fut'],[':'],
+    ['вчера','adv'],['я','pron'],['целый','adj'],['день','n'],['следила','past',{m:'следил',f:'следила'}],['за','prep'],['его','pron'],['обходами','n'],['.']
+  ],
+  noteHint:{
+    pres:w=>`«${w}» — настоящее время. Так скажет и мужчина, и женщина: в настоящем времени род не виден.`,
+    fut:w=>`«${w}» — будущее время. Род тоже не виден, и речь тут об охраннике, а не об авторе.`,
+    n:w=>`«${w}» — существительное. Оно называет предмет или человека в записке, а не показывает пол автора.`,
+    adj:w=>`«${w}» — прилагательное. Оно подстраивается под слово, к которому относится, а не под автора.`,
+    pron:w=>`«${w}» — местоимение. Оно звучит одинаково для мужчины и женщины.`,
+    prep:w=>`«${w}» — предлог. Пол автора он не выдаёт.`,
+    adv:w=>`«${w}» — наречие. Оно не меняется по роду.`,
+    o:w=>`«${w}» пол автора не выдаёт.`
+  },
+  q1:{
+    text:'Почему «возвращаюсь», «нахожу» и «открываю» не выдали автора?',
+    opts:[
+      {t:'Они стоят в начальной форме.',ok:false,why:'Начальная форма — «возвращаться». А «возвращаюсь» уже изменено по лицу.'},
+      {t:'В настоящем времени глагол не показывает род.',ok:true,why:'Верно. В прошедшем времени глагол меняется по роду (-л, -ла), а в настоящем нет: «я нахожу» скажет и мужчина, и женщина.'},
+      {t:'Эти слова слишком короткие.',ok:false,why:'Длина слова тут ни при чём.'}
+    ]
+  },
+
+  /* kind: ok — прошедшее, как надо; bad — «выпал» из времени; x — не глагол */
+  proto:[
+    ['Вчера','x'],['вечером','x'],['охранник','x'],['Григорий','x'],['Павлович','x'],['обходил','ok'],['музей','x'],['.'],
+    ['В','x'],['21:10','x'],['он','x'],['слышит','bad',{a:'слышал',o:['слышал','слышала','слышали'],why:'Рассказ о вчерашнем вечере, значит, прошедшее время. Охранник — мужской род: слышал.'}],['шум','x'],['на','x'],['втором','x'],['этаже','x'],['.'],
+    ['Охранник','x'],['поднялся','ok'],['по','x'],['лестнице','x'],['и','x'],['увидел','ok'],['открытую','x',{msg:'«открытую» отвечает на вопрос какую? Это признак двери, а не действие.'}],['дверь','x'],['кабинета','x'],['.'],
+    ['В','x'],['кабинете','x'],['горит','bad',{a:'горел',o:['горел','горела','горело'],why:'Свет — мужской род, прошедшее время: горел.'}],['свет','x'],[','],['на','x'],['полу','x'],['лежит','bad',{a:'лежал',o:['лежал','лежала','лежало'],why:'Осколок — мужской род, прошедшее время: лежал.'}],['осколок','x'],['вазы','x'],['.'],
+    ['Сейф','x'],['стоял','ok'],['пустой','x'],['.'],
+    ['Охранник','x'],['вызывает','bad',{a:'вызвал',alt:'вызывал',o:['вызвал','вызывал','вызвала'],why:'Охранник — мужской род, прошедшее время: вызвал.',altWhy:'Это тоже прошедшее время. Но «вызывал» значит, что он вызывал долго или несколько раз. Об этом на одном из ближайших уроков.'}],['полицию','x'],['и','x'],['ждал','ok'],['на','x'],['крыльце','x'],['.']
+  ],
+  q2:{
+    text:'Что нужно добавить к фразе «В кабинете … горит свет», чтобы «горит» могло остаться в настоящем времени?',
+    opts:[
+      {t:'вчера',ok:false,why:'«Вчера» — это прошедшее время. Тогда «горит» опять не подходит.'},
+      {t:'и сейчас',ok:true,why:'Верно. «И сейчас» показывает, что свет горит в момент рассказа. Время можно менять, когда меняется момент: вчера, сейчас, завтра.'},
+      {t:'тогда',ok:false,why:'«Тогда» тоже про прошлое.'}
+    ]
+  },
+
+  /* a — окончание, w — слово целиком, q — вопрос к слову */
+  bank:[
+    {t:'Преступник пытае{0} скры{1}.',g:[{a:'тся',w:'пытается',q:'что делает?'},{a:'ться',w:'скрыться',q:'что сделать?'}]},
+    {t:'Охранник бои{0} темноты.',g:[{a:'тся',w:'боится',q:'что делает?'}]},
+    {t:'Хранитель не хочет возвраща{0} в тот кабинет.',g:[{a:'ться',w:'возвращаться',q:'что делать?'}]},
+    {t:'Скоро тайна раскрое{0}.',g:[{a:'тся',w:'раскроется',q:'что сделает?'}]},
+    {t:'Детективу придётся постара{0}.',g:[{a:'ться',w:'постараться',q:'что сделать?'}]},
+    {t:'Подозреваемый пряче{0} за шторой.',g:[{a:'тся',w:'прячется',q:'что делает?'}]},
+    {t:'Вор долго будет скрыва{0}.',g:[{a:'ться',w:'скрываться',q:'после «будет» нужна начальная форма: что делать?'}]},
+    {t:'Что случи{0}, если ключ найдут?',g:[{a:'тся',w:'случится',q:'что сделает?'}]},
+    {t:'Следователь собирае{0} допросить свидетеля.',g:[{a:'тся',w:'собирается',q:'что делает?'}]},
+    {t:'Артём старае{0} не попада{1} на глаза охраннику.',g:[{a:'тся',w:'старается',q:'что делает?'},{a:'ться',w:'попадаться',q:'что делать?'}]},
+    {t:'Шкатулка находи{0} в сейфе уже сто лет.',g:[{a:'тся',w:'находится',q:'что делает?'}]},
+    {t:'Детектив не любит торопи{0}.',g:[{a:'ться',w:'торопиться',q:'что делать?'}]},
+    {t:'Скоро дело закончи{0}.',g:[{a:'тся',w:'закончится',q:'что сделает?'}]}
+  ],
+  perGame:8,
+
+  /* inf — начальная форма, a — верный ответ, o — варианты, wrong — пояснения к отдельным ошибкам */
+  rounds:[
+    {who:'Свидетельница',name:'Алиса, 34 года',note:'Говорит женщина. Прошедшее время женского рода: -ла, -лась.',t:'Я {0} свет в окне, {1} к двери и {2}.',g:[
+      {inf:'заметить',a:'заметила',o:['заметил','заметила','заметили']},
+      {inf:'подойти',a:'подошла',o:['подошёл','подошла','подошли']},
+      {inf:'прислушаться',a:'прислушалась',o:['прислушался','прислушалась','прислушались','прислушалася'],wrong:{'прислушалася':'После гласной пишется -сь, а не -ся: прислушалась.'}}
+    ]},
+    {who:'Свидетель',name:'Фёдор, 41 год',note:'Говорит мужчина. Прошедшее время мужского рода: -л, -лся.',t:'Я {0} тень на лестнице, {1} и {2} за шторой.',g:[
+      {inf:'увидеть',a:'увидел',o:['увидел','увидела','увидели']},
+      {inf:'испугаться',a:'испугался',o:['испугался','испугалась','испугались']},
+      {inf:'спрятаться',a:'спрятался',o:['спрятался','спряталась','спрятались']}
+    ]},
+    {who:'Свидетели',name:'Маша и Лёва, 12 лет',note:'Говорят двое: «мы». Множественное число: -ли, -лись.',t:'Мы {0} шаги, {1} и {2}.',g:[
+      {inf:'услышать',a:'услышали',o:['услышал','услышала','услышали']},
+      {inf:'остановиться',a:'остановились',o:['остановился','остановилась','остановились']},
+      {inf:'замереть',a:'замерли',o:['замер','замерла','замерли']}
+    ]}
+  ],
+
+  notes:[
+    {id:'n1',title:'Глагол',lock:'откроется после записки',body:'Называет действие или состояние: что делать? что сделать? Начальная форма: следить, брать, беречь.'},
+    {id:'n2',title:'Время и род',lock:'откроется после записки',body:'Время: прошедшее (следил), настоящее (слежу), будущее (прослежу, буду следить). В прошедшем глагол меняется по роду и числу (следил, следила, следили), в настоящем и будущем по лицу и числу (слежу, следишь, следит).'},
+    {id:'n3',title:'Один эпизод, одно время',lock:'откроется после протокола',body:'Время меняется, только когда меняется момент: вчера, сейчас, завтра.'},
+    {id:'n4',title:'-тся и -ться',lock:'откроется после допроса',body:'-тся: что делает? что сделает? -ться: что делать? что сделать? Оба окончания звучат одинаково, [ца]. Мягкий знак в вопросе значит мягкий знак в слове.'},
+    {id:'n5',title:'Прошедшее время',lock:'откроется после показаний',body:'он -л, она -ла, оно -ло, они -ли. После согласной пишется -ся (прислушался), после гласной -сь (прислушалась).'}
+  ]
+};
+
+/* ======================= рисунки подозреваемых ======================= */
+const BASE='<path class="sh" d="M4 64C6 50 18 44 32 44s26 6 28 20z"/><rect class="hd" x="28" y="36" width="8" height="10"/><ellipse class="hd" cx="32" cy="27" rx="10" ry="12"/>';
+const svg=inner=>`<svg class="av" viewBox="0 0 64 64" aria-hidden="true">${BASE}${inner}</svg>`;
+const AV={
+  guard:svg('<path class="dt" d="M21 25C21 13 27 10 32 10s11 3 11 15z"/><path class="dt" d="M19 25h26c0 2.5-2 3.5-4 3.5H23c-2 0-4-1-4-3.5z"/><rect class="dt" x="38" y="50" width="9" height="7" rx="1.5"/>'),
+  student:svg('<path class="dt" d="M22 25C19 14 27 9 34 10c7 1 10 7 8 15-2-5-6-8-10-8s-8 3-10 8z"/><path class="st" d="M21 27C20 11 44 11 43 27"/><rect class="dt" x="18" y="25" width="5" height="9" rx="2"/><rect class="dt" x="41" y="25" width="5" height="9" rx="2"/><path class="st" d="M19 47l3 17M45 47l-3 17"/>'),
+  keeper:svg('<path class="dt" d="M22 26C20 14 26 11 32 11s12 3 10 15c-2-6-6-9-10-9s-8 3-10 9z"/><circle class="dt" cx="32" cy="8" r="4.5"/><circle class="st" cx="28" cy="28" r="3.6"/><circle class="st" cx="36" cy="28" r="3.6"/><path class="st" d="M31.6 28h.8M26 46l6 8 6-8"/>'),
+  guide:svg('<path class="dt" d="M22 26C20 14 26 10 32 10s12 4 10 16c-2-7-6-9-10-9s-8 2-10 9z"/><path class="dt" d="M42 18c8 0 10 11 5 20 0-8-2-12-5-14z"/><path class="st" d="M25 45l7 14 7-14"/><rect class="dt" x="29" y="55" width="6" height="8" rx="1"/>')
+};
+
+/* ======================= помощники ======================= */
+const $=(s,r)=>(r||document).querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+const PUNCT=/^[.,:;!?]$/;
+const mk=n=>`<span class="mk">${n}</span>`;
+const LUPA='<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="6.5" cy="6.5" r="4.6" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M10 10l4.4 4.4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+const reduceMotion=()=>window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function wordsHtml(tokens,fn){
+  let out='',first=true;
+  tokens.forEach((t,i)=>{
+    if(PUNCT.test(t[0])){out+=esc(t[0]);return;}
+    if(!first)out+=' ';
+    first=false;
+    out+=fn(t,i);
+  });
+  return out;
+}
+function qHtml(Q,act,no){
+  let af=false;
+  const items=Q.opts.map((o,i)=>{
+    const dis=no.includes(i);
+    const a=!dis&&!af?(af=true,' data-af'):'';
+    return `<button type="button" class="opt txt${dis?' no':''}" data-act="${act}" data-i="${i}"${dis?' disabled':''}${a}>${o.t}</button>`;
+  }).join('');
+  return `<div class="q"><p class="q-t">${Q.text}</p><div class="opts">${items}</div></div>`;
+}
+function optsHtml(list,act,no,big){
+  let af=false;
+  return list.map(v=>{
+    const dis=no.includes(v);
+    const a=!dis&&!af?(af=true,' data-af'):'';
+    return `<button type="button" class="opt${big?' big':''}${dis?' no':''}" data-act="${act}" data-v="${esc(v)}"${dis?' disabled':''}${a}>${big==='dash'?'-':''}${esc(v)}</button>`;
+  }).join('');
+}
+function gapSentence(text,filled,active,labels){
+  return text.split(/(\{\d\})/).map(p=>{
+    const m=p.match(/^\{(\d)\}$/);
+    if(!m)return esc(p);
+    const n=+m[1],f=filled[n];
+    if(f)return `<span class="gap ${f.cls}">${esc(f.v)}</span>`;
+    const inner=labels?`<span class="lab">${esc(labels[n])}</span>`:'<span class="ph">ться</span>';
+    return `<span class="gap${n===active?' active':''}">${inner}</span>`;
+  }).join('');
+}
+
+/* ======================= состояние ======================= */
+let S;
+function newState(){
+  return {
+    stage:'brief',mistakes:0,hints:3,cleared:[],fresh:[],unlocked:[],noteNew:false,alibi:false,msg:null,refocus:null,
+    s1a:{found:false,hint:false},
+    s1b:{mode:'orig',m:false,f:false,done:false,no:[]},
+    s2:{fixed:{},active:null,hint:false,order:{},no:[],qDone:false,qNo:[]},
+    s3:null,s4:null
+  };
+}
+const mist=()=>{S.mistakes++;paintStats();};
+const unlock=id=>{if(!S.unlocked.includes(id)){S.unlocked.push(id);S.noteNew=true;}};
+const clearSuspect=id=>{if(!S.cleared.includes(id)){S.cleared.push(id);S.fresh.push(id);}};
+
+/* ======================= сообщения ======================= */
+function paintMsg(){
+  const el=$('#sticky');
+  if(!S.msg){el.hidden=true;el.innerHTML='';return;}
+  el.hidden=false;
+  el.className='sticky '+S.msg.kind;
+  el.innerHTML=S.msg.html;
+  el.classList.remove('pop');void el.offsetWidth;el.classList.add('pop');
+}
+function nudge(){
+  const el=$('#sticky');
+  if(el.hidden)return;
+  const r=el.getBoundingClientRect();
+  const behavior=reduceMotion()?'auto':'smooth';
+  if(r.bottom>window.innerHeight-8)window.scrollBy({top:r.bottom-window.innerHeight+16,behavior});
+  else if(r.top<0)window.scrollBy({top:r.top-16,behavior});
+}
+function say(kind,html){
+  S.msg={kind,html};
+  paintMsg();
+  requestAnimationFrame(nudge);
+}
+function paintStats(){$('#stats').textContent=`Ошибки: ${S.mistakes} · Лупа: ${S.hints}`;}
+
+/* ======================= экраны ======================= */
+const STEPS=['Записка','Протокол','Допрос','Показания','Вердикт'];
+const STEP_OF={brief:0,s1a:1,s1b:1,s2:2,s3:3,s4:4,s5:5,end:6};
+function stepsHtml(){
+  const cur=STEP_OF[S.stage];
+  return STEPS.map((l,i)=>{
+    const n=i+1,c=n<cur?'done':n===cur?'cur':'';
+    return `<li class="${c}"${c==='cur'?' aria-current="step"':''}>${mk(n)}<span class="lb">${l}</span></li>`;
+  }).join('');
+}
+function dossiersHtml(){
+  return CASE.suspects.map(s=>{
+    const cleared=S.cleared.includes(s.id),guilty=S.stage==='end'&&s.id===CASE.culprit;
+    const lab=guilty?'ВИНОВНА':cleared?(s.id==='mila'&&S.alibi?'АЛИБИ':'ИСКЛЮЧЁН'):'';
+    return `<article class="dos${cleared?' cleared':''}${cleared&&S.fresh.includes(s.id)?' fresh':''}${guilty?' guilty':''}"><div class="photo">${AV[s.av]}${lab?`<span class="stampx">${lab}</span>`:''}</div><div class="dos-t"><h3>${esc(s.name)}</h3><p>${esc(s.role)}</p></div></article>`;
+  }).join('');
+}
+function notesHtml(){
+  return CASE.notes.map(n=>S.unlocked.includes(n.id)
+    ?`<li class="n"><h3>${n.title}</h3><p>${n.body}</p></li>`
+    :`<li class="n lock"><span class="bar"></span><small>Засекречено: ${n.lock}</small></li>`).join('');
+}
+
+const V={};
+
+V.brief=()=>`
+<div class="sh-head"><h2 data-h tabindex="-1">Дело №1. Шкатулка</h2><span class="meta">отдел лингвистической экспертизы</span></div>
+<p class="lead">В городском музее пропала серебряная шкатулка. В корзине у служебного входа нашли записку. Полиция не может понять, кто её написал: подозреваемых четверо, а подписи нет.</p>
+<p class="lead">Вы эксперт-лингвист. Автора нужно установить по формам слов.</p>
+<ul class="rules"><li>Читайте улики и нажимайте на слова.</li><li>Ошибки не страшны, но попадают в отчёт.</li><li>В блокноте остаются правила, которые вы открыли.</li></ul>
+<div class="row"><button type="button" class="btn btn-ink" data-act="start">Принять дело</button></div>`;
+
+V.s1a=()=>{
+  const a=S.s1a;
+  const note=wordsHtml(CASE.note,(t,i)=>{
+    const c=['w'];
+    if(a.found&&t[1]==='past')c.push('picked');
+    if(a.hint&&['pres','fut','past'].includes(t[1]))c.push('verb-hint');
+    return `<button type="button" class="${c.join(' ')}" data-act="w1" data-i="${i}"${a.found?' disabled':''}>${esc(t[0])}</button>`;
+  });
+  const btn=a.found
+    ?'<button type="button" class="btn btn-ink" data-act="to1b" data-af>В лабораторию</button>'
+    :`<button type="button" class="btn btn-line sm" data-act="hint1">${LUPA}Лупа: подсветить глаголы</button>`;
+  return `
+<div class="sh-head">${mk(1)}<h2 data-h tabindex="-1">Записка</h2><span class="meta">вещдок №1 · найдена в корзине у служебного входа</span></div>
+<p class="task">Автор старался не выдать себя, но одно слово его выдало. Найдите это слово и нажмите на него.</p>
+<div class="note">${note}</div>
+<div class="row">${btn}</div>`;
+};
+
+V.s1b=()=>{
+  const L=S.s1b;
+  const note=wordsHtml(CASE.note,t=>{
+    if(t[2]&&L.mode!=='orig'&&t[2][L.mode]!==t[0])return `<span class="chg">${esc(t[2][L.mode])}</span>`;
+    return `<span>${esc(t[0])}</span>`;
+  });
+  const segs=[['orig','Как в записке'],['m','Прошедшее время, он'],['f','Прошедшее время, она']]
+    .map(([id,l])=>`<button type="button" class="seg${L.mode===id?' on':''}" data-act="lab" data-m="${id}" aria-pressed="${L.mode===id}">${l}</button>`).join('');
+  let tail;
+  if(L.done)tail='<div class="verdict-line"><strong>Вывод.</strong> Автор — женщина. Мужчины исключены, остаются Вера Николаевна и Мила.</div><div class="row"><button type="button" class="btn btn-ink" data-act="to2" data-af>Дальше: протокол</button></div>';
+  else if(L.m&&L.f)tail=qHtml(CASE.q1,'q1',L.no);
+  else tail='<p class="task">Включите оба режима прошедшего времени, чтобы увидеть вопрос эксперта.</p>';
+  return `
+<div class="sh-head">${mk(1)}<h2 data-h tabindex="-1">Лаборатория</h2><span class="meta">что меняется в глаголе</span></div>
+<p class="task">Переключайте режимы и смотрите, как меняются глаголы автора. Жёлтым отмечено то, что изменилось.</p>
+<div class="segs" role="group" aria-label="Режим">${segs}</div>
+<div class="note">${note}</div>
+${tail}`;
+};
+
+V.s2=()=>{
+  const P=S.s2,fixedN=Object.keys(P.fixed).length;
+  const txt=wordsHtml(CASE.proto,(t,i)=>{
+    if(P.fixed[i]!==undefined)return `<span class="w fixed">${esc(P.fixed[i])}</span>`;
+    const c=['w'];
+    if(P.active===i)c.push('active');
+    if(P.hint&&(t[1]==='ok'||t[1]==='bad'))c.push('verb-hint');
+    return `<button type="button" class="${c.join(' ')}" data-act="w2" data-i="${i}">${esc(t[0])}</button>`;
+  });
+  let tail='';
+  if(P.active!==null){
+    const t=CASE.proto[P.active];
+    tail=`<div class="q"><p class="q-t">Как исправить «${esc(t[0])}»?</p><div class="opts">${optsHtml(P.order[P.active].filter(Boolean),'fix',P.no.filter(x=>x.startsWith(P.active+':')).map(x=>x.slice(String(P.active).length+1)),true)}</div></div>`;
+  }else if(fixedN===4&&!P.qDone){
+    tail=qHtml(CASE.q2,'q2',P.qNo);
+  }else if(P.qDone){
+    tail='<div class="row"><button type="button" class="btn btn-ink" data-act="to3" data-af>Дальше: допрос</button></div>';
+  }else{
+    tail=`<div class="row"><span class="count">Найдено: ${fixedN} из 4</span><button type="button" class="btn btn-line sm" data-act="hint2">${LUPA}Лупа: подсветить глаголы</button></div>`;
+  }
+  return `
+<div class="sh-head">${mk(2)}<h2 data-h tabindex="-1">Протокол стажёра</h2><span class="meta">вещдок №2 · составлен в спешке</span></div>
+<div class="timeline"><span>Время рассказа:</span><b>вчера вечером</b><span>значит, прошедшее</span></div>
+<p class="task">Найдите глаголы, которые выпали из времени, и нажмите на них. Затем исправьте каждый.</p>
+<div class="doc">${txt}</div>
+${tail}`;
+};
+
+V.s3=()=>{
+  const s=S.s3;
+  if(s.over)return V.s3end();
+  const it=s.items[s.idx];
+  const dots=s.items.map((_,i)=>`<i class="${i<s.idx?'d':i===s.idx?'c':''}"></i>`).join('');
+  const ctl=s.itemDone
+    ?`<div class="row"><button type="button" class="btn btn-ink" data-act="next3" data-af>${s.idx===s.items.length-1?'Закончить допрос':'Следующий вопрос'}</button></div>`
+    :`<div class="opts">${optsHtml(['тся','ться'],'opt3',s.no,'dash')}</div><div class="row"><button type="button" class="btn btn-line sm" data-act="hint3">${LUPA}Лупа: подсказать вопрос</button></div>`;
+  return `
+<div class="sh-head">${mk(3)}<h2 data-h tabindex="-1">Допрос</h2><span class="meta">вопрос ${s.idx+1} из ${s.items.length}</span></div>
+<p class="task">В протоколах допроса стёрты окончания. Вставьте -тся или -ться.</p>
+<div class="prog" aria-hidden="true">${dots}</div>
+<p class="sent">${gapSentence(it.t,s.filled,s.itemDone?-1:s.gap)}</p>
+${ctl}`;
+};
+V.s3end=()=>{
+  const s=S.s3;
+  return `
+<div class="sh-head">${mk(3)}<h2 data-h tabindex="-1">Допрос окончен</h2><span class="meta">протоколы подписаны</span></div>
+<p class="lead">С первой попытки: ${s.clean} из ${s.items.length} предложений.</p>
+<div class="doc"><strong>Правило.</strong> -тся: что делает? что сделает? -ться: что делать? что сделать? Оба окончания звучат одинаково, [ца]. Мягкий знак в вопросе значит мягкий знак в слове.</div>
+<div class="row"><button type="button" class="btn btn-ink" data-act="to4" data-af>Дальше: показания</button></div>`;
+};
+
+V.s4=()=>{
+  const s=S.s4;
+  if(s.over)return V.s4end();
+  const R=CASE.rounds[s.r];
+  const labels=R.g.map(g=>g.inf);
+  const ctl=s.itemDone
+    ?`<div class="row"><button type="button" class="btn btn-ink" data-act="next4" data-af>${s.r===CASE.rounds.length-1?'Закончить показания':'Следующий свидетель'}</button></div>`
+    :`<div class="opts">${optsHtml(s.ord,'opt4',s.no,true)}</div>`;
+  return `
+<div class="sh-head">${mk(4)}<h2 data-h tabindex="-1">Показания</h2><span class="meta">свидетель ${s.r+1} из ${CASE.rounds.length}</span></div>
+<p class="task">Каждый свидетель говорит о себе. Поставьте глаголы в прошедшее время в нужной форме.</p>
+<div class="who"><span class="role">${R.who}</span><b>${R.name}</b></div>
+<p class="sent">${gapSentence(R.t,s.filled,s.itemDone?-1:s.gap,labels)}</p>
+${ctl}`;
+};
+V.s4end=()=>`
+<div class="sh-head">${mk(4)}<h2 data-h tabindex="-1">Показания записаны</h2><span class="meta">окончания прошедшего времени</span></div>
+<div class="scroll"><table class="tbl"><thead><tr><th>Кто говорит</th><th>Окончание</th><th>Пример</th></tr></thead><tbody>
+<tr><td>он</td><td>-л, -лся</td><td>заметил, испугался</td></tr>
+<tr><td>она</td><td>-ла, -лась</td><td>заметила, испугалась</td></tr>
+<tr><td>они, мы</td><td>-ли, -лись</td><td>заметили, испугались</td></tr>
+</tbody></table></div>
+<p class="lead">После согласной пишется -ся (прислушался), после гласной -сь (прислушалась).</p>
+<div class="row"><button type="button" class="btn btn-ink" data-act="to5" data-af>Дальше: вердикт</button></div>`;
+
+V.s5=()=>{
+  const left=CASE.suspects.filter(s=>!S.cleared.includes(s.id));
+  const btns=left.map((s,i)=>`<button type="button" class="btn btn-ink" data-act="accuse" data-id="${s.id}"${i===0?' data-af':''}>Обвинить: ${esc(s.name)}</button>`).join('');
+  return `
+<div class="sh-head">${mk(5)}<h2 data-h tabindex="-1">Вердикт</h2><span class="meta">осталось ${left.length===2?'две подозреваемые':'одна подозреваемая'}</span></div>
+<p class="task">Автор записки — женщина, поэтому мужчины исключены. Прочитайте справку и обвините одну из оставшихся.</p>
+<div class="doc"><strong>СПРАВКА.</strong> В ночь кражи Мила выступала на городском празднике. Её видели сотни зрителей.</div>
+<div class="row">${btns}</div>`;
+};
+
+V.end=()=>{
+  const rank=S.mistakes<=3?'старший эксперт-лингвист':S.mistakes<=8?'эксперт-лингвист':'стажёр-лингвист';
+  const items=CASE.notes.map((n,i)=>`<li>${mk(i+1)}<span><strong>${n.title}.</strong> ${n.body}</span></li>`).join('');
+  return `
+<div class="sh-head">${mk(5)}<h2 data-h tabindex="-1">Заключение эксперта</h2><span class="meta">дело №1 закрыто</span></div>
+<div class="verdict"><span class="stamp in">Дело закрыто</span></div>
+<p class="lead">Записку написала Вера Николаевна, хранитель фондов. Её выдало слово «следила»: в прошедшем времени глагол показывает род.</p>
+<p class="task">Язык показывает, кто мог написать записку. Вину доказывает следователь.</p>
+<h3 class="sub">Что установлено</h3>
+<ol class="found">${items}</ol>
+<p class="stats-line">Ошибок: ${S.mistakes}. Подсказок использовано: ${3-S.hints}. Звание: <strong>${rank}</strong>.</p>
+<div class="row"><button type="button" class="btn btn-ink" data-act="again" data-af>Сыграть ещё раз</button></div>`;
+};
+
+/* ======================= отрисовка ======================= */
+function render(){
+  $('#steps').innerHTML=stepsHtml();
+  $('#dossiers').innerHTML=dossiersHtml();
+  $('#stage').innerHTML=V[S.stage]();
+  $('#notesList').innerHTML=notesHtml();
+  $('#noteDot').hidden=!S.noteNew;
+  paintStats();
+  paintMsg();
+  if(S.refocus){
+    const el=(S.refocus==='af'&&$('#stage [data-af]'))||$('#stage [data-h]');
+    if(el)el.focus({preventScroll:true});
+    S.refocus=null;
+  }
+  S.fresh=[];
+}
+function go(stage,msg){
+  S.stage=stage;
+  S.msg=msg?{kind:'info',html:msg}:null;
+  S.refocus='h';
+  render();
+  window.scrollTo({top:0,behavior:reduceMotion()?'auto':'smooth'});
+}
+
+/* ======================= логика этапов ======================= */
+function onW1(i,b){
+  const t=CASE.note[i];
+  if(S.s1a.found)return;
+  if(t[1]==='past'){
+    S.s1a.found=true;
+    say('ok','Нашли. «следила» — глагол в прошедшем времени, женский род: окончание -ла. Остальные глаголы записки стоят в настоящем или будущем времени, там род не виден. Проверим это в лаборатории.');
+    S.refocus='af';render();
+    return;
+  }
+  mist();
+  b.classList.remove('miss');void b.offsetWidth;b.classList.add('miss');
+  say('bad',CASE.noteHint[t[1]](t[0]));
+}
+
+function onLab(m){
+  S.s1b.mode=m;
+  if(m==='m')S.s1b.m=true;
+  if(m==='f')S.s1b.f=true;
+  const txt={
+    orig:'В записке род виден только в слове «следила». Остальные глаголы стоят в настоящем и будущем времени.',
+    m:'Если бы автор писал в прошедшем времени и был мужчиной, у его глаголов было бы окончание -л.',
+    f:'Если бы автор писала в прошедшем времени, у её глаголов было бы окончание -ла.'
+  };
+  say('info',txt[m]);
+  render();
+}
+function onQ1(i){
+  const o=CASE.q1.opts[i];
+  if(o.ok){
+    S.s1b.done=true;
+    unlock('n1');unlock('n2');
+    CASE.menCleared.forEach(clearSuspect);
+    say('ok',o.why+' В блокноте появились две записи.');
+  }else{
+    S.s1b.no.push(i);mist();
+    say('bad',o.why);
+  }
+  S.refocus='af';render();
+}
+
+function onW2(i,b){
+  const t=CASE.proto[i],P=S.s2;
+  if(P.fixed[i]!==undefined)return;
+  if(t[1]==='bad'){
+    P.active=i;
+    if(!P.order[i])P.order[i]=shuffle(t[2].o);
+    say('info',`Нашли: «${esc(t[0])}» — настоящее время в рассказе о вчерашнем вечере. Выберите правильную форму.`);
+    S.refocus='af';render();
+    return;
+  }
+  mist();
+  b.classList.remove('miss');void b.offsetWidth;b.classList.add('miss');
+  if(t[1]==='ok')say('bad',`«${esc(t[0])}» — прошедшее время, как и весь рассказ. Здесь всё в порядке.`);
+  else say('bad',(t[2]&&t[2].msg)||`«${esc(t[0])}» — не глагол. Глагол отвечает на вопрос что делать? что сделать?`);
+}
+function onFix(opt){
+  const P=S.s2,i=P.active,t=CASE.proto[i],d=t[2];
+  if(opt===d.a||opt===d.alt){
+    P.fixed[i]=opt;P.active=null;
+    const left=4-Object.keys(P.fixed).length;
+    const why=opt===d.alt?d.altWhy:d.why;
+    say('ok',`${esc(t[0])} → ${esc(opt)}. ${why} ${left?`Осталось найти: ${left}.`:'Все глаголы исправлены.'}`);
+    S.refocus=left?null:'af';
+  }else{
+    P.no.push(i+':'+opt);mist();
+    say('bad',`«${esc(opt)}» не подходит. Найдите подлежащее и проверьте его род и число.`);
+    S.refocus='af';
+  }
+  render();
+}
+function onQ2(i){
+  const o=CASE.q2.opts[i],P=S.s2;
+  if(o.ok){P.qDone=true;unlock('n3');say('ok',o.why+' В блокноте новая запись.');}
+  else{P.qNo.push(i);mist();say('bad',o.why);}
+  S.refocus='af';render();
+}
+
+function initS3(){
+  S.s3={items:shuffle(CASE.bank).slice(0,CASE.perGame),idx:0,gap:0,filled:[],tries:0,no:[],bad:false,itemDone:false,clean:0,over:false};
+}
+function explain3(g){
+  return `${esc(g.w)}: ${g.q} Значит, -${g.a}. ${g.a==='ться'?'В вопросе есть мягкий знак, значит, он нужен и в слове.':'В вопросе мягкого знака нет, значит, в слове его тоже нет.'}`;
+}
+function advance3(){
+  const s=S.s3,it=s.items[s.idx];
+  s.tries=0;s.no=[];
+  if(s.gap<it.g.length-1)s.gap++;
+  else{s.itemDone=true;if(!s.bad)s.clean++;}
+  S.refocus='af';render();
+}
+function onOpt3(v){
+  const s=S.s3,g=s.items[s.idx].g[s.gap];
+  if(v===g.a){
+    s.filled[s.gap]={v:g.a,cls:'done'};
+    say('ok',explain3(g));
+    advance3();
+  }else{
+    mist();s.bad=true;s.tries++;s.no.push(v);
+    if(s.tries>=2){
+      s.filled[s.gap]={v:g.a,cls:'revealed'};
+      say('bad',`Правильно: -${g.a}. ${explain3(g)}`);
+      advance3();
+    }else{
+      say('bad','Не то. Задайте вопрос к слову с пропуском: что делает? что сделает? или что делать? что сделать? Мягкий знак в вопросе значит мягкий знак в слове.');
+      S.refocus='af';render();
+    }
+  }
+}
+function onNext3(){
+  const s=S.s3;
+  s.idx++;
+  if(s.idx>=s.items.length){s.over=true;unlock('n4');say('ok','Допрос окончен. В блокноте новая запись.');}
+  else{s.gap=0;s.filled=[];s.tries=0;s.no=[];s.bad=false;s.itemDone=false;S.msg=null;}
+  S.refocus='h';render();
+}
+function onHint3(){
+  const s=S.s3,g=s.items[s.idx].g[s.gap];
+  if(S.hints<1){say('info','Подсказки закончились.');return;}
+  S.hints--;
+  say('info',`Вопрос к слову с пропуском: ${g.q}`);
+  paintStats();
+}
+
+function startGap4(){
+  const s=S.s4,g=CASE.rounds[s.r].g[s.gap];
+  s.ord=shuffle(g.o);s.no=[];s.tries=0;
+}
+function initS4(){
+  S.s4={r:0,gap:0,filled:[],ord:[],no:[],tries:0,itemDone:false,over:false};
+  startGap4();
+}
+function advance4(){
+  const s=S.s4,R=CASE.rounds[s.r];
+  if(s.gap<R.g.length-1){s.gap++;startGap4();}
+  else{s.itemDone=true;}
+  S.refocus='af';render();
+}
+function onOpt4(v){
+  const s=S.s4,R=CASE.rounds[s.r],g=R.g[s.gap];
+  if(v===g.a){
+    s.filled[s.gap]={v:g.a,cls:'done'};
+    say('ok',`Верно: ${g.inf} → ${g.a}.${s.gap===R.g.length-1?' '+R.note:''}`);
+    advance4();
+  }else{
+    mist();s.tries++;s.no.push(v);
+    const why=(g.wrong&&g.wrong[v])||R.note;
+    if(s.tries>=2){
+      s.filled[s.gap]={v:g.a,cls:'revealed'};
+      say('bad',`Правильно: ${g.a}. ${why}`);
+      advance4();
+    }else{
+      say('bad',why);
+      S.refocus='af';render();
+    }
+  }
+}
+function onNext4(){
+  const s=S.s4;
+  s.r++;
+  if(s.r>=CASE.rounds.length){s.over=true;unlock('n5');say('ok','Показания записаны. В блокноте новая запись.');}
+  else{s.gap=0;s.filled=[];s.itemDone=false;S.msg=null;startGap4();}
+  S.refocus='h';render();
+}
+
+function onAccuse(id){
+  if(id===CASE.culprit){
+    clearSuspect('mila');S.alibi=true;
+    go('end');
+  }else{
+    mist();
+    clearSuspect(id);S.alibi=true;
+    say('bad','У Милы алиби: в ночь кражи сотни людей видели её на городском празднике. Перечитайте справку: подозреваемая осталась одна.');
+    S.refocus='af';render();
+  }
+}
+
+function toggleNotes(force){
+  const el=$('#notes'),open=force===undefined?!el.classList.contains('open'):force;
+  el.classList.toggle('open',open);
+  $('#scrim').hidden=!open;
+  $('#btnNotes').setAttribute('aria-expanded',String(open));
+  if(open){S.noteNew=false;$('#noteDot').hidden=true;$('#notesClose').focus();}
+  else $('#btnNotes').focus();
+}
+
+/* ======================= события ======================= */
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-act]');
+  if(!b||b.disabled)return;
+  const a=b.dataset.act;
+  switch(a){
+    case 'notes':toggleNotes();break;
+    case 'start':go('s1a');break;
+    case 'w1':onW1(+b.dataset.i,b);break;
+    case 'hint1':
+      if(S.hints<1){say('info','Подсказки закончились.');break;}
+      S.hints--;S.s1a.hint=true;say('info','Лупа подсвечивает глаголы. Один из них показывает род автора.');render();break;
+    case 'to1b':go('s1b','Включайте режимы по очереди и смотрите, как меняются глаголы автора.');break;
+    case 'lab':onLab(b.dataset.m);break;
+    case 'q1':onQ1(+b.dataset.i);break;
+    case 'to2':go('s2','Это рассказ о вчерашнем вечере, значит, все глаголы должны стоять в прошедшем времени.');break;
+    case 'w2':onW2(+b.dataset.i,b);break;
+    case 'hint2':
+      if(S.hints<1){say('info','Подсказки закончились.');break;}
+      S.hints--;S.s2.hint=true;say('info','Лупа подсвечивает все глаголы рассказа. Выберите те, что не в прошедшем времени.');render();break;
+    case 'fix':onFix(b.dataset.v);break;
+    case 'q2':onQ2(+b.dataset.i);break;
+    case 'to3':initS3();go('s3','К слову с пропуском задайте вопрос: что делает? что сделает? или что делать? что сделать?');break;
+    case 'opt3':onOpt3(b.dataset.v);break;
+    case 'next3':onNext3();break;
+    case 'hint3':onHint3();break;
+    case 'to4':initS4();go('s4','Каждый свидетель говорит о себе. Сначала определите, кто говорит.');break;
+    case 'opt4':onOpt4(b.dataset.v);break;
+    case 'next4':onNext4();break;
+    case 'to5':go('s5');break;
+    case 'accuse':onAccuse(b.dataset.id);break;
+    case 'again':S=newState();go('brief');break;
+  }
+});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'&&$('#notes').classList.contains('open'))toggleNotes(false);
+});
+
+S=newState();
+render();
+})();
+</script>
+</body>
+</html>
