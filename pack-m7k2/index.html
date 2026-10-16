@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Эффекты для Genially</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap');
+  :root{
+    --bg-page:#0b0c1f; --bg-panel:#13152f; --bg-input:#0c0e22;
+    --pink:#ff4fd8; --pink-dim:rgba(255,79,216,0.35);
+    --blue:#4fd8ff; --blue-dim:rgba(79,216,255,0.35);
+    --text:#eef0ff; --text-dim:#8b90b8; --line:#262a52;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; font-family:'Baloo 2','Trebuchet MS','Verdana',sans-serif; color:var(--text);
+    background:
+      radial-gradient(1000px 560px at -8% -12%, var(--pink-dim), transparent 60%),
+      radial-gradient(1000px 560px at 108% 112%, var(--blue-dim), transparent 60%),
+      var(--bg-page);
+    min-height:100vh;
+  }
+  header{padding:40px 24px 8px; text-align:center;}
+  header h1{
+    margin:0; font-size:clamp(28px,5vw,42px);
+    background:linear-gradient(90deg,var(--pink),var(--blue));
+    -webkit-background-clip:text; background-clip:text; color:transparent; display:inline-block;
+  }
+  header p{margin:12px auto 0; max-width:640px; font-size:15px; line-height:1.55; color:var(--text-dim);}
+  header p b{color:var(--blue);}
+  main{max-width:1100px; margin:0 auto; padding:24px;}
+
+  .grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:20px;}
+  .card{
+    background:var(--bg-panel); border:1px solid var(--line); border-radius:18px; padding:20px;
+    display:flex; flex-direction:column; gap:12px;
+  }
+  .card:nth-child(odd){box-shadow:0 0 0 1px rgba(255,79,216,0.15), 0 0 30px -14px var(--pink), 0 12px 30px rgba(0,0,0,0.35);}
+  .card:nth-child(even){box-shadow:0 0 0 1px rgba(79,216,255,0.15), 0 0 30px -14px var(--blue), 0 12px 30px rgba(0,0,0,0.35);}
+  .card-head{display:flex; align-items:center; gap:12px;}
+  .card-icon{
+    width:50px; height:50px; border-radius:14px; flex:0 0 auto; font-size:26px;
+    display:flex; align-items:center; justify-content:center;
+    background:var(--bg-input); border:1px solid var(--line);
+  }
+  .card h2{margin:0; font-size:19px;}
+  .count{font-size:12px; font-weight:700; color:var(--blue);}
+  .desc{margin:0; font-size:13.5px; line-height:1.5; color:var(--text-dim);}
+  .chips{display:flex; flex-wrap:wrap; gap:6px;}
+  .chip{
+    font-size:12px; background:var(--bg-input); border:1px solid var(--line);
+    border-radius:999px; padding:4px 10px; color:var(--text);
+  }
+  .open-btn{
+    margin-top:auto; display:block; text-align:center; text-decoration:none;
+    border-radius:999px; padding:12px; font-weight:700; font-size:15px; color:#0b0c1f;
+    background:linear-gradient(90deg,var(--pink),var(--blue));
+    box-shadow:0 0 24px -6px var(--pink), 0 0 34px -10px var(--blue);
+  }
+  .open-btn:hover{filter:brightness(1.08);}
+
+  .steps{
+    margin-top:28px; background:rgba(79,216,255,0.06); border:1px solid rgba(79,216,255,0.25);
+    border-radius:16px; padding:20px 24px;
+  }
+  .steps h3{margin:0 0 10px; font-size:16px; color:var(--pink);}
+  .steps ol{margin:0; padding-left:22px; font-size:14px; line-height:1.7; color:var(--text-dim);}
+  .steps li b{color:var(--text);}
+
+  .brand-badge{
+    display:flex; align-items:center; justify-content:center; gap:10px;
+    padding:16px 24px 28px; color:var(--text-dim); font-weight:800; font-size:13px;
+    letter-spacing:.08em; text-transform:uppercase;
+  }
+  .brand-badge img{
+    width:38px; height:38px; border-radius:50%; object-fit:cover;
+    border:2px solid var(--pink); box-shadow:0 0 12px -2px var(--pink);
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>Эффекты для Genially</h1>
+  <p id="lead"></p>
+</header>
+
+<main>
+  <div class="grid" id="grid"></div>
+
+  <div class="steps">
+    <h3>Как вставить эффект в Genially</h3>
+    <ol>
+      <li>Открой нужный конструктор и выбери эффект — справа сразу видно, как он выглядит.</li>
+      <li>Подстрой настройки и нажми <b>«Копировать ссылку»</b> или <b>«Скопировать код для Genially»</b>.</li>
+      <li>В своём проекте Genially: <b>«Вставить» → «Другое»</b> → вставь ссылку или код → <b>«Вставить»</b>.</li>
+    </ol>
+  </div>
+</main>
+
+<div class="brand-badge">
+  <img src="../assets/avatar.jpg" alt="Уроки-приключения">
+  <span>Уроки-приключения</span>
+</div>
+
+<script>
+const PACKS = [
+  { folder:'nature-effects', icon:'🌦️', title:'Природные явления',
+    desc:'Погода и небо: солнце, дождь, снег, молния, радуга.',
+    effects:[['☀️','Солнце'],['🌅','Лучи солнца'],['🌧️','Дождь'],['❄️','Снег'],['🧊','Град'],['⚡','Молния'],['🌈','Радуга'],['🌊','Цунами']] },
+  { folder:'landscape-fx', icon:'🌋', title:'Пейзаж и стихии',
+    desc:'Туман, лава, метеориты, осенние листья и другие картины природы.',
+    effects:[['🌫️','Туман'],['🌸','Лепестки'],['☄️','Метеориты'],['🌌','Сияние'],['🌋','Лава'],['🏜️','Песчаная буря'],['🍂','Осенние листья']] },
+  { folder:'screen-fx', icon:'💥', title:'Экранные эффекты',
+    desc:'Эффекты самого экрана: трещины, помехи, размытие, блики.',
+    effects:[['💥','Трещины'],['📺','Помехи'],['💫','Размытие'],['🔆','Блики'],['⚡','Вспышки'],['✨','Звёздочки']] },
+  { folder:'magic-fx', icon:'🔮', title:'Магия и космос',
+    desc:'Порталы, руны, кометы и звёздное небо для сказочных сюжетов.',
+    effects:[['🌀','Портал'],['📜','Руны'],['🧚','Магич. пыль'],['🐛','Светлячки'],['⭕','Кольца заклинания'],['✨','Звёздное небо'],['☄️','Кометы'],['📡','Голограмма']] },
+  { folder:'celebration-fx', icon:'🎉', title:'Праздник',
+    desc:'Конфетти, салют, шарики, кубок — для наград и финалов.',
+    effects:[['🎉','Конфетти'],['🎆','Салют'],['⭐','Звёзды-награды'],['💡','Гирлянда'],['🎈','Шарики'],['🎊','Серпантин'],['😍','Дождь эмодзи'],['✨','Бенгальские огни'],['🏆','Кубок/медаль']] },
+  { folder:'mood-fx', icon:'🎞️', title:'Атмосфера',
+    desc:'Старое кино, дождь по стеклу, пузыри, рябь на воде — настроение слайда.',
+    effects:[['🎞️','Старое кино'],['🌧️','Дождь по стеклу'],['🕯️','Пылинки в луче'],['🦇','Летучие мыши'],['🫧','Пузыри'],['💧','Подводные лучи'],['🌊','Рябь на воде']] },
+];
+
+function plural(n){
+  const m10 = n % 10, m100 = n % 100;
+  if (m10 === 1 && m100 !== 11) return 'эффект';
+  if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return 'эффекта';
+  return 'эффектов';
+}
+
+const total = PACKS.reduce((sum, p) => sum + p.effects.length, 0);
+const lead = document.getElementById('lead');
+lead.innerHTML = '';
+lead.append(
+  document.createTextNode('Конструкторы эффектов: '),
+  Object.assign(document.createElement('b'), { textContent: total + ' ' + plural(total) + ' в ' + PACKS.length + ' наборах' }),
+  document.createTextNode('. Выбираешь эффект, настраиваешь, копируешь ссылку или код и вставляешь в слайд.')
+);
+
+const grid = document.getElementById('grid');
+PACKS.forEach(pack => {
+  const card = document.createElement('div');
+  card.className = 'card';
+
+  const head = document.createElement('div');
+  head.className = 'card-head';
+  const icon = document.createElement('div');
+  icon.className = 'card-icon';
+  icon.textContent = pack.icon;
+  const titleWrap = document.createElement('div');
+  const h2 = document.createElement('h2');
+  h2.textContent = pack.title;
+  const count = document.createElement('div');
+  count.className = 'count';
+  count.textContent = pack.effects.length + ' ' + plural(pack.effects.length);
+  titleWrap.append(h2, count);
+  head.append(icon, titleWrap);
+
+  const desc = document.createElement('p');
+  desc.className = 'desc';
+  desc.textContent = pack.desc;
+
+  const chips = document.createElement('div');
+  chips.className = 'chips';
+  pack.effects.forEach(([emoji, label]) => {
+    const chip = document.createElement('span');
+    chip.className = 'chip';
+    chip.textContent = emoji + ' ' + label;
+    chips.appendChild(chip);
+  });
+
+  const link = document.createElement('a');
+  link.className = 'open-btn';
+  link.href = '../' + pack.folder + '/builder.html';
+  link.target = '_blank';
+  link.rel = 'noopener';
+  link.textContent = 'Открыть конструктор →';
+
+  card.append(head, desc, chips, link);
+  grid.appendChild(card);
+});
+</script>
+</body>
+</html>
