@@ -3,250 +3,313 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
 <title>Дневник экспедиции</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bitter:wght@500;600;700;800&family=IBM+Plex+Mono:wght@500;600&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;0,700;1,500&family=Onest:wght@400;500;600;700;800&family=Unbounded:wght@500;700;800&display=swap">
 <style>
-/* Layout concept: an archaeological camp in the desert. The header is a sunny dune scene with a tent, a palm, ruins on the horizon and a wooden display case at the right: the case has twelve slots and a new find (vase, coin, scarab...) appears in it for every finished step, so by the end of the lesson the diary is complete and "sent to the museum". Every step is a ruled diary page under a block-coloured header with a stitched edge; words are plain text on the page, commas are placed by tapping the gap between words; replies come from a field radio panel with an indicator lamp. */
+/* Layout concept: a lesson "player" for an archaeological dig. A slim glass bar on top carries the route of nine steps: every finished step turns its numbered node into a find (vase, coin, scarab...) and the last node into a crown. The task is one large light card in the middle of a turquoise-to-sand sky with dunes and pyramids far behind; round arrows sit on both sides of the card and follow the scroll; replies pop up in a dark dock at the bottom edge so they never leave the screen. Sentences are set in a serif so commas are easy to see, headings in a wide round display face. */
 *{box-sizing:border-box}
 :root{
   color-scheme:light;
-  --gutter:clamp(14px,4vw,34px);
-  --wood:#a8703d;--wood-d:#6f4423;--wood-dd:#3d2412;
+  --gx:clamp(16px,4vw,36px);
+  --page-a:#bfe4e6;--page-b:#ecf0dc;--page-c:#f8e9c1;--page-d:#edd398;
+  --glass:rgba(255,252,242,.84);--glass-line:rgba(120,85,40,.2);
+  --card:#fffdf8;--tint:#fff7e4;--tint-line:#f0e2bd;--line:#eadfc4;--rule:rgba(150,105,45,.16);
+  --ink:#2a2118;--ink-soft:#66573f;
   --brass:#d6a64a;--brass-d:#8a6416;--lamp:#ffd36a;
-  --ink:#2a1f14;--ink-soft:#6a5a47;--line:#e4d2ac;--paper:#fbf4e1;
-  --c:#0f8b8b;--c-deep:#096262;--ct:#d9f0ef;
-  --ok:#17935f;--bad:#d8433a;--focus:#1d6fe0;
-  --mint:#17a58a;--amber:#e0900a;--orange:#ff8a1f;
-  --f-head:"Bitter",Georgia,"Times New Roman",serif;
-  --f-ui:"Source Sans 3","Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
-  --f-mono:"IBM Plex Mono","Courier New",monospace;
+  --c:#0c7c7c;--c-deep:#075555;--ct:#d8efee;
+  --ok:#17935f;--ok-d:#0e6b40;--ok-t:#e4f5ec;
+  --bad:#d8433a;
+  --mint:#17a58a;--amber:#e0900a;
+  --focus:#1d6fe0;
+  --dock:#2a2118;--dock-ok:#12452f;--dock-bad:#5a1f1a;
+  --f-head:"Unbounded","Arial Black","Segoe UI",system-ui,sans-serif;
+  --f-ui:"Onest","Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+  --f-text:"Lora",Georgia,"Times New Roman",serif;
   --cloud:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 50'%3E%3Cg fill='%23fff'%3E%3Ccircle cx='32' cy='30' r='16'/%3E%3Ccircle cx='58' cy='22' r='20'/%3E%3Ccircle cx='86' cy='30' r='15'/%3E%3Crect x='24' y='28' width='72' height='18' rx='9'/%3E%3C/g%3E%3C/svg%3E");
 }
 /* у каждого блока урока свой цвет */
-html[data-b="1"]{--c:#0f8b8b;--c-deep:#096262;--ct:#d9f0ef}
-html[data-b="2"]{--c:#b5532c;--c-deep:#80381a;--ct:#fbe6dc}
+html[data-b="1"]{--c:#0c7c7c;--c-deep:#075555;--ct:#d8efee}
+html[data-b="2"]{--c:#c0562b;--c-deep:#8a3a18;--ct:#fbe6dc}
 html[data-b="3"]{--c:#2b5aa0;--c-deep:#1c3d70;--ct:#e1ebf9}
 html[data-b="4"]{--c:#5a7d2b;--c-deep:#3c5619;--ct:#e9f3d9}
 html[data-b="5"]{--c:#8a3f76;--c-deep:#612a53;--ct:#f6e5f1}
 [hidden]{display:none!important}
-html{height:100%;background:#ead7a8}
-body{position:relative;min-height:100%;margin:0;padding-inline:var(--gutter);padding-block:0 128px;color:var(--ink);font:400 17px/1.55 var(--f-ui);background-color:#ead7a8;background-image:radial-gradient(900px 420px at 8% -10%,rgba(255,255,255,.55),transparent 70%),repeating-linear-gradient(115deg,rgba(150,105,45,.07) 0 2px,transparent 2px 14px);-webkit-text-size-adjust:100%}
+html{height:100%;background:var(--page-d)}
+body{position:relative;min-height:100%;margin:0;padding-block:0 232px;color:var(--ink);font:500 17px/1.55 var(--f-ui);background-color:var(--page-d);background-image:radial-gradient(1000px 480px at 86% -10%,rgba(255,255,255,.75),transparent 62%),linear-gradient(180deg,var(--page-a) 0,var(--page-b) 34%,var(--page-c) 68%,var(--page-d) 100%);background-attachment:fixed;-webkit-text-size-adjust:100%}
 h1,h2,h3,p,ol,ul{margin:0}
-.wrap{position:relative;max-width:980px;margin:0 auto;padding-top:16px}
 
-/* ---------- шапка: лагерь экспедиции ---------- */
-.shop{--H:clamp(236px,31vw,292px);--cw:calc(var(--H)*.70);position:relative;isolation:isolate;height:var(--H);overflow:hidden;border:3px solid var(--wood-dd);border-radius:18px;box-shadow:0 6px 0 #2a190b,0 18px 30px rgba(42,25,11,.3);background:linear-gradient(180deg,#79c4e0 0%,#b9e3ee 36%,#fdeec6 62%,#f7d9a0 100%)}
-.sun{position:absolute;z-index:0;left:46%;top:9%;width:clamp(44px,7vw,70px);aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 38% 36%,#fffbd8,#ffe27a 55%,#ffc43d);box-shadow:0 0 0 clamp(8px,1.3vw,14px) rgba(255,238,170,.4),0 0 0 clamp(18px,2.8vw,30px) rgba(255,238,170,.22),0 0 60px 20px rgba(255,238,170,.5)}
-.cl{position:absolute;z-index:0;height:clamp(22px,3.6vw,38px);aspect-ratio:120/50;background:var(--cloud) center/contain no-repeat;opacity:.92}
-.c1{top:10%;left:30%}
-.c2{top:27%;left:60%;height:clamp(18px,2.8vw,30px)}
-.dn{position:absolute;left:0;width:100%;display:block}
-.dn.far{z-index:1;bottom:22%;height:34%}
-.dn.mid{z-index:3;bottom:10%;height:30%}
-.dn.near{z-index:6;bottom:0;height:22%}
-.ruins{position:absolute;z-index:2;left:38%;bottom:28%;height:28%;width:auto}
-.palm{position:absolute;z-index:4;left:29%;bottom:14%;height:31%;width:auto}
-.tent{position:absolute;z-index:5;left:4%;bottom:9%;height:35%;width:auto}
-.crate{position:absolute;z-index:5;left:22.5%;bottom:9%;width:clamp(26px,4vw,40px);aspect-ratio:1.15;background:repeating-linear-gradient(0deg,#a8703d 0 7px,#8c5a2c 7px 8px);border:2px solid #4d2e16;border-radius:3px}
-.case{position:absolute;z-index:7;right:2.2%;top:7%;height:82%;aspect-ratio:3/3.9;padding:8px 8px 20px;background:linear-gradient(180deg,#8c5a2c,#6f4423);border:3px solid var(--wood-dd);border-radius:8px;box-shadow:0 8px 14px rgba(42,25,11,.4),inset 0 0 0 2px rgba(255,255,255,.12);transform:rotate(1deg)}
-.rack{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(4,1fr);gap:4px;height:100%}
-.it{display:grid;place-items:center;background:#f6e9c6;border:1.5px solid #a98d4c;border-radius:4px;overflow:hidden}
-.it svg{width:78%;height:78%;filter:grayscale(1);opacity:.16;transition:opacity .4s,filter .4s}
-.it.on svg{filter:none;opacity:1;animation:popin .5s ease-out}
-.case .cap{position:absolute;left:0;right:0;bottom:4px;text-align:center;font:700 8px/1 var(--f-head);letter-spacing:.14em;text-transform:uppercase;color:#f3e1b0}
-.shop.done .case{box-shadow:0 0 0 3px #ffd36a,0 0 22px 6px rgba(255,211,106,.7),0 8px 14px rgba(42,25,11,.4)}
-.bubble{position:absolute;z-index:8;right:calc(2.2% + var(--cw) + 12px);top:14%;max-width:150px;padding:6px 10px;background:#fff;color:var(--ink);border:2px solid var(--ink);border-radius:12px 12px 4px 12px;font:700 13px/1.25 var(--f-head);opacity:0;transform:scale(.9);transform-origin:100% 100%;transition:opacity .4s,transform .4s}
-.shop.done .bubble{opacity:1;transform:none}
-.sc-text{position:absolute;z-index:8;left:clamp(14px,3vw,26px);top:clamp(12px,2.4vw,20px);display:grid;gap:8px;justify-items:start;max-width:46%}
-.sc-row{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px}
-.plate{padding:4px 10px;background:linear-gradient(180deg,#f3d58a,#d6a64a);color:#3a2a06;font:700 11px/1 var(--f-head);letter-spacing:.14em;border-radius:3px;box-shadow:0 2px 0 var(--brass-d),inset 0 1px 0 rgba(255,255,255,.55)}
-.sc-stats{padding:3px 10px;background:rgba(255,255,255,.92);color:var(--ink);border-radius:99px;font:600 12px/1.4 var(--f-ui)}
-.sign{position:relative;padding:8px 16px 9px;background:linear-gradient(180deg,#f7ecd0,#e8d6aa);border:3px solid var(--wood-dd);border-radius:6px;box-shadow:0 4px 0 #2a190b,inset 0 0 0 2px rgba(255,255,255,.4)}
-.sign h1{font:800 clamp(20px,4.1vw,38px)/1.05 var(--f-head);letter-spacing:.02em;text-transform:uppercase;color:#5a2a12;text-wrap:balance}
+/* ---------- фон: дюны и пирамиды далеко позади ---------- */
+.bg{position:fixed;z-index:0;left:0;right:0;bottom:0;height:42vh;min-height:220px;pointer-events:none;overflow:hidden}
+.bg svg{position:absolute;left:0;bottom:0;width:100%;height:100%}
 
-.now{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;margin:14px 2px 0;font:500 clamp(13px,2.4vw,15px)/1.35 var(--f-ui);color:var(--ink)}
-.now .k{padding:3px 10px;background:var(--wood-dd);color:#fff3d6;border-radius:6px;font:700 .86em var(--f-head);letter-spacing:.1em;text-transform:uppercase}
+/* ---------- верхняя панель: маршрут урока ---------- */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:8px 20px;padding:10px max(var(--gx),env(safe-area-inset-right,0px)) 10px max(var(--gx),env(safe-area-inset-left,0px));background:var(--glass);-webkit-backdrop-filter:blur(14px) saturate(1.2);backdrop-filter:blur(14px) saturate(1.2);border-bottom:1px solid var(--glass-line)}
+.brand{display:flex;align-items:center;gap:12px;min-width:0}
+.mark{flex:none;display:grid;place-items:center;width:42px;height:42px;border-radius:50%;background:var(--ink)}
+.mark svg{width:26px;height:26px;fill:none;stroke:var(--lamp);stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.brand h1{font:700 15px/1.15 var(--f-head);white-space:nowrap}
+.brand small{display:block;margin-top:3px;max-width:30ch;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:600 12.5px/1.2 var(--f-ui);color:var(--ink-soft)}
+.trail{display:flex;align-items:center;min-width:0;width:100%;max-width:660px;margin:0 auto;padding:0;list-style:none}
+.trail li{display:flex;align-items:center;flex:1 1 0;min-width:0}
+.trail li:last-child{flex:none}
+.trail li:not(:last-child)::after{content:"";flex:1;min-width:4px;height:4px;margin:0 4px;border-radius:2px;background:repeating-linear-gradient(90deg,#c9ad74 0 5px,transparent 5px 9px)}
+.trail li.done:not(:last-child)::after{background:var(--ok)}
+.nd{all:unset;box-sizing:border-box;cursor:pointer;flex:none;display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:#fff;border:2px dashed #c9ad74;color:#6f5c33;font:700 12px/1 var(--f-head);transition:transform .15s,border-color .15s,box-shadow .15s}
+.nd svg{width:72%;height:72%}
+.nd.pop svg{animation:popin .5s ease-out}
+.nd:hover{border-color:var(--c)}
+.nd:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.trail li.done .nd{border:2px solid var(--ok);background:#fffbe9}
+.trail li.cur .nd{border:3px solid var(--c);background:#fff;color:var(--c-deep);transform:scale(1.18);box-shadow:0 0 0 5px var(--ct)}
+.trail li.end .nd{border-style:solid;border-color:#c9ad74}
+.trail li.end.done .nd{border-color:var(--brass-d);background:#fff0bd;box-shadow:0 0 0 4px rgba(255,211,106,.7)}
+.meters{display:flex;align-items:center;gap:10px}
+.stat{padding:6px 12px;border-radius:99px;background:rgba(255,255,255,.85);border:1px solid var(--line);font:700 12.5px/1.2 var(--f-ui);white-space:nowrap}
+.slidebtn{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;gap:8px;padding:7px 14px;border-radius:99px;background:var(--ink);color:#fff3d6;font:700 13px/1.2 var(--f-ui)}
+.slidebtn:hover{background:#4a3a28}
+.slidebtn:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.slidebtn b{font:700 12.5px/1 var(--f-head)}
+.slidebtn span{max-width:18ch;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;opacity:.85}
+
+/* ---------- сцена: карточка по центру, стрелки по бокам ---------- */
+.stage{position:relative;z-index:1;display:grid;grid-template-columns:58px minmax(0,1fr) 58px;gap:16px;align-items:start;max-width:1180px;margin:26px auto 0;padding:0 max(var(--gx),env(safe-area-inset-right,0px)) 0 max(var(--gx),env(safe-area-inset-left,0px))}
+.arrow{all:unset;box-sizing:border-box;cursor:pointer;position:sticky;top:calc(50vh - 29px);z-index:3;display:grid;place-items:center;width:58px;height:58px;border-radius:50%;background:#fff;color:#4a2410;box-shadow:0 10px 22px -8px rgba(60,35,10,.55),0 0 0 1px rgba(120,85,40,.18);transition:transform .12s,background .12s}
+.arrow svg{width:28px;height:28px;fill:none;stroke:currentColor;stroke-width:3.2;stroke-linecap:round;stroke-linejoin:round}
+.arrow:hover:not(:disabled){background:var(--lamp);transform:scale(1.07)}
+.arrow:active:not(:disabled){transform:scale(.96)}
+.arrow:disabled{opacity:.3;cursor:default}
+.arrow:focus-visible{outline:3px solid var(--focus);outline-offset:3px}
+.arrow.left{grid-column:1;grid-row:1}
+.arrow.right{grid-column:3;grid-row:1}
+.card{position:relative;grid-column:2;grid-row:1;min-width:0;min-height:min(62vh,540px);background:var(--card);border-radius:28px;box-shadow:0 1px 0 #fff inset,0 34px 60px -26px rgba(96,62,16,.45),0 2px 10px rgba(96,62,16,.12);overflow:hidden}
+
+.sh-head{position:relative;display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;padding:26px 32px 4px}
+.sh-head>*:not(.wm){position:relative;z-index:1}
+.nut{display:inline-grid;place-items:center;flex:none;min-width:46px;height:46px;padding:0 6px;border-radius:15px;background:var(--c);color:#fff;font:800 19px/1 var(--f-head)}
+.sh-head h2{flex:1 1 8ch;min-width:0;font:700 clamp(21px,2.9vw,31px)/1.18 var(--f-head);letter-spacing:-.01em;text-wrap:balance;outline:none}
+.sh-head .meta{margin-left:auto;padding:6px 14px;border-radius:99px;background:var(--ct);color:var(--c-deep);font:800 11.5px/1.2 var(--f-ui);letter-spacing:.1em;text-transform:uppercase}
+.sh-head .wm{position:absolute;z-index:0;right:-26px;top:-34px;width:170px;height:170px;color:var(--c);opacity:.08;pointer-events:none}
+.sh-head .wm svg{width:100%;height:100%}
+.sh-head.hero .nut{background:linear-gradient(135deg,#0c7c7c,#2b5aa0 55%,#8a3f76)}
+.sh-head.hero h2{font-size:clamp(24px,3.5vw,38px)}
+.sh-body{padding:14px 32px 34px}
+.lead{max-width:60ch;margin-bottom:12px;font:500 19px/1.6 var(--f-ui)}
+.task{max-width:66ch;margin-bottom:16px;color:var(--ink-soft)}
+.rules{display:grid;gap:10px;margin:8px 0 22px;padding:0;list-style:none}
+.rules li{display:flex;gap:12px;padding:10px 16px;border-radius:16px;background:var(--tint);border:1px solid var(--tint-line)}
+.rules li::before{content:"";flex:none;width:12px;height:12px;margin-top:.5em;border-radius:50%;background:var(--c)}
+@media (min-width:900px){.rules{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.row{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;margin-top:18px}
+.sub{margin:18px 0 10px;font:700 13px/1.2 var(--f-head);letter-spacing:.06em;text-transform:uppercase;color:var(--c-deep)}
+
+/* ---------- лагерь на первом и последнем слайде ---------- */
+.camp{--H:clamp(120px,min(19vw,22vh),210px);position:relative;isolation:isolate;height:var(--H);overflow:hidden;background:linear-gradient(180deg,#7cc6df 0%,#bfe6ee 38%,#fdeec6 66%,#f7d9a0 100%)}
+.camp .sun{position:absolute;z-index:0;left:62%;top:12%;width:clamp(38px,6vw,60px);aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 38% 36%,#fffbd8,#ffe27a 55%,#ffc43d);box-shadow:0 0 0 clamp(6px,1vw,12px) rgba(255,238,170,.4),0 0 0 clamp(14px,2.4vw,26px) rgba(255,238,170,.22),0 0 50px 16px rgba(255,238,170,.5)}
+.camp .cl{position:absolute;z-index:0;height:clamp(20px,3.4vw,34px);aspect-ratio:120/50;background:var(--cloud) center/contain no-repeat;opacity:.92}
+.camp .c1{top:12%;left:22%}
+.camp .c2{top:30%;left:48%;height:clamp(16px,2.6vw,26px)}
+.camp .dn{position:absolute;left:0;width:100%;display:block}
+.camp .far{z-index:1;bottom:26%;height:36%}
+.camp .mid{z-index:3;bottom:12%;height:32%}
+.camp .near{z-index:6;bottom:0;height:24%}
+.camp .ruins{position:absolute;z-index:2;left:44%;bottom:30%;height:32%;width:auto}
+.camp .palm{position:absolute;z-index:4;left:30%;bottom:15%;height:40%;width:auto}
+.camp .tent{position:absolute;z-index:5;left:6%;bottom:10%;height:44%;width:auto}
+.camp .crate{position:absolute;z-index:5;left:24%;bottom:10%;width:clamp(22px,3.4vw,34px);aspect-ratio:1.15;background:repeating-linear-gradient(0deg,#a8703d 0 6px,#8c5a2c 6px 7px);border:2px solid #4d2e16;border-radius:3px}
+.camp .bubble{position:absolute;z-index:8;right:6%;top:16%;max-width:190px;padding:8px 14px;background:#fff;color:var(--ink);border:2px solid var(--ink);border-radius:16px 16px 4px 16px;font:700 13px/1.3 var(--f-ui);animation:rise .5s ease-out both}
+.shelf{display:flex;flex-wrap:wrap;gap:10px;margin:6px 0 18px}
+.fd{display:grid;place-items:center;width:56px;height:56px;border-radius:18px;background:var(--tint);border:1px solid var(--tint-line);animation:popin .5s ease-out both;animation-delay:calc(var(--k)*70ms)}
+.fd svg{width:70%;height:70%}
+.fd.last{background:#fff0bd;border-color:var(--brass);box-shadow:0 0 0 4px rgba(255,211,106,.55)}
 
 /* ---------- кнопки ---------- */
-.btn{all:unset;box-sizing:border-box;cursor:pointer;display:inline-flex;align-items:center;gap:8px;min-height:46px;padding:0 20px;font:700 15px/1 var(--f-head);letter-spacing:.06em;text-transform:uppercase;text-align:center;border-radius:8px}
-.btn:focus-visible,.opt:focus-visible,.wd:focus-visible,.seg button:focus-visible,.nv:focus-visible,.gp:focus-visible,.sl:focus-visible,.sgm button:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
-.btn-go{background:var(--c);color:#fff;box-shadow:0 4px 0 var(--c-deep)}
-.btn-go:hover{filter:brightness(1.08)}
-.btn-go:active{transform:translateY(3px);box-shadow:0 1px 0 var(--c-deep)}
+.btn{all:unset;box-sizing:border-box;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:52px;padding:0 28px;border-radius:99px;font:800 15px/1 var(--f-ui);letter-spacing:.01em;text-align:center;transition:transform .12s,box-shadow .12s,filter .12s}
+.btn:focus-visible,.opt:focus-visible,.wd:focus-visible,.seg button:focus-visible,.gp:focus-visible,.sl:focus-visible,.sgm button:focus-visible,.dx:focus-visible,.mobcount:focus-visible,.toc button:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.btn-go{background:var(--c);color:#fff;box-shadow:0 12px 20px -10px rgba(40,25,10,.7),inset 0 -3px 0 rgba(0,0,0,.18)}
+.btn-go:hover{filter:brightness(1.08);transform:translateY(-1px)}
+.btn-go:active{transform:translateY(1px);box-shadow:0 4px 8px -4px rgba(40,25,10,.7),inset 0 -1px 0 rgba(0,0,0,.18)}
 .btn-line{border:2px solid var(--c);color:var(--c-deep);background:#fff}
 .btn-line:hover:not(:disabled){background:var(--ct)}
 .btn-line:disabled{opacity:.4;cursor:default}
-.btn.sm{min-height:38px;padding:0 14px;font-size:13px}
-
-/* ---------- страница дневника ---------- */
-.sheet{position:relative;margin-top:12px;background-color:var(--paper);background-image:linear-gradient(rgba(150,105,45,.13) 1px,transparent 1px);background-size:100% 30px;color:var(--ink);border:3px solid var(--c);border-radius:14px;box-shadow:0 6px 0 var(--c-deep),0 18px 34px rgba(42,25,11,.2);overflow:hidden}
-.sh-head{position:relative;overflow:hidden;display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding:12px clamp(16px,3vw,28px) 22px;background:var(--c);color:#fff}
-.sh-head.hero{background:linear-gradient(90deg,#0f8b8b,#2b5aa0 40%,#b5532c 75%,#8a3f76)}
-.sh-head::after{content:"";position:absolute;left:10px;right:10px;bottom:8px;height:0;border-top:2px dashed rgba(255,255,255,.7);pointer-events:none}
-.sh-head>*{position:relative;z-index:1}
-.sh-head .wm{position:absolute;z-index:0;right:14px;top:42%;width:60px;height:60px;transform:translateY(-50%);opacity:.26;pointer-events:none}
-.sh-head .wm svg{width:100%;height:100%;animation:spin 40s linear infinite}
-.nut{display:inline-grid;place-items:center;width:38px;height:38px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff3c4,#d6a64a 60%,#b98a2b);color:#3a2a06;font:800 17px/1 var(--f-head);box-shadow:0 0 0 3px var(--brass-d),0 2px 0 3px rgba(0,0,0,.3)}
-.sh-head h2{font:800 clamp(17px,3vw,23px)/1.15 var(--f-head);letter-spacing:.04em;text-transform:uppercase;text-wrap:balance;outline:none}
-.sh-head .meta{margin-left:auto;margin-right:70px;font:600 12px/1.3 var(--f-ui);letter-spacing:.08em;text-transform:uppercase;opacity:.92}
-.sh-body{padding:clamp(16px,3vw,28px)}
-.lead{max-width:62ch;margin-bottom:12px;font-size:18px}
-.task{max-width:68ch;margin-bottom:14px;color:var(--ink-soft)}
-.rules{display:grid;gap:9px;margin:6px 0 22px;padding:0;list-style:none}
-.rules li{display:flex;gap:11px}
-.rules li::before{content:"";flex:none;width:12px;height:12px;margin-top:.5em;background:var(--orange);border:2px solid var(--wood-dd);border-radius:50%}
-.row{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;margin-top:14px}
-.sub{margin:16px 0 8px;font:700 15px/1 var(--f-head);letter-spacing:.1em;text-transform:uppercase;color:var(--c-deep)}
+.btn.sm{min-height:42px;padding:0 18px;font-size:13.5px}
 
 /* ---------- объяснение ---------- */
-.ex{display:grid;gap:14px;margin:0 0 6px;padding:0;list-style:none}
-.ex>li{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;align-items:start;font-size:18px;line-height:1.6}
-.ex>li>.no{display:grid;place-items:center;width:30px;height:30px;margin-top:2px;background:var(--c);color:#fff;font:800 14px/1 var(--f-head);border-radius:50%}
+.ex{display:grid;gap:12px;margin:0 0 6px;padding:0;list-style:none}
+.ex>li{display:grid;grid-template-columns:44px minmax(0,1fr);gap:16px;align-items:start;padding:16px 20px 16px 16px;border-radius:20px;background:var(--tint);border:1px solid var(--tint-line);font-size:18px;line-height:1.6}
+.ex>li>.no{display:grid;place-items:center;width:44px;height:44px;border-radius:14px;background:var(--c);color:#fff;font:700 16px/1 var(--f-head)}
 .ex>li.new{animation:rise .35s ease-out}
-.ex b.cm,.ex i b{color:var(--c-deep);font-size:1.15em}
+.ex b{font-weight:800}
+.ex i{font-family:var(--f-text);font-size:1.04em}
+.ex i b{color:var(--c-deep);font-size:1.2em}
 .ex u{text-decoration-thickness:3px;text-underline-offset:4px}
-.ex .box{display:block;margin-top:8px;padding:10px 14px;background:#fff;border:1px solid var(--line);border-left:5px solid var(--c);border-radius:8px}
+.ex .box{display:block;margin-top:10px;padding:12px 18px;background:#fff;border:1px solid var(--line);border-radius:14px;font-family:var(--f-text);font-size:1.04em}
 .ex .box span{display:block}
+.ex .box b{color:var(--c-deep);font-size:1.2em}
 
 /* ---------- выбор ответа ---------- */
-.prog{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px}
-.prog i{width:22px;height:7px;background:var(--line);border-radius:4px}
+.prog{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}
+.prog i{width:30px;height:8px;border-radius:99px;background:var(--line)}
 .prog i.d{background:var(--c)}
-.prog i.c{background:var(--lamp);outline:2px solid var(--wood-dd)}
-.mc-p{margin:4px 0 6px;font-size:19px}
-.big{font:500 clamp(20px,3.8vw,28px)/1.4 var(--f-head)}
-.opts{display:flex;flex-direction:column;align-items:stretch;gap:10px;margin-top:8px}
-.opt{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;min-height:50px;padding:8px 18px;background:#fff;color:var(--ink);border:2px solid var(--c);border-radius:10px;font:600 clamp(17px,2.6vw,20px)/1.35 var(--f-head);box-shadow:0 3px 0 var(--c-deep)}
-.opt:hover:not(:disabled){background:var(--ct)}
-.opt:active:not(:disabled){transform:translateY(2px);box-shadow:0 1px 0 var(--c-deep)}
-.opt.no{opacity:.4;cursor:not-allowed;text-decoration:line-through;box-shadow:none}
-.opt.right{background:#d8f1e4;border-color:var(--ok);box-shadow:0 3px 0 var(--ok)}
+.prog i.c{background:var(--lamp);box-shadow:0 0 0 2px var(--ink)}
+.mc-p{margin:4px 0 12px;font-size:19px}
+.big{font:600 clamp(22px,3.4vw,32px)/1.45 var(--f-text)}
+.opts{display:grid;gap:12px;margin-top:8px;counter-reset:o}
+.opt{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;gap:16px;min-height:62px;padding:12px 22px 12px 14px;background:#fff;color:var(--ink);border:2px solid var(--line);border-radius:20px;font:600 clamp(17px,2.4vw,21px)/1.4 var(--f-text);box-shadow:0 4px 0 var(--line);counter-increment:o;transition:transform .12s,border-color .12s}
+.opt::before{content:counter(o);flex:none;display:grid;place-items:center;width:38px;height:38px;border-radius:13px;background:var(--ct);color:var(--c-deep);font:700 15px/1 var(--f-head)}
+.opt:hover:not(:disabled){border-color:var(--c);transform:translateY(-2px)}
+.opt:active:not(:disabled){transform:translateY(1px);box-shadow:0 1px 0 var(--line)}
+.opt.no{opacity:.45;cursor:not-allowed;box-shadow:none;transform:none}
+.opt.no .ot{text-decoration:line-through}
+.opt.right{background:var(--ok-t);border-color:var(--ok);box-shadow:0 4px 0 var(--ok)}
+.opt.right::before{content:"✓";background:var(--ok);color:#fff}
 .opt:disabled{cursor:default}
 
 /* ---------- слова-бирки (отметить основу) ---------- */
-.sent{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:flex-end;margin:10px 0 14px;font:500 clamp(20px,3.2vw,28px)/1.4 var(--f-head)}
+.sent{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:flex-end;margin:12px 0 16px;font:600 clamp(22px,3.4vw,32px)/1.4 var(--f-text)}
 .wg{display:inline-flex;align-items:flex-end}
-.wd{all:unset;box-sizing:border-box;position:relative;cursor:pointer;padding:4px 12px 6px;margin-bottom:18px;background:#fff;color:var(--ink);border:2px solid #cdb98a;border-radius:10px;font:inherit;box-shadow:0 3px 0 #dccb9f;transition:transform .08s,background .15s}
+.wd{all:unset;box-sizing:border-box;position:relative;cursor:pointer;padding:6px 16px 8px;margin-bottom:20px;background:#fff;color:var(--ink);border:2px solid var(--line);border-radius:16px;font:inherit;transition:transform .08s,background .15s,border-color .15s}
 .wd:hover:not(:disabled){background:var(--ct);border-color:var(--c)}
-.wd:active:not(:disabled){transform:translateY(2px);box-shadow:0 1px 0 #dccb9f}
+.wd:active:not(:disabled){transform:scale(.97)}
 .wd:disabled{cursor:default}
-.wd.s{border-color:var(--mint);background:#e2fbf4;text-decoration:underline;text-decoration-thickness:3px;text-underline-offset:6px;text-decoration-color:var(--mint)}
-.wd.p{border-color:var(--amber);background:#fff5dc;text-decoration:underline double;text-decoration-thickness:2px;text-underline-offset:6px;text-decoration-color:var(--amber)}
-.wd.s::after,.wd.p::after{position:absolute;left:50%;top:100%;margin-top:3px;transform:translateX(-50%);font:700 10px/1 var(--f-ui);letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;text-decoration:none}
-.wd.s::after{content:"подлежащее";color:var(--mint)}
-.wd.p::after{content:"сказуемое";color:var(--amber)}
-.wd.good{box-shadow:0 0 0 3px rgba(23,147,95,.4),0 3px 0 #dccb9f}
-.wd.bad{box-shadow:0 0 0 3px rgba(216,67,58,.45),0 3px 0 #dccb9f;animation:shake .35s}
+.wd.s{border-color:var(--mint);background:#e0f7f1;text-decoration:underline;text-decoration-thickness:3px;text-underline-offset:6px;text-decoration-color:var(--mint)}
+.wd.p{border-color:var(--amber);background:#fff1cf;text-decoration:underline double;text-decoration-thickness:2px;text-underline-offset:6px;text-decoration-color:var(--amber)}
+.wd.s::after,.wd.p::after{position:absolute;left:50%;top:100%;margin-top:4px;transform:translateX(-50%);font:800 10px/1 var(--f-ui);letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;text-decoration:none}
+.wd.s::after{content:"подлежащее";color:#0e7d69}
+.wd.p::after{content:"сказуемое";color:#8f5400}
+.wd.good{box-shadow:0 0 0 4px rgba(23,147,95,.35)}
+.wd.bad{box-shadow:0 0 0 4px rgba(216,67,58,.4);animation:shake .35s}
 .wd.hint{animation:pulse 1s ease-in-out 4}
-.pn{align-self:flex-end;margin:0 0 20px 2px;font-weight:500}
-.result{margin:8px 0 4px;padding:10px 14px;background:#fff;border:1px solid var(--line);border-left:6px solid var(--ok);border-radius:10px;font-size:17px}
-.note{margin:6px 0 2px;color:var(--ink-soft);font-size:15px}
-.kn-grp{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:6px}
-.kn-lb{min-width:110px;font:700 12px/1.2 var(--f-ui);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft)}
-.seg{display:flex;flex-wrap:wrap;gap:6px}
-.seg button{all:unset;box-sizing:border-box;cursor:pointer;padding:6px 13px;background:#fff;border:2px solid var(--line);border-radius:10px;font:600 15px/1.2 var(--f-ui)}
+.pn{align-self:flex-end;margin:0 0 22px 2px;font-weight:600}
+.result{margin:10px 0 4px;padding:14px 18px;background:var(--ok-t);border:1px solid #bfe3cf;border-radius:16px;font-size:17px}
+.kn-grp{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin-top:8px}
+.kn-lb{min-width:110px;font:800 12px/1.2 var(--f-ui);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft)}
+.seg{display:flex;flex-wrap:wrap;gap:8px}
+.seg button{all:unset;box-sizing:border-box;cursor:pointer;padding:9px 20px;background:#fff;border:2px solid var(--line);border-radius:99px;font:800 15px/1.2 var(--f-ui)}
 .seg button:hover:not(:disabled){border-color:var(--c)}
-.seg button.on{background:var(--c);border-color:var(--c-deep);color:#fff}
+.seg button.on{background:var(--c);border-color:var(--c);color:#fff}
 .seg button:disabled{cursor:default}
 
-/* ---------- запятые: слова на странице и промежутки между ними ---------- */
-.sent2{margin:12px 0 14px;font:500 clamp(22px,3.4vw,30px)/2.5 var(--f-head);color:var(--ink)}
+/* ---------- запятые: слова на строках дневника и промежутки между ними ---------- */
+.sent2{margin:14px 0 16px;padding:6px 22px;border-radius:20px;border:1px solid var(--line);background-color:#fffaf0;background-image:repeating-linear-gradient(180deg,transparent 0 calc(2.4em - 2px),var(--rule) calc(2.4em - 2px) 2.4em);background-origin:content-box;font:600 clamp(24px,3.6vw,34px)/2.4 var(--f-text);color:var(--ink)}
 .tx{display:inline;padding:0 .04em}
-.tx.s{text-decoration:underline;text-decoration-thickness:3px;text-underline-offset:6px;text-decoration-color:var(--mint)}
-.tx.p{text-decoration:underline double;text-decoration-thickness:2px;text-underline-offset:6px;text-decoration-color:var(--amber)}
+.tx.s{text-decoration:underline;text-decoration-thickness:3px;text-underline-offset:7px;text-decoration-color:var(--mint)}
+.tx.p{text-decoration:underline double;text-decoration-thickness:2px;text-underline-offset:7px;text-decoration-color:var(--amber)}
 .gw{position:relative;display:inline-block;vertical-align:middle}
-.gp{all:unset;box-sizing:border-box;position:relative;cursor:pointer;display:inline-grid;place-items:center;width:22px;height:1.7em;margin:0 1px;border-radius:6px}
-.gp::before{content:"";position:absolute;left:50%;top:12%;bottom:12%;border-left:2px dashed #c4aa72;transform:translateX(-50%)}
-.gp:hover:not(:disabled){background:rgba(15,139,139,.14)}
+.gp{all:unset;box-sizing:border-box;position:relative;cursor:pointer;display:inline-grid;place-items:center;width:26px;height:1.7em;margin:0 1px;border-radius:8px}
+.gp::before{content:"";position:absolute;left:50%;top:14%;bottom:14%;border-left:2px dashed #c9ad74;transform:translateX(-50%)}
+.gp:hover:not(:disabled){background:var(--ct)}
 .gp:hover:not(:disabled)::before,.gp:focus-visible::before{border-left:3px solid var(--c)}
-.gp.has{width:auto;min-width:28px;margin:0 2px}
+.gp.has{width:auto;min-width:32px;margin:0 2px}
 .gp.has::before{display:none}
-.gp .sg{display:inline-grid;place-items:center;min-width:1.3em;height:1.3em;padding:0 .1em;background:var(--lamp);color:#3a2a06;border-radius:50%;font:800 .9em/1 var(--f-head);box-shadow:0 2px 0 #c58f00}
-.gp.good .sg{background:#cdeedd;color:#0e6b40;box-shadow:0 0 0 2px var(--ok)}
-.gp.bad .sg{background:#ffd9d6;color:#9d1f19;box-shadow:0 0 0 2px var(--bad);animation:shake .35s}
+.gp .sg{display:inline-grid;place-items:center;min-width:1.2em;height:1.2em;padding:0 .1em;background:var(--c);color:#fff;border-radius:50%;font:700 .85em/1 var(--f-head);box-shadow:0 4px 8px -3px rgba(40,25,10,.6)}
+.gp.good .sg{background:var(--ok)}
+.gp.bad .sg{background:var(--bad);animation:shake .35s}
 .cm{color:var(--c-deep);font-weight:800}
 
 /* ---------- замена повтора ---------- */
-.edtext{margin:12px 0 14px;font:500 clamp(19px,2.8vw,25px)/2.3 var(--f-head)}
+.edtext{margin:14px 0 16px;padding:6px 22px;border-radius:20px;border:1px solid var(--line);background-color:#fffaf0;background-image:repeating-linear-gradient(180deg,transparent 0 calc(2.3em - 2px),var(--rule) calc(2.3em - 2px) 2.3em);background-origin:content-box;font:600 clamp(20px,3vw,27px)/2.3 var(--f-text)}
 .slw{position:relative;display:inline-block}
-.sl{all:unset;box-sizing:border-box;cursor:pointer;padding:1px 12px 3px;border-radius:8px;background:#ffe9a8;border:2px dashed var(--amber);color:#5a3a00;font:inherit;font-weight:700}
+.sl{all:unset;box-sizing:border-box;cursor:pointer;padding:1px 14px 3px;border-radius:12px;background:#fff0bf;border:2px dashed var(--amber);color:#5a3a00;font:inherit;font-weight:700}
 .sl.set{background:#e3f5ea;border:2px solid var(--ok);color:var(--ink)}
 .sl.bad{background:#ffe3e0;border:2px solid var(--bad);animation:shake .35s}
 .sl:disabled{cursor:default}
-.sgm{position:absolute;z-index:8;top:calc(100% - 2px);left:0;display:flex;flex-wrap:wrap;gap:6px;max-width:300px;padding:6px;background:#fff;border:2px solid var(--c);border-radius:12px;box-shadow:0 12px 26px rgba(42,25,11,.35)}
-.sgm button{all:unset;box-sizing:border-box;cursor:pointer;display:grid;place-items:center;height:42px;padding:0 14px;background:var(--ct);border:2px solid var(--c);border-radius:10px;font:600 16px/1 var(--f-ui);color:var(--ink);white-space:nowrap}
+.sgm{position:absolute;z-index:8;top:calc(100% + 2px);left:0;display:flex;flex-wrap:wrap;gap:8px;max-width:340px;padding:8px;background:#fff;border:2px solid var(--c);border-radius:18px;box-shadow:0 18px 34px -10px rgba(40,25,10,.5)}
+.sgm button{all:unset;box-sizing:border-box;cursor:pointer;display:grid;place-items:center;height:44px;padding:0 18px;background:var(--ct);border-radius:99px;font:700 16px/1 var(--f-ui);color:var(--ink);white-space:nowrap}
 .sgm button:hover{background:var(--lamp)}
 
 /* ---------- финал ---------- */
 .found{display:grid;gap:10px;margin:0 0 14px;padding:0;list-style:none}
-.found li{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start;font-size:16px;line-height:1.55}
-.found .no{display:grid;place-items:center;width:28px;height:28px;margin-top:1px;background:var(--c);color:#fff;font:800 13px/1 var(--f-head);border-radius:50%}
-.hw{margin:14px 0;padding:12px 16px;background:#fff7e3;border:2px dashed var(--brass);border-radius:12px;font-size:16px}
+.found li{display:grid;grid-template-columns:36px 1fr;gap:14px;align-items:start;padding:12px 16px;border-radius:16px;background:var(--tint);border:1px solid var(--tint-line);font-size:16.5px;line-height:1.55}
+.found .no{display:grid;place-items:center;width:36px;height:36px;border-radius:12px;background:var(--c);color:#fff;font:700 14px/1 var(--f-head)}
+.hw{margin:16px 0;padding:16px 20px;background:#fff3c8;border:2px dashed var(--brass);border-radius:20px;font-size:16.5px}
 .hw b{color:var(--brass-d)}
-.stats-line{margin:6px 0 4px;font:500 15px/1.6 var(--f-mono)}
-.verdict{display:flex;justify-content:flex-end;margin:2px 0 18px}
-.stamp{display:inline-block;padding:.12em .35em;border:5px solid var(--bad);color:var(--bad);font:800 clamp(24px,5.4vw,42px)/1 var(--f-head);letter-spacing:.06em;text-transform:uppercase;transform:rotate(-7deg);opacity:.9;border-radius:6px}
+.stats-line{margin:8px 0 4px;font:600 15px/1.6 var(--f-ui)}
+.verdict{display:flex;justify-content:flex-end;margin:4px 0 28px}
+.stamp{display:inline-block;padding:.12em .4em;border:5px solid var(--bad);color:var(--bad);font:800 clamp(20px,4.2vw,34px)/1 var(--f-head);letter-spacing:.04em;text-transform:uppercase;transform:rotate(-7deg);opacity:.9;border-radius:8px}
 .stamp.in{animation:stampIn .55s cubic-bezier(.2,.9,.3,1.2) both}
 
-/* ---------- панель сообщений ---------- */
-.pa{display:flex;gap:14px;align-items:flex-start;margin-top:16px;padding:14px 18px;background:#2b3a2e;color:#f1f6ee;border:3px solid #7d9577;border-radius:12px;box-shadow:0 5px 0 #17201a}
-.pa .led{flex:none;width:16px;height:16px;margin-top:5px;border-radius:50%;background:#ffc233;box-shadow:0 0 0 3px rgba(255,194,51,.25),0 0 12px 2px rgba(255,194,51,.7)}
-.pa .lb{display:block;margin-bottom:2px;font:700 12px/1.2 var(--f-head);letter-spacing:.14em;text-transform:uppercase;color:#ffc233}
-.pa .tx2{font-size:16.5px;line-height:1.5}
-.pa.ok{border-color:#3fd69a}
-.pa.ok .led{background:#3fd69a;box-shadow:0 0 0 3px rgba(63,214,154,.25),0 0 12px 2px rgba(63,214,154,.7)}
-.pa.ok .lb{color:#3fd69a}
-.pa.bad{border-color:#ff7b6e}
-.pa.bad .led{background:#ff6b5e;box-shadow:0 0 0 3px rgba(255,107,94,.25),0 0 12px 2px rgba(255,107,94,.7)}
-.pa.bad .lb{color:#ff9a8f}
-.pa.pop{animation:pop .3s ease-out}
+/* ---------- ответ всплывает внизу экрана ---------- */
+.dock{position:fixed;z-index:30;left:50%;bottom:calc(22px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);display:flex;gap:14px;align-items:flex-start;width:min(780px,calc(100vw - 2*var(--gx)));padding:16px 18px 16px 22px;background:var(--dock);color:#fff7e6;border-radius:22px;box-shadow:0 24px 44px -12px rgba(30,20,10,.6),0 0 0 2px rgba(255,255,255,.08) inset}
+.dock .led{flex:none;width:16px;height:16px;margin-top:6px;border-radius:50%;background:#ffc233;box-shadow:0 0 0 4px rgba(255,194,51,.25),0 0 14px 2px rgba(255,194,51,.7)}
+.dock .tx2{flex:1;min-width:0;font-size:17px;line-height:1.5}
+.dock .lb{display:block;margin-bottom:2px;font:800 12px/1.2 var(--f-ui);letter-spacing:.14em;text-transform:uppercase;color:#ffc233}
+.dock .dx{all:unset;box-sizing:border-box;cursor:pointer;flex:none;display:grid;place-items:center;width:32px;height:32px;margin:-4px 0 0;border-radius:50%;color:rgba(255,247,230,.7);font:600 24px/1 var(--f-ui)}
+.dock .dx:hover{background:rgba(255,255,255,.14);color:#fff}
+.dock.ok{background:var(--dock-ok)}
+.dock.ok .led{background:#3fd69a;box-shadow:0 0 0 4px rgba(63,214,154,.25),0 0 14px 2px rgba(63,214,154,.7)}
+.dock.ok .lb{color:#7bf0be}
+.dock.bad{background:var(--dock-bad)}
+.dock.bad .led{background:#ff6b5e;box-shadow:0 0 0 4px rgba(255,107,94,.25),0 0 14px 2px rgba(255,107,94,.7)}
+.dock.bad .lb{color:#ffab9f}
+.dock.pop{animation:dockin .3s ease-out}
 
 .confetti{position:absolute;inset:0;z-index:5;overflow:hidden;pointer-events:none}
 .confetti i{position:absolute;top:-16px;width:9px;height:15px;border-radius:2px;opacity:0;animation:cf 2.2s ease-in forwards}
 @keyframes cf{0%{opacity:1;transform:translate(0,0) rotate(0)}100%{opacity:0;transform:translate(var(--dx),460px) rotate(var(--r))}}
-@keyframes spin{to{transform:rotate(360deg)}}
-@keyframes popin{0%{transform:scale(.6);opacity:.2}60%{transform:scale(1.12)}100%{transform:none;opacity:1}}
+@keyframes popin{0%{transform:scale(.5);opacity:.2}60%{transform:scale(1.15)}100%{transform:none;opacity:1}}
 @keyframes shake{20%{transform:translateX(-4px)}40%{transform:translateX(4px)}60%{transform:translateX(-3px)}80%{transform:translateX(3px)}}
-@keyframes pulse{50%{box-shadow:0 0 0 6px rgba(255,194,51,.6)}}
-@keyframes pop{from{transform:scale(.97);opacity:.6}to{transform:none;opacity:1}}
+@keyframes pulse{50%{box-shadow:0 0 0 7px rgba(255,194,51,.6)}}
+@keyframes dockin{from{transform:translate(-50%,14px);opacity:.4}to{transform:translate(-50%,0);opacity:1}}
+@keyframes dockin-m{from{transform:translateY(14px);opacity:.4}to{transform:none;opacity:1}}
 @keyframes rise{from{transform:translateY(8px);opacity:0}to{transform:none;opacity:1}}
 @keyframes stampIn{0%{transform:rotate(-14deg) scale(2.2);opacity:0}60%{transform:rotate(-7deg) scale(.96);opacity:1}100%{transform:rotate(-7deg) scale(1);opacity:.9}}
 
-/* ---------- стрелки и список слайдов ---------- */
-.nav{position:fixed;z-index:15;left:50%;bottom:max(12px,env(safe-area-inset-bottom));transform:translateX(-50%);display:flex;align-items:stretch;width:min(560px,calc(100% - 2*var(--gutter)));background:linear-gradient(180deg,#b27846,#8c5a2c);border:3px solid var(--wood-dd);border-radius:14px;box-shadow:0 5px 0 #2a190b,0 14px 28px rgba(42,25,11,.4);overflow:hidden}
-.nv{all:unset;box-sizing:border-box;cursor:pointer;display:grid;place-items:center;flex:none;width:64px;min-height:58px;color:#ffe9a8}
-.nv svg{width:30px;height:30px;fill:none;stroke:currentColor;stroke-width:3.2;stroke-linecap:round;stroke-linejoin:round}
-.nv:hover:not(:disabled){background:rgba(0,0,0,.14)}
-.nv:active:not(:disabled){transform:translateY(2px)}
-.nv:disabled{opacity:.35;cursor:default}
-.nv-mid{all:unset;box-sizing:border-box;cursor:pointer;flex:1;min-width:0;display:grid;align-content:center;gap:3px;padding:6px 10px;text-align:center;border-inline:2px solid rgba(61,36,18,.55);color:#ffeec4;font:600 12px/1.25 var(--f-ui);letter-spacing:.08em;text-transform:uppercase}
-.nv-mid:hover{background:rgba(0,0,0,.14)}
-.nv-mid b{color:#fff;font:800 17px/1.2 var(--f-head);letter-spacing:.14em}
-.nv-mid span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.nv:focus-visible,.nv-mid:focus-visible{outline:3px solid #fff;outline-offset:-4px}
-.toc{position:fixed;z-index:16;left:50%;bottom:calc(max(12px,env(safe-area-inset-bottom)) + 80px);transform:translateX(-50%);width:min(560px,calc(100% - 2*var(--gutter)));max-height:min(62vh,540px);overflow:auto;padding:4px 12px 12px;background:var(--paper);color:var(--ink);border:3px solid var(--c);border-radius:14px;box-shadow:0 14px 36px rgba(42,25,11,.4)}
-.toc h3{display:flex;align-items:center;gap:8px;margin:12px 0 5px;font:700 12.5px/1.2 var(--f-head);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft)}
+/* ---------- список слайдов ---------- */
+.toc{position:fixed;z-index:40;top:calc(70px + env(safe-area-inset-top,0px));right:max(var(--gx),env(safe-area-inset-right,0px));width:min(430px,calc(100% - 2*var(--gx)));max-height:calc(100vh - 96px);overflow:auto;padding:6px 14px 14px;background:var(--card);color:var(--ink);border-radius:24px;box-shadow:0 30px 60px -16px rgba(40,25,10,.55),0 0 0 1px rgba(120,85,40,.2)}
+.toc h3{display:flex;align-items:center;gap:8px;margin:14px 0 6px;font:800 12px/1.2 var(--f-ui);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft)}
 .toc h3 i{flex:none;width:12px;height:12px;border-radius:50%;background:var(--rc)}
-.toc button{all:unset;box-sizing:border-box;cursor:pointer;display:flex;gap:10px;align-items:baseline;width:100%;padding:7px 10px;border-radius:8px;font:400 16px/1.3 var(--f-ui)}
+.toc .st{margin:10px 2px 0;font:700 13px/1.3 var(--f-ui);color:var(--ink-soft)}
+.toc button{all:unset;box-sizing:border-box;cursor:pointer;display:flex;gap:12px;align-items:baseline;width:100%;padding:9px 12px;border-radius:14px;font:600 16px/1.3 var(--f-ui)}
 .toc button:hover{background:var(--ct)}
-.toc button.cur{background:var(--lamp);color:#3a2a06;font-weight:700}
-.toc button:focus-visible{outline:3px solid var(--focus);outline-offset:-3px}
-.toc .no{flex:none;min-width:2ch;font:500 12.5px/1.3 var(--f-mono);color:var(--ink-soft)}
+.toc button.cur{background:var(--lamp);color:#3a2a06;font-weight:800}
+.toc .no{flex:none;min-width:2ch;font:700 12.5px/1.3 var(--f-head);color:var(--ink-soft)}
 .toc button.cur .no{color:#3a2a06}
+.mobcount{display:none}
 
-@media (max-width:640px){
-  .nv{width:56px}
-  .shop{--H:clamp(236px,66vw,272px);border-radius:14px}
-  .sc-text{max-width:44%}
-  .sign{padding:6px 10px 7px}
-  .sign h1{font-size:clamp(15px,4.4vw,19px);letter-spacing:0}
-  .gp{width:28px}
-  .gp.has{min-width:32px}
-  .sgm button{height:46px}
-  .ruins,.crate{display:none}
-  .bubble{top:6%;max-width:110px;font-size:12px}
-  .sh-head .meta{margin-left:0;margin-right:0;width:100%}
+@media (max-width:1259px){
+  .brand small,.slidebtn span{display:none}
+}
+@media (max-width:1040px){
+  .stat{display:none}
+  .nd{width:30px;height:30px;font-size:11px}
+  .trail li:not(:last-child)::after{margin:0 3px}
+  .trail li.cur .nd{transform:scale(1.12)}
+}
+@media (min-width:1041px){
+  .toc .st{display:none}
+}
+@media (max-width:860px){
+  .top{position:relative;top:auto;grid-template-columns:minmax(0,1fr) auto}
+  .trail{grid-column:1/-1;grid-row:2;max-width:none}
+}
+@media (max-width:760px){
+  body{padding-block:0 252px}
+  .slidebtn{display:none}
+  .stage{grid-template-columns:minmax(0,1fr);margin-top:16px}
+  .card{grid-column:1;min-height:0;border-radius:24px}
+  .arrow{position:fixed;top:auto;bottom:calc(14px + env(safe-area-inset-bottom,0px));width:54px;height:54px;z-index:31}
+  .arrow.left{left:max(12px,env(safe-area-inset-left,0px))}
+  .arrow.right{right:max(12px,env(safe-area-inset-right,0px))}
+  .mobcount{all:unset;box-sizing:border-box;cursor:pointer;display:block;position:fixed;z-index:31;left:50%;bottom:calc(26px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);padding:8px 18px;border-radius:99px;background:var(--ink);color:#fff3d6;font:700 14px/1 var(--f-head)}
+  .dock{left:max(12px,env(safe-area-inset-left,0px));right:max(12px,env(safe-area-inset-right,0px));bottom:calc(80px + env(safe-area-inset-bottom,0px));width:auto;transform:none;padding:12px 12px 12px 16px}
+  .dock.pop{animation-name:dockin-m}
+  .dock .tx2{font-size:15.5px;line-height:1.42}
+  .dock .led{margin-top:4px}
+  .sh-head{padding:20px 20px 4px}
+  .sh-body{padding:10px 20px 26px}
+  .ex>li{grid-template-columns:38px minmax(0,1fr);gap:12px;padding:12px 14px 12px 12px;font-size:17px}
+  .ex>li>.no{width:38px;height:38px}
+  .sent2,.edtext{padding:4px 12px}
   .kn-lb{min-width:100%}
+  .camp{--H:clamp(120px,38vw,170px)}
+  .camp .ruins,.camp .crate{display:none}
+  .camp .bubble{right:4%;top:10%;max-width:140px;font-size:12px}
+  .gp{width:28px}
+  .gp.has{min-width:34px}
+  .sgm button{height:46px}
+  .toc{top:auto;bottom:calc(90px + env(safe-area-inset-bottom,0px));left:max(12px,env(safe-area-inset-left,0px));right:max(12px,env(safe-area-inset-right,0px));width:auto;max-height:60vh}
+  .bg{height:30vh}
 }
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
@@ -254,69 +317,36 @@ h1,h2,h3,p,ol,ul{margin:0}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <header class="shop" id="shop" aria-label="Лагерь экспедиции">
-    <div class="sun" aria-hidden="true"></div>
-    <i class="cl c1" aria-hidden="true"></i><i class="cl c2" aria-hidden="true"></i>
-    <svg class="dn far" viewBox="0 0 600 100" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path d="M0 62Q80 22 170 56T340 52T520 40T600 56V100H0Z" fill="#edd49e"/></svg>
-    <svg class="ruins" viewBox="0 0 160 90" aria-hidden="true" focusable="false">
-      <path d="M10 88H110V74H98V60H86V46H74V34H46V46H34V60H22V74H10Z" fill="#cba56a"/>
-      <path d="M60 34H74V46H86V60H98V74H110V88H60Z" fill="#b8905a"/>
-      <rect x="122" y="52" width="9" height="36" fill="#bd9558"/><rect x="119" y="48" width="15" height="6" fill="#c9a26a"/>
-      <rect x="140" y="66" width="9" height="22" fill="#b8905a"/><path d="M137 64h15l-3 5h-9z" fill="#c9a26a"/>
-    </svg>
-    <svg class="dn mid" viewBox="0 0 600 100" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path d="M0 70Q100 30 210 62T420 58T600 48V100H0Z" fill="#dcb26f"/></svg>
-    <svg class="palm" viewBox="0 0 64 92" aria-hidden="true" focusable="false">
-      <path d="M32 90C30 72 36 56 33 38" fill="none" stroke="#7a5230" stroke-width="5" stroke-linecap="round"/>
-      <g fill="none" stroke="#3f8f3a" stroke-width="4.5" stroke-linecap="round">
-        <path d="M33 38C20 28 9 31 2 42"/><path d="M33 38C24 22 13 20 5 24"/><path d="M33 38C36 22 46 15 58 18"/><path d="M33 38C46 29 56 33 62 44"/><path d="M33 38C31 26 31 18 33 8"/>
-      </g>
-      <circle cx="30" cy="42" r="3" fill="#8a4b1c"/><circle cx="36" cy="43" r="3" fill="#8a4b1c"/>
-    </svg>
-    <svg class="tent" viewBox="0 0 130 104" aria-hidden="true" focusable="false">
-      <path d="M65 12V2" stroke="#4d2e16" stroke-width="2.5" stroke-linecap="round"/><path d="M65 2L90 8L65 15Z" fill="#1f8a8a"/>
-      <path d="M8 96L65 12L122 96Z" fill="#f4ead2" stroke="#8a6a3a" stroke-width="2.5" stroke-linejoin="round"/>
-      <path d="M8 96L65 12L74 26L30 96Z" fill="#e8d9b4"/>
-      <path d="M50 96L65 44L80 96Z" fill="#3a2a1a"/>
-      <path d="M50 96L65 44L58 96Z" fill="#5a4630"/>
-      <path d="M8 96H122V88H12Z" fill="#b5532c"/>
-    </svg>
-    <i class="crate" aria-hidden="true"></i>
-    <svg class="dn near" viewBox="0 0 600 100" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path d="M0 76Q120 48 260 74T600 66V100H0Z" fill="#c99650"/><path d="M0 76Q120 48 260 74T600 66" fill="none" stroke="#e8c88a" stroke-width="3" opacity=".7"/></svg>
-    <div class="case" id="case" aria-hidden="true">
-      <div class="rack">
-        <span class="it"><svg viewBox="0 0 40 40"><path d="M15 6h10v5c7 3 9 9 7 15-1 5-5 9-12 9s-11-4-12-9c-2-6 0-12 7-15z" fill="#c0653a" stroke="#6b3317" stroke-width="2"/><path d="M12 22h16" stroke="#f1d29a" stroke-width="3"/></svg></span>
-        <span class="it"><svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="14" fill="#e6b93a" stroke="#8a6416" stroke-width="2"/><circle cx="20" cy="20" r="9" fill="none" stroke="#8a6416" stroke-width="2"/><path d="M20 14v12M16 20h8" stroke="#8a6416" stroke-width="2"/></svg></span>
-        <span class="it"><svg viewBox="0 0 40 40"><path d="M20 4l10 20-10 12-10-12z" fill="#7d8a93" stroke="#3a4650" stroke-width="2" stroke-linejoin="round"/><path d="M20 10v22" stroke="#3a4650" stroke-width="2"/></svg></span>
-        <span class="it"><svg viewBox="0 0 40 40"><rect x="9" y="9" width="23" height="22" rx="3" fill="#f3e3b3" stroke="#8a6b30" stroke-width="2"/><path d="M13 15h15M13 20h15M13 25h9" stroke="#8a6b30" stroke-width="2"/><circle cx="9" cy="20" r="4" fill="#d9bf7a" stroke="#8a6b30" stroke-width="2"/></svg></span>
-        <span class="it"><svg viewBox="0 0 40 40"><ellipse cx="20" cy="23" rx="9" ry="12" fill="#2b8a8a" stroke="#0e4f4f" stroke-width="2"/><path d="M20 12v22M11 19l-6-3M11 25l-6 3M29 19l6-3M29 25l6 3" stroke="#0e4f4f" stroke-width="2" stroke-linecap="round"/><circle cx="20" cy="9" r="4" fill="#2b8a8a" stroke="#0e4f4f" stroke-width="2"/></svg></span>
-        <span class="it"><svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="14" fill="#d6a64a" stroke="#8a6416" stroke-width="2"/><polygon points="20,10 28,17 24,28 16,28 12,17" fill="#c23a5a" stroke="#6e1a2e" stroke-width="2"/></svg></span>
-        <span class="it"><svg viewBox="0 0 40 40"><path d="M5 25c4-9 19-9 25 0l5-5c-1 9-6 15-17 15-9 0-13-4-13-10z" fill="#c8a24c" stroke="#7a5c18" stroke-width="2" stroke-linejoin="round"/><path d="M30 22c3-3 5-6 4-10" fill="none" stroke="#7a5c18" stroke-width="2"/></svg></span>
-        <span class="it"><svg viewBox="0 0 40 40"><circle cx="13" cy="14" r="7" fill="none" stroke="#6a5a47" stroke-width="4"/><path d="M18 19l14 14M26 27l4-4M30 31l4-4" stroke="#6a5a47" stroke-width="4" stroke-linecap="round"/></svg></span>
-        <span class="it"><svg viewBox="0 0 40 40"><path d="M8 7h24v13c0 9-6 14-12 14S8 29 8 20z" fill="#e0c26a" stroke="#7a5c18" stroke-width="2"/><path d="M13 17h5M22 17h5" stroke="#3a2a10" stroke-width="3" stroke-linecap="round"/><path d="M15 26q5 4 10 0" fill="none" stroke="#3a2a10" stroke-width="2"/></svg></span>
-        <span class="it"><svg viewBox="0 0 40 40"><circle cx="20" cy="24" r="10" fill="none" stroke="#d6a64a" stroke-width="5"/><polygon points="20,4 25,10 20,16 15,10" fill="#4bb5d6" stroke="#1f6a86" stroke-width="2"/></svg></span>
-        <span class="it"><svg viewBox="0 0 40 40"><rect x="8" y="6" width="24" height="28" rx="3" fill="#c9a074" stroke="#6b4a2b" stroke-width="2"/><path d="M12 13h16M12 19h16M12 25h10" stroke="#6b4a2b" stroke-width="2" stroke-dasharray="3 2"/></svg></span>
-        <span class="it"><svg viewBox="0 0 40 40"><path d="M6 31l2-17 8 8 4-10 4 10 8-8 2 17z" fill="#e6b93a" stroke="#8a6416" stroke-width="2" stroke-linejoin="round"/><circle cx="20" cy="26" r="2.5" fill="#c23a5a"/></svg></span>
-      </div>
-      <span class="cap">Находки</span>
-    </div>
-    <div class="bubble" id="bubble" aria-hidden="true">Дневник отправлен в музей!</div>
-    <div class="sc-text">
-      <div class="sc-row"><span class="plate">ЭКСПЕДИЦИЯ</span><span class="sc-stats" id="stats"></span></div>
-      <div class="sign"><h1>Дневник экспедиции</h1></div>
-    </div>
-  </header>
-  <div class="now" id="now"></div>
-  <main>
-    <article class="sheet" id="stage"></article>
-    <div class="pa" id="pa" role="status" aria-live="polite" hidden></div>
-  </main>
+<div class="bg" aria-hidden="true">
+  <svg viewBox="0 0 1440 400" preserveAspectRatio="xMidYMax slice" focusable="false">
+    <path d="M0 250Q200 190 420 235T820 220T1180 200T1440 230V400H0Z" fill="#efd9a2"/>
+    <polygon points="980,232 1070,128 1160,232" fill="#e2c27f"/>
+    <polygon points="1070,128 1160,232 1070,232" fill="#d2ad66"/>
+    <polygon points="1150,238 1212,168 1274,238" fill="#e2c27f"/>
+    <polygon points="1212,168 1274,238 1212,238" fill="#d2ad66"/>
+    <path d="M0 300Q220 240 470 290T900 275T1440 290V400H0Z" fill="#e6c985"/>
+    <path d="M0 345Q300 300 640 340T1440 320V400H0Z" fill="#d8b472"/>
+    <path d="M0 345Q300 300 640 340T1440 320" fill="none" stroke="#ecd49c" stroke-width="3" opacity=".7"/>
+  </svg>
 </div>
-<nav class="nav" id="nav" aria-label="Переход по слайдам">
-  <button type="button" class="nv" id="navPrev" data-act="prev" aria-label="Предыдущий слайд" title="Назад (стрелка влево)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 4 7 12l8 8"/></svg></button>
-  <button type="button" class="nv-mid" id="navMid" data-act="toc" aria-expanded="false" aria-controls="toc" title="Список слайдов"><b id="navNo"></b><span id="navTitle"></span></button>
-  <button type="button" class="nv" id="navNext" data-act="next" aria-label="Следующий слайд" title="Дальше (стрелка вправо)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 4 8 8-8 8"/></svg></button>
-</nav>
+<header class="top" id="top">
+  <div class="brand">
+    <span class="mark" aria-hidden="true"><svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="26"/><path d="M32 12l6 20-6 20-6-20z"/><path d="M12 32h8M44 32h8M32 6v4M32 54v4"/></svg></span>
+    <div><h1>Дневник экспедиции</h1><small id="now"></small></div>
+  </div>
+  <ol class="trail" id="trail" aria-label="Маршрут урока"></ol>
+  <div class="meters">
+    <span class="stat" id="stats"></span>
+    <button type="button" class="slidebtn" id="navMid" data-act="toc" aria-expanded="false" aria-controls="toc" title="Список слайдов"><b id="navNo"></b><span id="navTitle"></span></button>
+  </div>
+</header>
+<main class="stage">
+  <button type="button" class="arrow left" id="navPrev" data-act="prev" aria-label="Предыдущий слайд" title="Назад (стрелка влево)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 4 7 12l8 8"/></svg></button>
+  <article class="card" id="stage"></article>
+  <button type="button" class="arrow right" id="navNext" data-act="next" aria-label="Следующий слайд" title="Дальше (стрелка вправо)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 4 8 8-8 8"/></svg></button>
+</main>
+<div class="dock" id="pa" role="status" aria-live="polite" hidden></div>
+<button type="button" class="mobcount" id="mobNo" data-act="toc" aria-label="Список слайдов"></button>
 <div class="toc" id="toc" aria-label="Список слайдов" hidden></div>
 
 <script>
@@ -344,7 +374,7 @@ function parseComma(s){
 const CI=(s,subj,pred,why,o)=>{const P=parseComma(s);return Object.assign({s,subj,pred,why,_p:P,trap:!Object.keys(P.exp).length},o||{});};
 
 const BLOCKS={1:'Разминка',2:'Простые и сложные',3:'Запятая между частями',4:'Союзы',5:'Склей и не повторяйся'};
-const BC=['#0f8b8b','#b5532c','#2b5aa0','#5a7d2b','#8a3f76'];
+const BC=['#0c7c7c','#c0562b','#2b5aa0','#5a7d2b','#8a3f76'];
 
 /* ======================= содержание урока =======================
    Типы шагов: explain (карточки с пунктами), mc (выбор ответа), bases (отметить основы и выбрать простое или сложное),
@@ -427,8 +457,56 @@ const STEPS=[
 ];
 
 /* ======================= значки ======================= */
-const COMPASS='<svg viewBox="0 0 64 64" fill="none" stroke="#fff" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><circle cx="32" cy="32" r="26"/><circle cx="32" cy="32" r="21" stroke-dasharray="2 5"/><path d="M32 12l6 20-6 20-6-20z"/><path d="M12 32h8M44 32h8M32 6v4M32 54v4"/></svg>';
+const COMPASS='<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><circle cx="32" cy="32" r="26"/><circle cx="32" cy="32" r="21" stroke-dasharray="2 5"/><path d="M32 12l6 20-6 20-6-20z"/><path d="M12 32h8M44 32h8M32 6v4M32 54v4"/></svg>';
 const LED='<span class="led" aria-hidden="true"></span>';
+
+/* находки экспедиции: первые девять открываются по одной за каждый шаг, корона — за финал */
+const FINDS=[
+ '<svg viewBox="0 0 40 40"><path d="M15 6h10v5c7 3 9 9 7 15-1 5-5 9-12 9s-11-4-12-9c-2-6 0-12 7-15z" fill="#c0653a" stroke="#6b3317" stroke-width="2"/><path d="M12 22h16" stroke="#f1d29a" stroke-width="3"/></svg>',
+ '<svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="14" fill="#e6b93a" stroke="#8a6416" stroke-width="2"/><circle cx="20" cy="20" r="9" fill="none" stroke="#8a6416" stroke-width="2"/><path d="M20 14v12M16 20h8" stroke="#8a6416" stroke-width="2"/></svg>',
+ '<svg viewBox="0 0 40 40"><path d="M20 4l10 20-10 12-10-12z" fill="#7d8a93" stroke="#3a4650" stroke-width="2" stroke-linejoin="round"/><path d="M20 10v22" stroke="#3a4650" stroke-width="2"/></svg>',
+ '<svg viewBox="0 0 40 40"><rect x="9" y="9" width="23" height="22" rx="3" fill="#f3e3b3" stroke="#8a6b30" stroke-width="2"/><path d="M13 15h15M13 20h15M13 25h9" stroke="#8a6b30" stroke-width="2"/><circle cx="9" cy="20" r="4" fill="#d9bf7a" stroke="#8a6b30" stroke-width="2"/></svg>',
+ '<svg viewBox="0 0 40 40"><ellipse cx="20" cy="23" rx="9" ry="12" fill="#2b8a8a" stroke="#0e4f4f" stroke-width="2"/><path d="M20 12v22M11 19l-6-3M11 25l-6 3M29 19l6-3M29 25l6 3" stroke="#0e4f4f" stroke-width="2" stroke-linecap="round"/><circle cx="20" cy="9" r="4" fill="#2b8a8a" stroke="#0e4f4f" stroke-width="2"/></svg>',
+ '<svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="14" fill="#d6a64a" stroke="#8a6416" stroke-width="2"/><polygon points="20,10 28,17 24,28 16,28 12,17" fill="#c23a5a" stroke="#6e1a2e" stroke-width="2"/></svg>',
+ '<svg viewBox="0 0 40 40"><path d="M5 25c4-9 19-9 25 0l5-5c-1 9-6 15-17 15-9 0-13-4-13-10z" fill="#c8a24c" stroke="#7a5c18" stroke-width="2" stroke-linejoin="round"/><path d="M30 22c3-3 5-6 4-10" fill="none" stroke="#7a5c18" stroke-width="2"/></svg>',
+ '<svg viewBox="0 0 40 40"><circle cx="13" cy="14" r="7" fill="none" stroke="#6a5a47" stroke-width="4"/><path d="M18 19l14 14M26 27l4-4M30 31l4-4" stroke="#6a5a47" stroke-width="4" stroke-linecap="round"/></svg>',
+ '<svg viewBox="0 0 40 40"><path d="M8 7h24v13c0 9-6 14-12 14S8 29 8 20z" fill="#e0c26a" stroke="#7a5c18" stroke-width="2"/><path d="M13 17h5M22 17h5" stroke="#3a2a10" stroke-width="3" stroke-linecap="round"/><path d="M15 26q5 4 10 0" fill="none" stroke="#3a2a10" stroke-width="2"/></svg>',
+ '<svg viewBox="0 0 40 40"><circle cx="20" cy="24" r="10" fill="none" stroke="#d6a64a" stroke-width="5"/><polygon points="20,4 25,10 20,16 15,10" fill="#4bb5d6" stroke="#1f6a86" stroke-width="2"/></svg>',
+ '<svg viewBox="0 0 40 40"><rect x="8" y="6" width="24" height="28" rx="3" fill="#c9a074" stroke="#6b4a2b" stroke-width="2"/><path d="M12 13h16M12 19h16M12 25h10" stroke="#6b4a2b" stroke-width="2" stroke-dasharray="3 2"/></svg>',
+ '<svg viewBox="0 0 40 40"><path d="M6 31l2-17 8 8 4-10 4 10 8-8 2 17z" fill="#e6b93a" stroke="#8a6416" stroke-width="2" stroke-linejoin="round"/><circle cx="20" cy="26" r="2.5" fill="#c23a5a"/></svg>'
+];
+const CROWN=FINDS[11];
+
+/* лагерь на первом и последнем слайде */
+const CAMP=done=>`<div class="camp" aria-hidden="true">
+  <div class="sun"></div><i class="cl c1"></i><i class="cl c2"></i>
+  <svg class="dn far" viewBox="0 0 600 100" preserveAspectRatio="none" focusable="false"><path d="M0 62Q80 22 170 56T340 52T520 40T600 56V100H0Z" fill="#edd49e"/></svg>
+  <svg class="ruins" viewBox="0 0 160 90" focusable="false">
+    <path d="M10 88H110V74H98V60H86V46H74V34H46V46H34V60H22V74H10Z" fill="#cba56a"/>
+    <path d="M60 34H74V46H86V60H98V74H110V88H60Z" fill="#b8905a"/>
+    <rect x="122" y="52" width="9" height="36" fill="#bd9558"/><rect x="119" y="48" width="15" height="6" fill="#c9a26a"/>
+    <rect x="140" y="66" width="9" height="22" fill="#b8905a"/><path d="M137 64h15l-3 5h-9z" fill="#c9a26a"/>
+  </svg>
+  <svg class="dn mid" viewBox="0 0 600 100" preserveAspectRatio="none" focusable="false"><path d="M0 70Q100 30 210 62T420 58T600 48V100H0Z" fill="#dcb26f"/></svg>
+  <svg class="palm" viewBox="0 0 64 92" focusable="false">
+    <path d="M32 90C30 72 36 56 33 38" fill="none" stroke="#7a5230" stroke-width="5" stroke-linecap="round"/>
+    <g fill="none" stroke="#3f8f3a" stroke-width="4.5" stroke-linecap="round">
+      <path d="M33 38C20 28 9 31 2 42"/><path d="M33 38C24 22 13 20 5 24"/><path d="M33 38C36 22 46 15 58 18"/><path d="M33 38C46 29 56 33 62 44"/><path d="M33 38C31 26 31 18 33 8"/>
+    </g>
+    <circle cx="30" cy="42" r="3" fill="#8a4b1c"/><circle cx="36" cy="43" r="3" fill="#8a4b1c"/>
+  </svg>
+  <svg class="tent" viewBox="0 0 130 104" focusable="false">
+    <path d="M65 12V2" stroke="#4d2e16" stroke-width="2.5" stroke-linecap="round"/><path d="M65 2L90 8L65 15Z" fill="#1f8a8a"/>
+    <path d="M8 96L65 12L122 96Z" fill="#f4ead2" stroke="#8a6a3a" stroke-width="2.5" stroke-linejoin="round"/>
+    <path d="M8 96L65 12L74 26L30 96Z" fill="#e8d9b4"/>
+    <path d="M50 96L65 44L80 96Z" fill="#3a2a1a"/>
+    <path d="M50 96L65 44L58 96Z" fill="#5a4630"/>
+    <path d="M8 96H122V88H12Z" fill="#b5532c"/>
+  </svg>
+  <i class="crate"></i>
+  <svg class="dn near" viewBox="0 0 600 100" preserveAspectRatio="none" focusable="false"><path d="M0 76Q120 48 260 74T600 66V100H0Z" fill="#c99650"/><path d="M0 76Q120 48 260 74T600 66" fill="none" stroke="#e8c88a" stroke-width="3" opacity=".7"/></svg>
+  ${done?'<div class="bubble">Дневник отправлен в музей!</div>':''}
+</div>`;
 
 /* ======================= состояние ======================= */
 let S;
@@ -442,30 +520,31 @@ function paintPA(){
   const el=$('#pa');
   if(!S.msg){el.hidden=true;el.innerHTML='';return;}
   el.hidden=false;
-  el.className='pa '+S.msg.kind;
-  el.innerHTML=`${LED}<div class="tx2"><span class="lb">${LABEL[S.msg.kind]}</span>${S.msg.html}</div>`;
+  el.className='dock '+S.msg.kind;
+  el.innerHTML=`${LED}<div class="tx2"><span class="lb">${LABEL[S.msg.kind]}</span>${S.msg.html}</div><button type="button" class="dx" data-act="dockx" aria-label="Закрыть сообщение">×</button>`;
   el.classList.remove('pop');void el.offsetWidth;el.classList.add('pop');
 }
+/* панель ответа лежит поверх страницы: прокручиваем так, чтобы кнопки задания остались над ней */
 function nudge(){
-  const el=$('#pa');
-  if(el.hidden)return;
-  const r=el.getBoundingClientRect(),behavior=reduceMotion()?'auto':'smooth';
-  if(r.bottom>window.innerHeight-92)window.scrollBy({top:r.bottom-window.innerHeight+104,behavior});
-  else if(r.top<0)window.scrollBy({top:r.top-16,behavior});
+  const el=$('#pa'),row=$$('#stage .row').pop();
+  if(el.hidden||!row)return;
+  const d=el.getBoundingClientRect(),r=row.getBoundingClientRect();
+  if(r.bottom>d.top-12)window.scrollBy({top:r.bottom-d.top+20,behavior:reduceMotion()?'auto':'smooth'});
 }
 function say(kind,html){S.msg={kind,html};paintPA();setTimeout(nudge,0);}
-function paintStats(){$('#stats').textContent=`Ошибки ${S.mistakes} · Подсказки ${S.hints}`;}
+const statsText=()=>`Ошибки ${S.mistakes} · Подсказки ${S.hints}`;
+function paintStats(){$('#stats').textContent=statsText();}
 
 /* ======================= экраны ======================= */
 const head=(title,meta)=>`<div class="sh-head"><span class="nut">${S.pi+1}</span><h2 data-h tabindex="-1">${title}</h2><span class="meta">${meta}</span><span class="wm">${COMPASS}</span></div>`;
 const V={};
 
-V.brief=()=>`
+V.brief=()=>`${CAMP(false)}
 <div class="sh-head hero"><span class="nut">№</span><h2 data-h tabindex="-1">Дневник экспедиции</h2><span class="meta">лагерь археологов</span><span class="wm">${COMPASS}</span></div>
 <div class="sh-body">
 <p class="lead">Археологи нашли в пустыне засыпанный песком город. До утра нужно привести в порядок полевой дневник и отправить его в музей. Вы секретарь экспедиции.</p>
 <p class="lead">В дневнике предложения «слиплись», не хватает запятых, а слова слишком часто повторяются. Починим всё по правилам.</p>
-<ul class="rules"><li>Сначала объяснение, потом задания.</li><li>За каждое выполненное задание в витрине появляется находка.</li><li>Ошибки не страшны: они попадают в журнал, подсказок три. Стрелки внизу переключают слайды.</li></ul>
+<ul class="rules"><li>Сначала объяснение, потом задания.</li><li>За каждое задание на маршруте вверху появляется находка.</li><li>Ошибки не страшны, подсказок три. Слайды переключают стрелки.</li></ul>
 <div class="row"><button type="button" class="btn btn-go" data-act="start" data-af>Открыть дневник</button></div>
 </div>`;
 
@@ -486,7 +565,7 @@ V.mc=st=>{
     const cls=['opt'];
     if(m.no.includes(k))cls.push('no');
     if(m.lock&&o.ok)cls.push('right');
-    return `<button type="button" class="${cls.join(' ')}" data-act="mc" data-k="${k}"${dis?' disabled':''}${a}>${esc(o.t)}</button>`;
+    return `<button type="button" class="${cls.join(' ')}" data-act="mc" data-k="${k}"${dis?' disabled':''}${a}><span class="ot">${esc(o.t)}</span></button>`;
   }).join('');
   const ctl=m.lock?`<div class="row"><button type="button" class="btn btn-go" data-act="mcnext" data-af>${m.i===total-1?'Дальше':'Следующее'}</button></div>`:'';
   return `${head(st.title,'задание')}<div class="sh-body">${st.intro?`<p class="task">${st.intro}</p>`:''}${dots}<p class="mc-p">${it.p}</p><div class="opts">${opts}</div>${ctl}</div>`;
@@ -551,9 +630,12 @@ V.edit=st=>{
 
 V.end=()=>{
   const rank=S.mistakes<=6?'главный археолог':S.mistakes<=14?'археолог':'помощник археолога';
-  return `<div class="sh-head hero"><span class="nut">✓</span><h2 data-h tabindex="-1">Дневник готов</h2><span class="meta">отправляем в музей</span><span class="wm">${COMPASS}</span></div>
+  const finds=FINDS.slice(0,STEPS.length).concat(CROWN);
+  const shelf=finds.map((s,i)=>`<span class="fd${i===finds.length-1?' last':''}" style="--k:${i}">${s}</span>`).join('');
+  return `${CAMP(true)}<div class="sh-head hero"><span class="nut">✓</span><h2 data-h tabindex="-1">Дневник готов</h2><span class="meta">отправляем в музей</span><span class="wm">${COMPASS}</span></div>
 <div class="sh-body"><div class="verdict"><span class="stamp in">В музей</span></div>
-<p class="lead">Дневник приведён в порядок: основы найдены, запятые на месте, повторы убраны. Витрина экспедиции собрана полностью.</p>
+<p class="lead">Дневник приведён в порядок: основы найдены, запятые на месте, повторы убраны. Все находки экспедиции собраны.</p>
+<div class="shelf" aria-label="Находки экспедиции">${shelf}</div>
 <h3 class="sub">Что мы узнали</h3><ol class="found">
 <li><span class="no">1</span><span><b>Простое предложение</b> — одна основа, <b>сложное</b> — две основы или больше. Основу ищем по сказуемому: что происходит и кто это делает?</span></li>
 <li><span class="no">2</span><span><b>Между частями сложного предложения ставится запятая.</b> Она стоит там, где кончается одна основа и начинается другая: <i>Ветер стих, а песок ещё летел.</i></span></li>
@@ -572,26 +654,32 @@ function viewHtml(){
   const st=step();
   return V[st.t](st);
 }
-function nowHtml(){
-  if(S.phase==='brief')return '<span class="k">Сейчас</span>Знакомимся с лагерем';
-  if(S.phase==='end')return '<span class="k">Итог</span>дневник готов';
+function nowText(){
+  if(S.phase==='brief')return 'Знакомимся с лагерем';
+  if(S.phase==='end')return 'Дневник готов';
   const st=step();
-  return `<span class="k">Блок ${st.b}</span>${esc(BLOCKS[st.b])} · ${esc(st.title)}`;
+  return `Блок ${st.b} · ${BLOCKS[st.b]}`;
 }
-const PARTS=12;
-function paintShop(){
-  const n=STEPS.length;
-  let built=0;
-  if(S.phase==='end')built=PARTS;
-  else if(S.phase==='step'){const d=STEPS.filter(s=>S.seen[s.id]).length;built=Math.min(PARTS,Math.round(PARTS*d/n));}
-  $$('#case .it').forEach((g,i)=>g.classList.toggle('on',i<built));
-  $('#shop').classList.toggle('done',S.phase==='end');
+/* маршрут вверху: номер шага превращается в находку, когда шаг пройден */
+let prevDone={};
+function paintTrail(){
+  const now={};
+  const items=STEPS.map((s,k)=>{
+    const d=S.phase==='end'||!!S.seen[s.id],cur=S.phase==='step'&&S.pi===k;
+    now[s.id]=d;
+    return `<li class="${d?'done':''}${cur?' cur':''}"><button type="button" class="nd${d&&!prevDone[s.id]?' pop':''}" data-act="goto" data-i="${k+1}" title="${esc(s.title)}" aria-label="Шаг ${k+1}: ${esc(s.title)}${d?', готово':''}"${cur?' aria-current="step"':''}>${d?FINDS[k]:k+1}</button></li>`;
+  });
+  const end=S.phase==='end';
+  now.end=end;
+  items.push(`<li class="end${end?' done cur':''}"><button type="button" class="nd${end&&!prevDone.end?' pop':''}" data-act="goto" data-i="${STEPS.length+1}" title="Дневник готов" aria-label="Финал"${end?' aria-current="step"':''}>${end?CROWN:'★'}</button></li>`);
+  prevDone=now;
+  $('#trail').innerHTML=items.join('');
 }
 function render(){
   document.documentElement.dataset.b=S.phase==='step'?String(step().b):'0';
-  $('#now').innerHTML=nowHtml();
+  $('#now').textContent=nowText();
   $('#stage').innerHTML=viewHtml();
-  paintStats();paintPA();paintNav();paintShop();
+  paintStats();paintPA();paintNav();paintTrail();
   if(S.refocus){
     const el=(S.refocus==='af'&&$('#stage [data-af]'))||$('#stage [data-h]');
     if(el)el.focus({preventScroll:true});
@@ -774,7 +862,7 @@ function onEdCheck(){
 
 /* переход по слайдам (стрелки) */
 function slides(){
-  const L=[{k:'brief',t:'Начало',b:0}];
+  const L=[{k:'brief',t:'Знакомство с лагерем',b:0}];
   STEPS.forEach((s,pi)=>L.push({k:'step',pi,t:s.title,b:s.b}));
   L.push({k:'end',t:'Дневник готов',b:6});
   return L;
@@ -805,13 +893,13 @@ function slideStep(dir){
   goSlide(i+dir,dir);
 }
 function renderToc(L,cur){
-  let h='',last=-1;
+  let h=`<p class="st">${esc(statsText())}</p>`,last=-1;
   L.forEach((x,k)=>{
     if(x.b!==last){
       last=x.b;
       h+=x.b===0?'<h3><i style="--rc:#d6a64a"></i>Вступление</h3>':x.b===6?'<h3><i style="--rc:#ff8a1f"></i>Финал</h3>':`<h3><i style="--rc:${BC[x.b-1]}"></i>Блок ${x.b} · ${esc(BLOCKS[x.b])}</h3>`;
     }
-    h+=`<button type="button" data-act="goto" data-i="${k}"${k===cur?' class="cur" aria-current="step"':''}><span class="no">${k+1}</span><span>${esc(x.t)}</span></button>`;
+    h+=`<button type="button" data-act="goto" data-i="${k}"${k===cur?' class="cur" aria-current="step"':''}><span class="no">${x.k==='step'?x.pi+1:x.k==='end'?'★':'№'}</span><span>${esc(x.t)}</span></button>`;
   });
   $('#toc').innerHTML=h;
   const c=$('#toc .cur');
@@ -820,21 +908,23 @@ function renderToc(L,cur){
 function toggleToc(force){
   const el=$('#toc'),open=force===undefined?el.hidden:force;
   el.hidden=!open;
-  $('#navMid').setAttribute('aria-expanded',String(open));
+  $$('[data-act="toc"]').forEach(b=>b.setAttribute('aria-expanded',String(open)));
   if(open){const L=slides();renderToc(L,curIdx(L));}
 }
 function paintNav(){
   const L=slides(),i=curIdx(L),T=L[i];
   $('#navPrev').disabled=i===0;
   $('#navNext').disabled=i===L.length-1;
-  $('#navNo').textContent=`${i+1} / ${L.length}`;
+  const no=T.k==='step'?`Шаг ${T.pi+1} из ${STEPS.length}`:T.k==='end'?'Финал':'Начало';
+  $('#navNo').textContent=no;
+  $('#mobNo').textContent=no;
   $('#navTitle').textContent=T.k==='step'?`${BLOCKS[T.b]} · ${T.t}`:T.t;
   if(!$('#toc').hidden)renderToc(L,i);
 }
 
 /* ======================= события ======================= */
 document.addEventListener('click',e=>{
-  if(!$('#toc').hidden&&!e.target.closest('#toc,#navMid'))toggleToc(false);
+  if(!$('#toc').hidden&&!e.target.closest('#toc,[data-act="toc"]'))toggleToc(false);
   if(S&&S.ed&&S.ed.menu!==null&&!e.target.closest('.slw')){S.ed.menu=null;render();}
   const b=e.target.closest('[data-act]');
   if(!b||b.disabled)return;
@@ -842,6 +932,7 @@ document.addEventListener('click',e=>{
     case 'prev':slideStep(-1);break;
     case 'next':slideStep(1);break;
     case 'toc':toggleToc();break;
+    case 'dockx':S.msg=null;paintPA();break;
     case 'goto':{const k=+b.dataset.i,cur=curIdx(slides());toggleToc(false);goSlide(k,k>cur?1:-1);break;}
     case 'start':S.phase='step';S.pi=0;enterStep();S.refocus='h';render();toTop();break;
     case 'exmore':onExMore();break;
