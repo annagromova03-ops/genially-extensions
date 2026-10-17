@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Дневник экспедиции</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bitter:wght@500;600;700;800&family=IBM+Plex+Mono:wght@500;600&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+<style>
+/* Layout concept: an archaeological camp in the desert. The header is a sunny dune scene with a tent, a palm, ruins on the horizon and a wooden display case at the right: the case has twelve slots and a new find (vase, coin, scarab...) appears in it for every finished step, so by the end of the lesson the diary is complete and "sent to the museum". Every step is a ruled diary page under a block-coloured header with a stitched edge; words are plain text on the page, commas are placed by tapping the gap between words; replies come from a field radio panel with an indicator lamp. */
+*{box-sizing:border-box}
+:root{
+  color-scheme:light;
+  --gutter:clamp(14px,4vw,34px);
+  --wood:#a8703d;--wood-d:#6f4423;--wood-dd:#3d2412;
+  --brass:#d6a64a;--brass-d:#8a6416;--lamp:#ffd36a;
+  --ink:#2a1f14;--ink-soft:#6a5a47;--line:#e4d2ac;--paper:#fbf4e1;
+  --c:#0f8b8b;--c-deep:#096262;--ct:#d9f0ef;
+  --ok:#17935f;--bad:#d8433a;--focus:#1d6fe0;
+  --mint:#17a58a;--amber:#e0900a;--orange:#ff8a1f;
+  --f-head:"Bitter",Georgia,"Times New Roman",serif;
+  --f-ui:"Source Sans 3","Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+  --f-mono:"IBM Plex Mono","Courier New",monospace;
+  --cloud:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 50'%3E%3Cg fill='%23fff'%3E%3Ccircle cx='32' cy='30' r='16'/%3E%3Ccircle cx='58' cy='22' r='20'/%3E%3Ccircle cx='86' cy='30' r='15'/%3E%3Crect x='24' y='28' width='72' height='18' rx='9'/%3E%3C/g%3E%3C/svg%3E");
+}
+/* у каждого блока урока свой цвет */
+html[data-b="1"]{--c:#0f8b8b;--c-deep:#096262;--ct:#d9f0ef}
+html[data-b="2"]{--c:#b5532c;--c-deep:#80381a;--ct:#fbe6dc}
+html[data-b="3"]{--c:#2b5aa0;--c-deep:#1c3d70;--ct:#e1ebf9}
+html[data-b="4"]{--c:#5a7d2b;--c-deep:#3c5619;--ct:#e9f3d9}
+html[data-b="5"]{--c:#8a3f76;--c-deep:#612a53;--ct:#f6e5f1}
+[hidden]{display:none!important}
+html{height:100%;background:#ead7a8}
+body{position:relative;min-height:100%;margin:0;padding-inline:var(--gutter);padding-block:0 128px;color:var(--ink);font:400 17px/1.55 var(--f-ui);background-color:#ead7a8;background-image:radial-gradient(900px 420px at 8% -10%,rgba(255,255,255,.55),transparent 70%),repeating-linear-gradient(115deg,rgba(150,105,45,.07) 0 2px,transparent 2px 14px);-webkit-text-size-adjust:100%}
+h1,h2,h3,p,ol,ul{margin:0}
+.wrap{position:relative;max-width:980px;margin:0 auto;padding-top:16px}
+
+/* ---------- шапка: лагерь экспедиции ---------- */
+.shop{--H:clamp(236px,31vw,292px);--cw:calc(var(--H)*.70);position:relative;isolation:isolate;height:var(--H);overflow:hidden;border:3px solid var(--wood-dd);border-radius:18px;box-shadow:0 6px 0 #2a190b,0 18px 30px rgba(42,25,11,.3);background:linear-gradient(180deg,#79c4e0 0%,#b9e3ee 36%,#fdeec6 62%,#f7d9a0 100%)}
+.sun{position:absolute;z-index:0;left:46%;top:9%;width:clamp(44px,7vw,70px);aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 38% 36%,#fffbd8,#ffe27a 55%,#ffc43d);box-shadow:0 0 0 clamp(8px,1.3vw,14px) rgba(255,238,170,.4),0 0 0 clamp(18px,2.8vw,30px) rgba(255,238,170,.22),0 0 60px 20px rgba(255,238,170,.5)}
+.cl{position:absolute;z-index:0;height:clamp(22px,3.6vw,38px);aspect-ratio:120/50;background:var(--cloud) center/contain no-repeat;opacity:.92}
+.c1{top:10%;left:30%}
+.c2{top:27%;left:60%;height:clamp(18px,2.8vw,30px)}
+.dn{position:absolute;left:0;width:100%;display:block}
+.dn.far{z-index:1;bottom:22%;height:34%}
+.dn.mid{z-index:3;bottom:10%;height:30%}
+.dn.near{z-index:6;bottom:0;height:22%}
+.ruins{position:absolute;z-index:2;left:38%;bottom:28%;height:28%;width:auto}
+.palm{position:absolute;z-index:4;left:29%;bottom:14%;height:31%;width:auto}
+.tent{position:absolute;z-index:5;left:4%;bottom:9%;height:35%;width:auto}
+.crate{position:absolute;z-index:5;left:22.5%;bottom:9%;width:clamp(26px,4vw,40px);aspect-ratio:1.15;background:repeating-linear-gradient(0deg,#a8703d 0 7px,#8c5a2c 7px 8px);border:2px solid #4d2e16;border-radius:3px}
+.case{position:absolute;z-index:7;right:2.2%;top:7%;height:82%;aspect-ratio:3/3.9;padding:8px 8px 20px;background:linear-gradient(180deg,#8c5a2c,#6f4423);border:3px solid var(--wood-dd);border-radius:8px;box-shadow:0 8px 14px rgba(42,25,11,.4),inset 0 0 0 2px rgba(255,255,255,.12);transform:rotate(1deg)}
+.rack{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(4,1fr);gap:4px;height:100%}
+.it{display:grid;place-items:center;background:#f6e9c6;border:1.5px solid #a98d4c;border-radius:4px;overflow:hidden}
+.it svg{width:78%;height:78%;filter:grayscale(1);opacity:.16;transition:opacity .4s,filter .4s}
+.it.on svg{filter:none;opacity:1;animation:popin .5s ease-out}
+.case .cap{position:absolute;left:0;right:0;bottom:4px;text-align:center;font:700 8px/1 var(--f-head);letter-spacing:.14em;text-transform:uppercase;color:#f3e1b0}
+.shop.done .case{box-shadow:0 0 0 3px #ffd36a,0 0 22px 6px rgba(255,211,106,.7),0 8px 14px rgba(42,25,11,.4)}
+.bubble{position:absolute;z-index:8;right:calc(2.2% + var(--cw) + 12px);top:14%;max-width:150px;padding:6px 10px;background:#fff;color:var(--ink);border:2px solid var(--ink);border-radius:12px 12px 4px 12px;font:700 13px/1.25 var(--f-head);opacity:0;transform:scale(.9);transform-origin:100% 100%;transition:opacity .4s,transform .4s}
+.shop.done .bubble{opacity:1;transform:none}
+.sc-text{position:absolute;z-index:8;left:clamp(14px,3vw,26px);top:clamp(12px,2.4vw,20px);display:grid;gap:8px;justify-items:start;max-width:46%}
+.sc-row{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px}
+.plate{padding:4px 10px;background:linear-gradient(180deg,#f3d58a,#d6a64a);color:#3a2a06;font:700 11px/1 var(--f-head);letter-spacing:.14em;border-radius:3px;box-shadow:0 2px 0 var(--brass-d),inset 0 1px 0 rgba(255,255,255,.55)}
+.sc-stats{padding:3px 10px;background:rgba(255,255,255,.92);color:var(--ink);border-radius:99px;font:600 12px/1.4 var(--f-ui)}
+.sign{position:relative;padding:8px 16px 9px;background:linear-gradient(180deg,#f7ecd0,#e8d6aa);border:3px solid var(--wood-dd);border-radius:6px;box-shadow:0 4px 0 #2a190b,inset 0 0 0 2px rgba(255,255,255,.4)}
+.sign h1{font:800 clamp(20px,4.1vw,38px)/1.05 var(--f-head);letter-spacing:.02em;text-transform:uppercase;color:#5a2a12;text-wrap:balance}
+
+.now{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;margin:14px 2px 0;font:500 clamp(13px,2.4vw,15px)/1.35 var(--f-ui);color:var(--ink)}
+.now .k{padding:3px 10px;background:var(--wood-dd);color:#fff3d6;border-radius:6px;font:700 .86em var(--f-head);letter-spacing:.1em;text-transform:uppercase}
+
+/* ---------- кнопки ---------- */
+.btn{all:unset;box-sizing:border-box;cursor:pointer;display:inline-flex;align-items:center;gap:8px;min-height:46px;padding:0 20px;font:700 15px/1 var(--f-head);letter-spacing:.06em;text-transform:uppercase;text-align:center;border-radius:8px}
+.btn:focus-visible,.opt:focus-visible,.wd:focus-visible,.seg button:focus-visible,.nv:focus-visible,.gp:focus-visible,.sl:focus-visible,.sgm button:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.btn-go{background:var(--c);color:#fff;box-shadow:0 4px 0 var(--c-deep)}
+.btn-go:hover{filter:brightness(1.08)}
+.btn-go:active{transform:translateY(3px);box-shadow:0 1px 0 var(--c-deep)}
+.btn-line{border:2px solid var(--c);color:var(--c-deep);background:#fff}
+.btn-line:hover:not(:disabled){background:var(--ct)}
+.btn-line:disabled{opacity:.4;cursor:default}
+.btn.sm{min-height:38px;padding:0 14px;font-size:13px}
+
+/* ---------- страница дневника ---------- */
+.sheet{position:relative;margin-top:12px;background-color:var(--paper);background-image:linear-gradient(rgba(150,105,45,.13) 1px,transparent 1px);background-size:100% 30px;color:var(--ink);border:3px solid var(--c);border-radius:14px;box-shadow:0 6px 0 var(--c-deep),0 18px 34px rgba(42,25,11,.2);overflow:hidden}
+.sh-head{position:relative;overflow:hidden;display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding:12px clamp(16px,3vw,28px) 22px;background:var(--c);color:#fff}
+.sh-head.hero{background:linear-gradient(90deg,#0f8b8b,#2b5aa0 40%,#b5532c 75%,#8a3f76)}
+.sh-head::after{content:"";position:absolute;left:10px;right:10px;bottom:8px;height:0;border-top:2px dashed rgba(255,255,255,.7);pointer-events:none}
+.sh-head>*{position:relative;z-index:1}
+.sh-head .wm{position:absolute;z-index:0;right:14px;top:42%;width:60px;height:60px;transform:translateY(-50%);opacity:.26;pointer-events:none}
+.sh-head .wm svg{width:100%;height:100%;animation:spin 40s linear infinite}
+.nut{display:inline-grid;place-items:center;width:38px;height:38px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff3c4,#d6a64a 60%,#b98a2b);color:#3a2a06;font:800 17px/1 var(--f-head);box-shadow:0 0 0 3px var(--brass-d),0 2px 0 3px rgba(0,0,0,.3)}
+.sh-head h2{font:800 clamp(17px,3vw,23px)/1.15 var(--f-head);letter-spacing:.04em;text-transform:uppercase;text-wrap:balance;outline:none}
+.sh-head .meta{margin-left:auto;margin-right:70px;font:600 12px/1.3 var(--f-ui);letter-spacing:.08em;text-transform:uppercase;opacity:.92}
+.sh-body{padding:clamp(16px,3vw,28px)}
+.lead{max-width:62ch;margin-bottom:12px;font-size:18px}
+.task{max-width:68ch;margin-bottom:14px;color:var(--ink-soft)}
+.rules{display:grid;gap:9px;margin:6px 0 22px;padding:0;list-style:none}
+.rules li{display:flex;gap:11px}
+.rules li::before{content:"";flex:none;width:12px;height:12px;margin-top:.5em;background:var(--orange);border:2px solid var(--wood-dd);border-radius:50%}
+.row{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;margin-top:14px}
+.sub{margin:16px 0 8px;font:700 15px/1 var(--f-head);letter-spacing:.1em;text-transform:uppercase;color:var(--c-deep)}
+
+/* ---------- объяснение ---------- */
+.ex{display:grid;gap:14px;margin:0 0 6px;padding:0;list-style:none}
+.ex>li{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;align-items:start;font-size:18px;line-height:1.6}
+.ex>li>.no{display:grid;place-items:center;width:30px;height:30px;margin-top:2px;background:var(--c);color:#fff;font:800 14px/1 var(--f-head);border-radius:50%}
+.ex>li.new{animation:rise .35s ease-out}
+.ex b.cm,.ex i b{color:var(--c-deep);font-size:1.15em}
+.ex u{text-decoration-thickness:3px;text-underline-offset:4px}
+.ex .box{display:block;margin-top:8px;padding:10px 14px;background:#fff;border:1px solid var(--line);border-left:5px solid var(--c);border-radius:8px}
+.ex .box span{display:block}
+
+/* ---------- выбор ответа ---------- */
+.prog{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px}
+.prog i{width:22px;height:7px;background:var(--line);border-radius:4px}
+.prog i.d{background:var(--c)}
+.prog i.c{background:var(--lamp);outline:2px solid var(--wood-dd)}
+.mc-p{margin:4px 0 6px;font-size:19px}
+.big{font:500 clamp(20px,3.8vw,28px)/1.4 var(--f-head)}
+.opts{display:flex;flex-direction:column;align-items:stretch;gap:10px;margin-top:8px}
+.opt{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;min-height:50px;padding:8px 18px;background:#fff;color:var(--ink);border:2px solid var(--c);border-radius:10px;font:600 clamp(17px,2.6vw,20px)/1.35 var(--f-head);box-shadow:0 3px 0 var(--c-deep)}
+.opt:hover:not(:disabled){background:var(--ct)}
+.opt:active:not(:disabled){transform:translateY(2px);box-shadow:0 1px 0 var(--c-deep)}
+.opt.no{opacity:.4;cursor:not-allowed;text-decoration:line-through;box-shadow:none}
+.opt.right{background:#d8f1e4;border-color:var(--ok);box-shadow:0 3px 0 var(--ok)}
+.opt:disabled{cursor:default}
+
+/* ---------- слова-бирки (отметить основу) ---------- */
+.sent{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:flex-end;margin:10px 0 14px;font:500 clamp(20px,3.2vw,28px)/1.4 var(--f-head)}
+.wg{display:inline-flex;align-items:flex-end}
+.wd{all:unset;box-sizing:border-box;position:relative;cursor:pointer;padding:4px 12px 6px;margin-bottom:18px;background:#fff;color:var(--ink);border:2px solid #cdb98a;border-radius:10px;font:inherit;box-shadow:0 3px 0 #dccb9f;transition:transform .08s,background .15s}
+.wd:hover:not(:disabled){background:var(--ct);border-color:var(--c)}
+.wd:active:not(:disabled){transform:translateY(2px);box-shadow:0 1px 0 #dccb9f}
+.wd:disabled{cursor:default}
+.wd.s{border-color:var(--mint);background:#e2fbf4;text-decoration:underline;text-decoration-thickness:3px;text-underline-offset:6px;text-decoration-color:var(--mint)}
+.wd.p{border-color:var(--amber);background:#fff5dc;text-decoration:underline double;text-decoration-thickness:2px;text-underline-offset:6px;text-decoration-color:var(--amber)}
+.wd.s::after,.wd.p::after{position:absolute;left:50%;top:100%;margin-top:3px;transform:translateX(-50%);font:700 10px/1 var(--f-ui);letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;text-decoration:none}
+.wd.s::after{content:"подлежащее";color:var(--mint)}
+.wd.p::after{content:"сказуемое";color:var(--amber)}
+.wd.good{box-shadow:0 0 0 3px rgba(23,147,95,.4),0 3px 0 #dccb9f}
+.wd.bad{box-shadow:0 0 0 3px rgba(216,67,58,.45),0 3px 0 #dccb9f;animation:shake .35s}
+.wd.hint{animation:pulse 1s ease-in-out 4}
+.pn{align-self:flex-end;margin:0 0 20px 2px;font-weight:500}
+.result{margin:8px 0 4px;padding:10px 14px;background:#fff;border:1px solid var(--line);border-left:6px solid var(--ok);border-radius:10px;font-size:17px}
+.note{margin:6px 0 2px;color:var(--ink-soft);font-size:15px}
+.kn-grp{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:6px}
+.kn-lb{min-width:110px;font:700 12px/1.2 var(--f-ui);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft)}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{all:unset;box-sizing:border-box;cursor:pointer;padding:6px 13px;background:#fff;border:2px solid var(--line);border-radius:10px;font:600 15px/1.2 var(--f-ui)}
+.seg button:hover:not(:disabled){border-color:var(--c)}
+.seg button.on{background:var(--c);border-color:var(--c-deep);color:#fff}
+.seg button:disabled{cursor:default}
+
+/* ---------- запятые: слова на странице и промежутки между ними ---------- */
+.sent2{margin:12px 0 14px;font:500 clamp(22px,3.4vw,30px)/2.5 var(--f-head);color:var(--ink)}
+.tx{display:inline;padding:0 .04em}
+.tx.s{text-decoration:underline;text-decoration-thickness:3px;text-underline-offset:6px;text-decoration-color:var(--mint)}
+.tx.p{text-decoration:underline double;text-decoration-thickness:2px;text-underline-offset:6px;text-decoration-color:var(--amber)}
+.gw{position:relative;display:inline-block;vertical-align:middle}
+.gp{all:unset;box-sizing:border-box;position:relative;cursor:pointer;display:inline-grid;place-items:center;width:22px;height:1.7em;margin:0 1px;border-radius:6px}
+.gp::before{content:"";position:absolute;left:50%;top:12%;bottom:12%;border-left:2px dashed #c4aa72;transform:translateX(-50%)}
+.gp:hover:not(:disabled){background:rgba(15,139,139,.14)}
+.gp:hover:not(:disabled)::before,.gp:focus-visible::before{border-left:3px solid var(--c)}
+.gp.has{width:auto;min-width:28px;margin:0 2px}
+.gp.has::before{display:none}
+.gp .sg{display:inline-grid;place-items:center;min-width:1.3em;height:1.3em;padding:0 .1em;background:var(--lamp);color:#3a2a06;border-radius:50%;font:800 .9em/1 var(--f-head);box-shadow:0 2px 0 #c58f00}
+.gp.good .sg{background:#cdeedd;color:#0e6b40;box-shadow:0 0 0 2px var(--ok)}
+.gp.bad .sg{background:#ffd9d6;color:#9d1f19;box-shadow:0 0 0 2px var(--bad);animation:shake .35s}
+.cm{color:var(--c-deep);font-weight:800}
+
+/* ---------- замена повтора ---------- */
+.edtext{margin:12px 0 14px;font:500 clamp(19px,2.8vw,25px)/2.3 var(--f-head)}
+.slw{position:relative;display:inline-block}
+.sl{all:unset;box-sizing:border-box;cursor:pointer;padding:1px 12px 3px;border-radius:8px;background:#ffe9a8;border:2px dashed var(--amber);color:#5a3a00;font:inherit;font-weight:700}
+.sl.set{background:#e3f5ea;border:2px solid var(--ok);color:var(--ink)}
+.sl.bad{background:#ffe3e0;border:2px solid var(--bad);animation:shake .35s}
+.sl:disabled{cursor:default}
+.sgm{position:absolute;z-index:8;top:calc(100% - 2px);left:0;display:flex;flex-wrap:wrap;gap:6px;max-width:300px;padding:6px;background:#fff;border:2px solid var(--c);border-radius:12px;box-shadow:0 12px 26px rgba(42,25,11,.35)}
+.sgm button{all:unset;box-sizing:border-box;cursor:pointer;display:grid;place-items:center;height:42px;padding:0 14px;background:var(--ct);border:2px solid var(--c);border-radius:10px;font:600 16px/1 var(--f-ui);color:var(--ink);white-space:nowrap}
+.sgm button:hover{background:var(--lamp)}
+
+/* ---------- финал ---------- */
+.found{display:grid;gap:10px;margin:0 0 14px;padding:0;list-style:none}
+.found li{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start;font-size:16px;line-height:1.55}
+.found .no{display:grid;place-items:center;width:28px;height:28px;margin-top:1px;background:var(--c);color:#fff;font:800 13px/1 var(--f-head);border-radius:50%}
+.hw{margin:14px 0;padding:12px 16px;background:#fff7e3;border:2px dashed var(--brass);border-radius:12px;font-size:16px}
+.hw b{color:var(--brass-d)}
+.stats-line{margin:6px 0 4px;font:500 15px/1.6 var(--f-mono)}
+.verdict{display:flex;justify-content:flex-end;margin:2px 0 18px}
+.stamp{display:inline-block;padding:.12em .35em;border:5px solid var(--bad);color:var(--bad);font:800 clamp(24px,5.4vw,42px)/1 var(--f-head);letter-spacing:.06em;text-transform:uppercase;transform:rotate(-7deg);opacity:.9;border-radius:6px}
+.stamp.in{animation:stampIn .55s cubic-bezier(.2,.9,.3,1.2) both}
+
+/* ---------- панель сообщений ---------- */
+.pa{display:flex;gap:14px;align-items:flex-start;margin-top:16px;padding:14px 18px;background:#2b3a2e;color:#f1f6ee;border:3px solid #7d9577;border-radius:12px;box-shadow:0 5px 0 #17201a}
+.pa .led{flex:none;width:16px;height:16px;margin-top:5px;border-radius:50%;background:#ffc233;box-shadow:0 0 0 3px rgba(255,194,51,.25),0 0 12px 2px rgba(255,194,51,.7)}
+.pa .lb{display:block;margin-bottom:2px;font:700 12px/1.2 var(--f-head);letter-spacing:.14em;text-transform:uppercase;color:#ffc233}
+.pa .tx2{font-size:16.5px;line-height:1.5}
+.pa.ok{border-color:#3fd69a}
+.pa.ok .led{background:#3fd69a;box-shadow:0 0 0 3px rgba(63,214,154,.25),0 0 12px 2px rgba(63,214,154,.7)}
+.pa.ok .lb{color:#3fd69a}
+.pa.bad{border-color:#ff7b6e}
+.pa.bad .led{background:#ff6b5e;box-shadow:0 0 0 3px rgba(255,107,94,.25),0 0 12px 2px rgba(255,107,94,.7)}
+.pa.bad .lb{color:#ff9a8f}
+.pa.pop{animation:pop .3s ease-out}
+
+.confetti{position:absolute;inset:0;z-index:5;overflow:hidden;pointer-events:none}
+.confetti i{position:absolute;top:-16px;width:9px;height:15px;border-radius:2px;opacity:0;animation:cf 2.2s ease-in forwards}
+@keyframes cf{0%{opacity:1;transform:translate(0,0) rotate(0)}100%{opacity:0;transform:translate(var(--dx),460px) rotate(var(--r))}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes popin{0%{transform:scale(.6);opacity:.2}60%{transform:scale(1.12)}100%{transform:none;opacity:1}}
+@keyframes shake{20%{transform:translateX(-4px)}40%{transform:translateX(4px)}60%{transform:translateX(-3px)}80%{transform:translateX(3px)}}
+@keyframes pulse{50%{box-shadow:0 0 0 6px rgba(255,194,51,.6)}}
+@keyframes pop{from{transform:scale(.97);opacity:.6}to{transform:none;opacity:1}}
+@keyframes rise{from{transform:translateY(8px);opacity:0}to{transform:none;opacity:1}}
+@keyframes stampIn{0%{transform:rotate(-14deg) scale(2.2);opacity:0}60%{transform:rotate(-7deg) scale(.96);opacity:1}100%{transform:rotate(-7deg) scale(1);opacity:.9}}
+
+/* ---------- стрелки и список слайдов ---------- */
+.nav{position:fixed;z-index:15;left:50%;bottom:max(12px,env(safe-area-inset-bottom));transform:translateX(-50%);display:flex;align-items:stretch;width:min(560px,calc(100% - 2*var(--gutter)));background:linear-gradient(180deg,#b27846,#8c5a2c);border:3px solid var(--wood-dd);border-radius:14px;box-shadow:0 5px 0 #2a190b,0 14px 28px rgba(42,25,11,.4);overflow:hidden}
+.nv{all:unset;box-sizing:border-box;cursor:pointer;display:grid;place-items:center;flex:none;width:64px;min-height:58px;color:#ffe9a8}
+.nv svg{width:30px;height:30px;fill:none;stroke:currentColor;stroke-width:3.2;stroke-linecap:round;stroke-linejoin:round}
+.nv:hover:not(:disabled){background:rgba(0,0,0,.14)}
+.nv:active:not(:disabled){transform:translateY(2px)}
+.nv:disabled{opacity:.35;cursor:default}
+.nv-mid{all:unset;box-sizing:border-box;cursor:pointer;flex:1;min-width:0;display:grid;align-content:center;gap:3px;padding:6px 10px;text-align:center;border-inline:2px solid rgba(61,36,18,.55);color:#ffeec4;font:600 12px/1.25 var(--f-ui);letter-spacing:.08em;text-transform:uppercase}
+.nv-mid:hover{background:rgba(0,0,0,.14)}
+.nv-mid b{color:#fff;font:800 17px/1.2 var(--f-head);letter-spacing:.14em}
+.nv-mid span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nv:focus-visible,.nv-mid:focus-visible{outline:3px solid #fff;outline-offset:-4px}
+.toc{position:fixed;z-index:16;left:50%;bottom:calc(max(12px,env(safe-area-inset-bottom)) + 80px);transform:translateX(-50%);width:min(560px,calc(100% - 2*var(--gutter)));max-height:min(62vh,540px);overflow:auto;padding:4px 12px 12px;background:var(--paper);color:var(--ink);border:3px solid var(--c);border-radius:14px;box-shadow:0 14px 36px rgba(42,25,11,.4)}
+.toc h3{display:flex;align-items:center;gap:8px;margin:12px 0 5px;font:700 12.5px/1.2 var(--f-head);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft)}
+.toc h3 i{flex:none;width:12px;height:12px;border-radius:50%;background:var(--rc)}
+.toc button{all:unset;box-sizing:border-box;cursor:pointer;display:flex;gap:10px;align-items:baseline;width:100%;padding:7px 10px;border-radius:8px;font:400 16px/1.3 var(--f-ui)}
+.toc button:hover{background:var(--ct)}
+.toc button.cur{background:var(--lamp);color:#3a2a06;font-weight:700}
+.toc button:focus-visible{outline:3px solid var(--focus);outline-offset:-3px}
+.toc .no{flex:none;min-width:2ch;font:500 12.5px/1.3 var(--f-mono);color:var(--ink-soft)}
+.toc button.cur .no{color:#3a2a06}
+
+@media (max-width:640px){
+  .nv{width:56px}
+  .shop{--H:clamp(236px,66vw,272px);border-radius:14px}
+  .sc-text{max-width:44%}
+  .sign{padding:6px 10px 7px}
+  .sign h1{font-size:clamp(15px,4.4vw,19px);letter-spacing:0}
+  .gp{width:28px}
+  .gp.has{min-width:32px}
+  .sgm button{height:46px}
+  .ruins,.crate{display:none}
+  .bubble{top:6%;max-width:110px;font-size:12px}
+  .sh-head .meta{margin-left:0;margin-right:0;width:100%}
+  .kn-lb{min-width:100%}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="shop" id="shop" aria-label="Лагерь экспедиции">
+    <div class="sun" aria-hidden="true"></div>
+    <i class="cl c1" aria-hidden="true"></i><i class="cl c2" aria-hidden="true"></i>
+    <svg class="dn far" viewBox="0 0 600 100" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path d="M0 62Q80 22 170 56T340 52T520 40T600 56V100H0Z" fill="#edd49e"/></svg>
+    <svg class="ruins" viewBox="0 0 160 90" aria-hidden="true" focusable="false">
+      <path d="M10 88H110V74H98V60H86V46H74V34H46V46H34V60H22V74H10Z" fill="#cba56a"/>
+      <path d="M60 34H74V46H86V60H98V74H110V88H60Z" fill="#b8905a"/>
+      <rect x="122" y="52" width="9" height="36" fill="#bd9558"/><rect x="119" y="48" width="15" height="6" fill="#c9a26a"/>
+      <rect x="140" y="66" width="9" height="22" fill="#b8905a"/><path d="M137 64h15l-3 5h-9z" fill="#c9a26a"/>
+    </svg>
+    <svg class="dn mid" viewBox="0 0 600 100" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path d="M0 70Q100 30 210 62T420 58T600 48V100H0Z" fill="#dcb26f"/></svg>
+    <svg class="palm" viewBox="0 0 64 92" aria-hidden="true" focusable="false">
+      <path d="M32 90C30 72 36 56 33 38" fill="none" stroke="#7a5230" stroke-width="5" stroke-linecap="round"/>
+      <g fill="none" stroke="#3f8f3a" stroke-width="4.5" stroke-linecap="round">
+        <path d="M33 38C20 28 9 31 2 42"/><path d="M33 38C24 22 13 20 5 24"/><path d="M33 38C36 22 46 15 58 18"/><path d="M33 38C46 29 56 33 62 44"/><path d="M33 38C31 26 31 18 33 8"/>
+      </g>
+      <circle cx="30" cy="42" r="3" fill="#8a4b1c"/><circle cx="36" cy="43" r="3" fill="#8a4b1c"/>
+    </svg>
+    <svg class="tent" viewBox="0 0 130 104" aria-hidden="true" focusable="false">
+      <path d="M65 12V2" stroke="#4d2e16" stroke-width="2.5" stroke-linecap="round"/><path d="M65 2L90 8L65 15Z" fill="#1f8a8a"/>
+      <path d="M8 96L65 12L122 96Z" fill="#f4ead2" stroke="#8a6a3a" stroke-width="2.5" stroke-linejoin="round"/>
+      <path d="M8 96L65 12L74 26L30 96Z" fill="#e8d9b4"/>
+      <path d="M50 96L65 44L80 96Z" fill="#3a2a1a"/>
+      <path d="M50 96L65 44L58 96Z" fill="#5a4630"/>
+      <path d="M8 96H122V88H12Z" fill="#b5532c"/>
+    </svg>
+    <i class="crate" aria-hidden="true"></i>
+    <svg class="dn near" viewBox="0 0 600 100" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path d="M0 76Q120 48 260 74T600 66V100H0Z" fill="#c99650"/><path d="M0 76Q120 48 260 74T600 66" fill="none" stroke="#e8c88a" stroke-width="3" opacity=".7"/></svg>
+    <div class="case" id="case" aria-hidden="true">
+      <div class="rack">
+        <span class="it"><svg viewBox="0 0 40 40"><path d="M15 6h10v5c7 3 9 9 7 15-1 5-5 9-12 9s-11-4-12-9c-2-6 0-12 7-15z" fill="#c0653a" stroke="#6b3317" stroke-width="2"/><path d="M12 22h16" stroke="#f1d29a" stroke-width="3"/></svg></span>
+        <span class="it"><svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="14" fill="#e6b93a" stroke="#8a6416" stroke-width="2"/><circle cx="20" cy="20" r="9" fill="none" stroke="#8a6416" stroke-width="2"/><path d="M20 14v12M16 20h8" stroke="#8a6416" stroke-width="2"/></svg></span>
+        <span class="it"><svg viewBox="0 0 40 40"><path d="M20 4l10 20-10 12-10-12z" fill="#7d8a93" stroke="#3a4650" stroke-width="2" stroke-linejoin="round"/><path d="M20 10v22" stroke="#3a4650" stroke-width="2"/></svg></span>
+        <span class="it"><svg viewBox="0 0 40 40"><rect x="9" y="9" width="23" height="22" rx="3" fill="#f3e3b3" stroke="#8a6b30" stroke-width="2"/><path d="M13 15h15M13 20h15M13 25h9" stroke="#8a6b30" stroke-width="2"/><circle cx="9" cy="20" r="4" fill="#d9bf7a" stroke="#8a6b30" stroke-width="2"/></svg></span>
+        <span class="it"><svg viewBox="0 0 40 40"><ellipse cx="20" cy="23" rx="9" ry="12" fill="#2b8a8a" stroke="#0e4f4f" stroke-width="2"/><path d="M20 12v22M11 19l-6-3M11 25l-6 3M29 19l6-3M29 25l6 3" stroke="#0e4f4f" stroke-width="2" stroke-linecap="round"/><circle cx="20" cy="9" r="4" fill="#2b8a8a" stroke="#0e4f4f" stroke-width="2"/></svg></span>
+        <span class="it"><svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="14" fill="#d6a64a" stroke="#8a6416" stroke-width="2"/><polygon points="20,10 28,17 24,28 16,28 12,17" fill="#c23a5a" stroke="#6e1a2e" stroke-width="2"/></svg></span>
+        <span class="it"><svg viewBox="0 0 40 40"><path d="M5 25c4-9 19-9 25 0l5-5c-1 9-6 15-17 15-9 0-13-4-13-10z" fill="#c8a24c" stroke="#7a5c18" stroke-width="2" stroke-linejoin="round"/><path d="M30 22c3-3 5-6 4-10" fill="none" stroke="#7a5c18" stroke-width="2"/></svg></span>
+        <span class="it"><svg viewBox="0 0 40 40"><circle cx="13" cy="14" r="7" fill="none" stroke="#6a5a47" stroke-width="4"/><path d="M18 19l14 14M26 27l4-4M30 31l4-4" stroke="#6a5a47" stroke-width="4" stroke-linecap="round"/></svg></span>
+        <span class="it"><svg viewBox="0 0 40 40"><path d="M8 7h24v13c0 9-6 14-12 14S8 29 8 20z" fill="#e0c26a" stroke="#7a5c18" stroke-width="2"/><path d="M13 17h5M22 17h5" stroke="#3a2a10" stroke-width="3" stroke-linecap="round"/><path d="M15 26q5 4 10 0" fill="none" stroke="#3a2a10" stroke-width="2"/></svg></span>
+        <span class="it"><svg viewBox="0 0 40 40"><circle cx="20" cy="24" r="10" fill="none" stroke="#d6a64a" stroke-width="5"/><polygon points="20,4 25,10 20,16 15,10" fill="#4bb5d6" stroke="#1f6a86" stroke-width="2"/></svg></span>
+        <span class="it"><svg viewBox="0 0 40 40"><rect x="8" y="6" width="24" height="28" rx="3" fill="#c9a074" stroke="#6b4a2b" stroke-width="2"/><path d="M12 13h16M12 19h16M12 25h10" stroke="#6b4a2b" stroke-width="2" stroke-dasharray="3 2"/></svg></span>
+        <span class="it"><svg viewBox="0 0 40 40"><path d="M6 31l2-17 8 8 4-10 4 10 8-8 2 17z" fill="#e6b93a" stroke="#8a6416" stroke-width="2" stroke-linejoin="round"/><circle cx="20" cy="26" r="2.5" fill="#c23a5a"/></svg></span>
+      </div>
+      <span class="cap">Находки</span>
+    </div>
+    <div class="bubble" id="bubble" aria-hidden="true">Дневник отправлен в музей!</div>
+    <div class="sc-text">
+      <div class="sc-row"><span class="plate">ЭКСПЕДИЦИЯ</span><span class="sc-stats" id="stats"></span></div>
+      <div class="sign"><h1>Дневник экспедиции</h1></div>
+    </div>
+  </header>
+  <div class="now" id="now"></div>
+  <main>
+    <article class="sheet" id="stage"></article>
+    <div class="pa" id="pa" role="status" aria-live="polite" hidden></div>
+  </main>
+</div>
+<nav class="nav" id="nav" aria-label="Переход по слайдам">
+  <button type="button" class="nv" id="navPrev" data-act="prev" aria-label="Предыдущий слайд" title="Назад (стрелка влево)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 4 7 12l8 8"/></svg></button>
+  <button type="button" class="nv-mid" id="navMid" data-act="toc" aria-expanded="false" aria-controls="toc" title="Список слайдов"><b id="navNo"></b><span id="navTitle"></span></button>
+  <button type="button" class="nv" id="navNext" data-act="next" aria-label="Следующий слайд" title="Дальше (стрелка вправо)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 4 8 8-8 8"/></svg></button>
+</nav>
+<div class="toc" id="toc" aria-label="Список слайдов" hidden></div>
+
+<script>
+(function(){
+'use strict';
+
+/* ======================= помощники ======================= */
+const $=(s,r)=>(r||document).querySelector(s);
+const $$=(s,r)=>Array.prototype.slice.call((r||document).querySelectorAll(s));
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+const reduceMotion=()=>window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+/* «Когда начался дождь, мы…» -> слова и знак, который стоит сразу после слова */
+const tokens=s=>s.split(/\s+/).filter(Boolean).map(x=>{const m=x.match(/^(.*?)([.,!?;:]*)$/);return {w:m[1],p:m[2]};});
+/* для заданий с запятыми: в строке запятые стоят правильно, слова приходят без них; exp — после каких слов нужна запятая */
+function parseComma(s){
+  const words=[],exp={};
+  s.split(/\s+/).filter(Boolean).forEach((x,i)=>{
+    const m=x.match(/^(.*?)(,?)([.!?]?)$/);
+    words.push({w:m[1],end:m[3]});
+    if(m[2])exp[i]=1;
+  });
+  return {words,exp};
+}
+const CI=(s,subj,pred,why,o)=>{const P=parseComma(s);return Object.assign({s,subj,pred,why,_p:P,trap:!Object.keys(P.exp).length},o||{});};
+
+const BLOCKS={1:'Разминка',2:'Простые и сложные',3:'Запятая между частями',4:'Союзы',5:'Склей и не повторяйся'};
+const BC=['#0f8b8b','#b5532c','#2b5aa0','#5a7d2b','#8a3f76'];
+
+/* ======================= содержание урока =======================
+   Типы шагов: explain (карточки с пунктами), mc (выбор ответа), bases (отметить основы и выбрать простое или сложное),
+   commas (поставить запятую между словами), edit (заменить повторяющееся слово). */
+const STEPS=[
+ {id:'warm',t:'explain',b:1,all:1,title:'Расскажи без «потом»',go:'Дальше',meta:'устно',points:[
+   'Расскажите, как прошёл вчерашний вечер. Слова <b>«потом»</b> и <b>«и»</b> можно сказать не больше двух раз.',
+   'Помогут слова: <i>когда, пока, после того как, сначала, затем, а, но, потому что</i>. Послушайте себя: где рассказ звучит скучно, потому что слово повторяется?']},
+
+ {id:'sc',t:'explain',b:2,title:'Одна основа или две',go:'К заданию',points:[
+   'Вспомним. <b>Простое</b> предложение — одна основа. <b>Сложное</b> — две основы или больше: <i>Когда туман рассеялся, капитан увидел берег.</i> Основы: <u>туман рассеялся</u> и <u>капитан увидел</u>.',
+   '<b>Ловушка.</b> Подлежащее одно, а сказуемых два: основа одна, предложение простое. <i>Археолог взял кисточку и очистил находку.</i>',
+   'Сегодня разберём главное в сложных предложениях: <b>что ставится между их частями</b>. Точка там не нужна, ведь это одна мысль из двух частей.']},
+
+ {id:'count',t:'bases',b:2,type:1,title:'Сколько основ?',
+  intro:'Нажмите на слово один раз, чтобы отметить подлежащее, и ещё раз, чтобы отметить сказуемое. Потом выберите: предложение простое или сложное.',items:[
+   {s:'Археолог осторожно очистил старый сосуд.',subj:[0],pred:[2],type:'простое',why:'Одна основа: археолог очистил. Простое предложение.'},
+   {s:'Когда начался дождь, мы спрятались под навес.',subj:[2,3],pred:[1,4],type:'сложное',why:'Две основы: дождь начался и мы спрятались. Сложное предложение.'},
+   {s:'Мы нашли воду и разбили лагерь.',subj:[0],pred:[1,4],type:'простое',trapType:'Подлежащее одно: «мы». Сказуемых два, но основа одна, поэтому предложение простое.',why:'Одно подлежащее и два сказуемых образуют одну основу: предложение простое.'},
+   {s:'Ветер стих, а песок всё ещё летел.',subj:[0,3],pred:[1,6],type:'сложное',why:'Две основы: ветер стих и песок летел. Сложное предложение.'},
+   {s:'Над лагерем взошла яркая луна.',subj:[4],pred:[2],type:'простое',why:'Одна основа: луна взошла. Подлежащее стоит после сказуемого. Простое предложение.'},
+   {s:'Мы знали, что вода скоро появится.',subj:[0,3],pred:[1,5],type:'сложное',why:'Две основы: мы знали и вода появится. Сложное предложение.'}
+ ]},
+
+ {id:'cr',t:'explain',b:3,title:'Запятая на границе',go:'К заданию',points:[
+   'В сложном предложении две части, и у каждой своя основа. <b>Между частями ставится запятая</b>: она показывает границу.',
+   'Как найти границу: <b>сначала найдите основы</b>, потом посмотрите, где кончается первая часть и начинается вторая. Запятая стоит между ними. Слова <i>а, но, и</i> начинают вторую часть, поэтому запятая стоит перед ними. Союза может и не быть.<span class="box"><span>Мы устали<b>,</b> но проводник вёл нас дальше.</span><span>Ветер стих<b>,</b> а песок ещё летел.</span><span>Наступила ночь<b>,</b> в лагере всё затихло.</span></span>',
+   '<b>Запомните ловушку.</b> Если основа одна (одно подлежащее и два сказуемых), запятая не нужна: <i>Археолог взял кисточку и начал работу.</i> А если основ две, запятая нужна: <i>Археолог взял кисточку<b>,</b> и помощник включил фонарь.</i>']},
+
+ {id:'cmA',t:'commas',b:3,title:'Поставь запятую',
+  intro:'Нажимайте в промежутках между словами, чтобы поставить запятую. Если запятая не нужна, нажмите «Запятая не нужна». Потом нажмите «Проверить».',items:[
+   CI('Мы устали, но проводник вёл нас дальше.',[0,3],[1,4],'Две основы: «мы устали» и «проводник вёл». Граница между ними, запятая стоит перед «но».'),
+   CI('Ветер стих, а песок ещё летел.',[0,3],[1,5],'Две основы: «ветер стих» и «песок летел». Запятая стоит перед «а».'),
+   CI('Наступила ночь, в лагере всё затихло.',[1,4],[0,5],'Две основы: «наступила ночь» и «всё затихло». Союза нет, но запятая между основами всё равно нужна.'),
+   CI('Мы копали до вечера, а помощник просеивал песок.',[0,5],[1,6],'Две основы: «мы копали» и «помощник просеивал». Запятая стоит перед «а».'),
+   CI('Археолог взял кисточку и начал работу.',[0],[1,4],'Подлежащее одно: «археолог». Сказуемых два, но основа одна, поэтому запятая не нужна.',{one:'подлежащее «археолог» одно, а сказуемых два'}),
+   CI('Археолог взял кисточку, и помощник включил фонарь.',[0,4],[1,5],'Две основы: «археолог взял» и «помощник включил». Запятая стоит перед «и».')
+ ]},
+
+ {id:'cj',t:'explain',b:4,title:'Слова-союзы',go:'К заданию',points:[
+   'Слова <b>когда, что, потому что, если</b> — это <b>союзы</b>: они соединяют части сложного предложения. Союз стоит в начале своей части.',
+   'Запятая по-прежнему стоит <b>между основами</b>. Если часть с союзом идёт <b>второй</b>, запятая оказывается перед союзом:<span class="box"><span>Костёр погас<b>,</b> потому что пошёл дождь.</span><span>Проводник сказал<b>,</b> что буря скоро утихнет.</span><span>Мы спрятались под навес<b>,</b> когда начался дождь.</span></span>',
+   'Если часть с союзом идёт <b>первой</b>, запятая оказывается после всей этой части:<span class="box"><span>Когда начался дождь<b>,</b> мы спрятались под навес.</span><span>Если проводник найдёт воду<b>,</b> мы останемся здесь.</span></span>',
+   '<b>«Потому что»</b> — один союз из двух слов: запятая стоит перед ним целиком, а внутри не нужна. И помните: если основа одна, запятой нет, даже со словом «когда»: <i>Когда начнётся дождь?</i>']},
+
+ {id:'cmB',t:'commas',b:4,title:'Запятая рядом с союзом',
+  intro:'Найдите границу между основами и поставьте запятую. Не забывайте: слово «когда» не всегда требует запятой.',items:[
+   CI('Когда начался дождь, мы спрятались под навес.',[2,3],[1,4],'Две основы: «дождь начался» и «мы спрятались». Часть с «когда» стоит первой, поэтому запятая после неё.'),
+   CI('Мы спрятались под навес, когда начался дождь.',[0,6],[1,5],'Основы те же, но часть с «когда» теперь вторая. Запятая стоит перед «когда».'),
+   CI('Проводник сказал, что буря скоро утихнет.',[0,3],[1,5],'Две основы: «проводник сказал» и «буря утихнет». Запятая стоит перед «что».'),
+   CI('Костёр погас, потому что пошёл дождь.',[0,5],[1,4],'Две основы: «костёр погас» и «дождь пошёл». «Потому что» — один союз, запятая стоит перед ним.',{uni:[2]}),
+   CI('Если проводник найдёт воду, мы останемся здесь.',[1,4],[2,5],'Две основы: «проводник найдёт» и «мы останемся». Часть с «если» первая, запятая после неё.'),
+   CI('Когда начнётся дождь?',[2],[1],'Основа одна: «дождь начнётся». Второй основы нет, поэтому запятая не нужна, хотя в предложении есть слово «когда».',{one:'«дождь начнётся» — единственная основа'})
+ ]},
+
+ {id:'join',t:'mc',b:5,title:'Выбери лучший вариант',intro:'Соедините два коротких предложения так, чтобы слова не повторялись и запятые стояли правильно.',items:[
+   {p:'<span class="big">Археолог взял кисточку. Археолог очистил находку.</span>',o:[
+     {t:'Археолог взял кисточку и очистил находку.',ok:1,why:'Верно. Подлежащее одно, поэтому второе «археолог» не нужно. Основа одна, запятая не нужна.'},
+     {t:'Археолог взял кисточку, археолог очистил находку.',why:'Повтор остался: «археолог» стоит дважды. Лучше назвать его один раз.'},
+     {t:'Археолог взял кисточку, и он очистил находку.',why:'Запятая здесь правильная, но «он» снова повторяет подлежащее. Проще убрать его: «Археолог взял кисточку и очистил находку».'}]},
+   {p:'<span class="big">Мы нашли сосуд. Сосуд был старым.</span>',o:[
+     {t:'Мы нашли старый сосуд.',ok:1,why:'Верно. Второе предложение превратилось в слово «старый», и «сосуд» больше не повторяется.'},
+     {t:'Мы нашли сосуд, сосуд был старым.',why:'Запятая не убирает повтор: «сосуд» всё равно стоит дважды.'},
+     {t:'Мы нашли сосуд и сосуд был старым.',why:'Повтор остался, а между двумя основами не хватает запятой.'}]},
+   {p:'<span class="big">Поднялся ветер. Мы спрятались в палатке.</span>',o:[
+     {t:'Когда поднялся ветер, мы спрятались в палатке.',ok:1,why:'Верно. Два предложения стали одним сложным: часть с «когда» первая, запятая после неё.'},
+     {t:'Поднялся ветер мы спрятались в палатке.',why:'Между двумя основами нужна запятая, а здесь её нет.'},
+     {t:'Мы спрятались в палатке, поднялся ветер.',why:'Запятая есть, но связь событий потерялась: что было сначала? Союз «когда» делает её понятной.'}]}
+ ]},
+
+ {id:'dup',t:'edit',b:5,title:'Найди повтор',
+  intro:'В записи дневника слово «потом» стоит четыре раза подряд. Нажмите на каждое «Потом» и выберите замену. Все замены должны быть разными.',
+  parts:['Мы пришли к раскопу. ',{slot:0,w:'Потом'},' мы взяли кисточки. ',{slot:1,w:'Потом'},' мы начали работать. ',{slot:2,w:'Потом'},' мы нашли вазу. ',{slot:3,w:'Потом'},' мы сфотографировали находку.'],
+  slots:[
+   {o:['Потом','Сначала','Затем','Наконец'],ok:['Сначала','Затем'],bad:{'Наконец':'«Наконец» говорят о последнем действии, а здесь работа только начинается.'}},
+   {o:['Потом','Затем','Вскоре','Через час'],ok:['Затем','Вскоре','Через час']},
+   {o:['Потом','Вскоре','Через час','Сначала'],ok:['Вскоре','Через час'],bad:{'Сначала':'«Сначала» ставят в начале рассказа, а здесь событие в середине.'}},
+   {o:['Потом','Наконец','Затем','Сначала'],ok:['Наконец','Затем'],bad:{'Сначала':'«Сначала» здесь не подходит: это последнее действие.'}}
+  ]}
+];
+
+/* ======================= значки ======================= */
+const COMPASS='<svg viewBox="0 0 64 64" fill="none" stroke="#fff" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><circle cx="32" cy="32" r="26"/><circle cx="32" cy="32" r="21" stroke-dasharray="2 5"/><path d="M32 12l6 20-6 20-6-20z"/><path d="M12 32h8M44 32h8M32 6v4M32 54v4"/></svg>';
+const LED='<span class="led" aria-hidden="true"></span>';
+
+/* ======================= состояние ======================= */
+let S;
+const newState=()=>({phase:'brief',pi:0,mistakes:0,hints:3,msg:null,refocus:null,rev:1,seen:{},mc:null,bs:null,cm:null,ed:null});
+const step=()=>STEPS[S.pi];
+const mist=()=>{S.mistakes++;paintStats();};
+
+/* ======================= сообщения ======================= */
+const LABEL={info:'Внимание',ok:'Верно',bad:'Не то'};
+function paintPA(){
+  const el=$('#pa');
+  if(!S.msg){el.hidden=true;el.innerHTML='';return;}
+  el.hidden=false;
+  el.className='pa '+S.msg.kind;
+  el.innerHTML=`${LED}<div class="tx2"><span class="lb">${LABEL[S.msg.kind]}</span>${S.msg.html}</div>`;
+  el.classList.remove('pop');void el.offsetWidth;el.classList.add('pop');
+}
+function nudge(){
+  const el=$('#pa');
+  if(el.hidden)return;
+  const r=el.getBoundingClientRect(),behavior=reduceMotion()?'auto':'smooth';
+  if(r.bottom>window.innerHeight-92)window.scrollBy({top:r.bottom-window.innerHeight+104,behavior});
+  else if(r.top<0)window.scrollBy({top:r.top-16,behavior});
+}
+function say(kind,html){S.msg={kind,html};paintPA();setTimeout(nudge,0);}
+function paintStats(){$('#stats').textContent=`Ошибки ${S.mistakes} · Подсказки ${S.hints}`;}
+
+/* ======================= экраны ======================= */
+const head=(title,meta)=>`<div class="sh-head"><span class="nut">${S.pi+1}</span><h2 data-h tabindex="-1">${title}</h2><span class="meta">${meta}</span><span class="wm">${COMPASS}</span></div>`;
+const V={};
+
+V.brief=()=>`
+<div class="sh-head hero"><span class="nut">№</span><h2 data-h tabindex="-1">Дневник экспедиции</h2><span class="meta">лагерь археологов</span><span class="wm">${COMPASS}</span></div>
+<div class="sh-body">
+<p class="lead">Археологи нашли в пустыне засыпанный песком город. До утра нужно привести в порядок полевой дневник и отправить его в музей. Вы секретарь экспедиции.</p>
+<p class="lead">В дневнике предложения «слиплись», не хватает запятых, а слова слишком часто повторяются. Починим всё по правилам.</p>
+<ul class="rules"><li>Сначала объяснение, потом задания.</li><li>За каждое выполненное задание в витрине появляется находка.</li><li>Ошибки не страшны: они попадают в журнал, подсказок три. Стрелки внизу переключают слайды.</li></ul>
+<div class="row"><button type="button" class="btn btn-go" data-act="start" data-af>Открыть дневник</button></div>
+</div>`;
+
+V.explain=st=>{
+  const total=st.points.length,n=st.all?total:Math.min(S.rev,total),last=n>=total;
+  const list=st.points.slice(0,n).map((p,i)=>`<li${i===n-1&&n>1&&!st.all?' class="new"':''}><span class="no">${i+1}</span><div>${p}</div></li>`).join('');
+  const btn=last?`<button type="button" class="btn btn-go" data-act="exdone" data-af>${st.go||'К заданию'}</button>`:`<button type="button" class="btn btn-go" data-act="exmore" data-af>Дальше</button>`;
+  return `${head(st.title,st.meta||'объяснение')}<div class="sh-body"><ol class="ex">${list}</ol><div class="row">${btn}</div></div>`;
+};
+
+V.mc=st=>{
+  const m=S.mc,it=st.items[m.i],total=st.items.length;
+  const dots=`<div class="prog" aria-hidden="true">${st.items.map((_,i)=>`<i class="${i<m.i?'d':i===m.i?'c':''}"></i>`).join('')}</div>`;
+  let af=false;
+  const opts=m.ord.map(k=>{
+    const o=it.o[k],dis=m.no.includes(k)||m.lock;
+    const a=!dis&&!af?(af=true,' data-af'):'';
+    const cls=['opt'];
+    if(m.no.includes(k))cls.push('no');
+    if(m.lock&&o.ok)cls.push('right');
+    return `<button type="button" class="${cls.join(' ')}" data-act="mc" data-k="${k}"${dis?' disabled':''}${a}>${esc(o.t)}</button>`;
+  }).join('');
+  const ctl=m.lock?`<div class="row"><button type="button" class="btn btn-go" data-act="mcnext" data-af>${m.i===total-1?'Дальше':'Следующее'}</button></div>`:'';
+  return `${head(st.title,'задание')}<div class="sh-body">${st.intro?`<p class="task">${st.intro}</p>`:''}${dots}<p class="mc-p">${it.p}</p><div class="opts">${opts}</div>${ctl}</div>`;
+};
+
+function chipsHtml(toks,marks,flags,hint,dis){
+  return toks.map((t,i)=>{
+    const m=marks[i]||0,cls=['wd'];
+    if(m===1)cls.push('s');
+    if(m===2)cls.push('p');
+    if(flags&&flags[i])cls.push(flags[i]);
+    if(hint&&hint.includes(i))cls.push('hint');
+    return `<span class="wg"><button type="button" class="${cls.join(' ')}" data-act="wd" data-i="${i}"${dis?' disabled':''}>${esc(t.w)}</button>${t.p?`<span class="pn">${esc(t.p)}</span>`:''}</span>`;
+  }).join(' ');
+}
+
+V.bases=st=>{
+  const B=S.bs,it=st.items[B.i],toks=tokens(it.s),total=st.items.length;
+  const dots=`<div class="prog" aria-hidden="true">${st.items.map((_,i)=>`<i class="${i<B.i?'d':i===B.i?'c':''}"></i>`).join('')}</div>`;
+  const chips=chipsHtml(toks,B.marks,B.flags,B.hintIdx,B.ok);
+  const typ=st.type?`<div class="kn-grp"><span class="kn-lb">Предложение</span><div class="seg">${['простое','сложное'].map(v=>`<button type="button" class="${B.typ===v?'on':''}" data-act="typ" data-v="${v}"${B.ok?' disabled':''}>${v}</button>`).join('')}</div></div>`:'';
+  const res=B.ok?`<div class="result">${esc(it.why)}</div>`:'';
+  const ctl=B.ok?`<div class="row"><button type="button" class="btn btn-go" data-act="bsnext" data-af>${B.i===total-1?'Дальше':'Следующее'}</button></div>`
+    :`<div class="row"><button type="button" class="btn btn-go" data-act="bscheck">Проверить</button><button type="button" class="btn btn-line sm" data-act="bshint"${S.hints<1?' disabled':''}>Подсказка</button><button type="button" class="btn btn-line sm" data-act="bsreset">Сбросить</button></div>`;
+  return `${head(st.title,'задание')}<div class="sh-body"><p class="task">${st.intro}</p>${dots}<div class="sent" aria-label="Предложение">${chips}</div>${typ}${res}${ctl}</div>`;
+};
+
+V.commas=st=>{
+  const C=S.cm,it=st.items[C.i],P=it._p,total=st.items.length,n=P.words.length;
+  const dots=`<div class="prog" aria-hidden="true">${st.items.map((_,i)=>`<i class="${i<C.i?'d':i===C.i?'c':''}"></i>`).join('')}</div>`;
+  const mark=i=>it.subj.indexOf(i)>=0?1:(it.pred.indexOf(i)>=0?2:0);
+  const show=C.ok||C.hint;
+  const h=P.words.map((x,i)=>{
+    const m=show?mark(i):0;
+    const cls='tx'+(m===1?' s':m===2?' p':'');
+    let after='';
+    if(i<n-1){
+      if(C.ok)after=P.exp[i]?'<span class="cm">,</span>':'';
+      else after=`<span class="gw"><button type="button" class="gp${C.cuts[i]?' has':''}${C.flags[i]?' '+C.flags[i]:''}" data-act="cgap" data-i="${i}" aria-label="Промежуток после слова «${esc(x.w)}»${C.cuts[i]?', стоит запятая':''}">${C.cuts[i]?'<span class="sg">,</span>':''}</button></span>`;
+    }
+    return `<span class="${cls}">${esc(x.w)}</span>${x.end?`<span>${x.end}</span>`:''}${after} `;
+  }).join('');
+  const res=C.ok?`<div class="result">${esc(it.why)}</div>`:'';
+  const ctl=C.ok?`<div class="row"><button type="button" class="btn btn-go" data-act="cmnext" data-af>${C.i===total-1?'Дальше':'Следующее'}</button></div>`
+    :`<div class="row"><button type="button" class="btn btn-go" data-act="cmcheck">Проверить</button><button type="button" class="btn btn-line sm" data-act="cmno">Запятая не нужна</button><button type="button" class="btn btn-line sm" data-act="cmhint"${S.hints<1||C.hint?' disabled':''}>Подсказка</button><button type="button" class="btn btn-line sm" data-act="cmreset">Сбросить</button></div>`;
+  return `${head(st.title,'запятые')}<div class="sh-body"><p class="task">${st.intro}</p>${dots}<div class="sent2" aria-label="Предложение">${h}</div>${res}${ctl}</div>`;
+};
+
+V.edit=st=>{
+  const E=S.ed;
+  const parts=st.parts.map(p=>{
+    if(typeof p==='string')return esc(p);
+    const v=E.pick[p.slot];
+    const cls=['sl'];if(v)cls.push('set');if(E.flags[p.slot])cls.push(E.flags[p.slot]);
+    const menu=E.menu===p.slot?`<div class="sgm" role="group" aria-label="Выберите замену">${st.slots[p.slot].o.map(o=>`<button type="button" data-act="slotopt" data-i="${p.slot}" data-v="${esc(o)}">${esc(o)}</button>`).join('')}</div>`:'';
+    return `<span class="slw"><button type="button" class="${cls.join(' ')}" data-act="slot" data-i="${p.slot}"${E.ok?' disabled':''}>${esc(v||p.w)}</button>${menu}</span>`;
+  }).join('');
+  const ctl=E.ok?`<div class="row"><button type="button" class="btn btn-go" data-act="ednext" data-af>Дальше</button></div>`
+    :`<div class="row"><button type="button" class="btn btn-go" data-act="edcheck">Проверить</button><button type="button" class="btn btn-line sm" data-act="edreset">Сбросить</button></div>`;
+  return `${head(st.title,'повторы')}<div class="sh-body"><p class="task">${st.intro}</p><div class="edtext">${parts}</div>${ctl}</div>`;
+};
+
+V.end=()=>{
+  const rank=S.mistakes<=6?'главный археолог':S.mistakes<=14?'археолог':'помощник археолога';
+  return `<div class="sh-head hero"><span class="nut">✓</span><h2 data-h tabindex="-1">Дневник готов</h2><span class="meta">отправляем в музей</span><span class="wm">${COMPASS}</span></div>
+<div class="sh-body"><div class="verdict"><span class="stamp in">В музей</span></div>
+<p class="lead">Дневник приведён в порядок: основы найдены, запятые на месте, повторы убраны. Витрина экспедиции собрана полностью.</p>
+<h3 class="sub">Что мы узнали</h3><ol class="found">
+<li><span class="no">1</span><span><b>Простое предложение</b> — одна основа, <b>сложное</b> — две основы или больше. Основу ищем по сказуемому: что происходит и кто это делает?</span></li>
+<li><span class="no">2</span><span><b>Между частями сложного предложения ставится запятая.</b> Она стоит там, где кончается одна основа и начинается другая: <i>Ветер стих, а песок ещё летел.</i></span></li>
+<li><span class="no">3</span><span><b>Союзы</b> <i>когда, что, потому что, если</i> начинают свою часть. Запятая стоит перед союзом или после всей части с ним, но всегда между основами. Если основа одна, запятой нет.</span></li>
+<li><span class="no">4</span><span><b>Чтобы рассказ не повторялся,</b> одинаковые слова заменяют, а короткие предложения соединяют в одно.</span></li>
+</ol>
+<div class="hw"><b>Домашнее задание «Редактор дневника».</b> В черновике дневника слова «потом» и «мы» повторяются, а запятых нет. Перепишите запись в 3–4 предложения: уберите повторы, соедините короткие предложения, поставьте запятые. В двух сложных предложениях подчеркните основы.</div>
+<p class="stats-line">Ошибок: ${S.mistakes}. Подсказок использовано: ${3-S.hints}. Звание: <b>${rank}</b>.</p>
+<div class="row"><button type="button" class="btn btn-go" data-act="again" data-af>Пройти ещё раз</button></div></div>`;
+};
+
+/* ======================= отрисовка ======================= */
+function viewHtml(){
+  if(S.phase==='brief')return V.brief();
+  if(S.phase==='end')return V.end();
+  const st=step();
+  return V[st.t](st);
+}
+function nowHtml(){
+  if(S.phase==='brief')return '<span class="k">Сейчас</span>Знакомимся с лагерем';
+  if(S.phase==='end')return '<span class="k">Итог</span>дневник готов';
+  const st=step();
+  return `<span class="k">Блок ${st.b}</span>${esc(BLOCKS[st.b])} · ${esc(st.title)}`;
+}
+const PARTS=12;
+function paintShop(){
+  const n=STEPS.length;
+  let built=0;
+  if(S.phase==='end')built=PARTS;
+  else if(S.phase==='step'){const d=STEPS.filter(s=>S.seen[s.id]).length;built=Math.min(PARTS,Math.round(PARTS*d/n));}
+  $$('#case .it').forEach((g,i)=>g.classList.toggle('on',i<built));
+  $('#shop').classList.toggle('done',S.phase==='end');
+}
+function render(){
+  document.documentElement.dataset.b=S.phase==='step'?String(step().b):'0';
+  $('#now').innerHTML=nowHtml();
+  $('#stage').innerHTML=viewHtml();
+  paintStats();paintPA();paintNav();paintShop();
+  if(S.refocus){
+    const el=(S.refocus==='af'&&$('#stage [data-af]'))||$('#stage [data-h]');
+    if(el)el.focus({preventScroll:true});
+    S.refocus=null;
+  }
+}
+const toTop=()=>window.scrollTo({top:0,behavior:reduceMotion()?'auto':'smooth'});
+function confetti(n){
+  if(reduceMotion())return;
+  const host=$('#stage');
+  const old=host.querySelector('.confetti');if(old)old.remove();
+  const box=document.createElement('div');
+  box.className='confetti';box.setAttribute('aria-hidden','true');
+  const colors=['#ffc933','#0f8b8b','#b5532c','#2b5aa0','#5a7d2b','#ffffff'];
+  for(let i=0;i<n;i++){
+    const p=document.createElement('i');
+    p.style.left=(Math.random()*100)+'%';
+    p.style.background=colors[i%colors.length];
+    p.style.setProperty('--dx',(Math.random()*160-80)+'px');
+    p.style.setProperty('--r',(Math.random()*720-360)+'deg');
+    p.style.animationDelay=(Math.random()*.6)+'s';
+    p.style.animationDuration=(1.6+Math.random()*1.2)+'s';
+    box.appendChild(p);
+  }
+  host.appendChild(box);
+  setTimeout(()=>box.remove(),3600);
+}
+
+/* ======================= ход урока ======================= */
+function newBases(){return {i:0,marks:[],flags:{},ok:false,typ:'',hintIdx:null};}
+function newComma(i){return {i:i||0,cuts:{},flags:{},ok:false,hint:false};}
+function newEdit(){return {pick:{},menu:null,flags:{},ok:false};}
+function enterStep(){
+  S.rev=1;S.msg=null;
+  const st=step();
+  if(st.t==='mc'){S.mc={i:0,no:[],lock:false,ord:[]};prepItem();}
+  if(st.t==='bases')S.bs=newBases();
+  if(st.t==='commas')S.cm=newComma(0);
+  if(st.t==='edit')S.ed=newEdit();
+}
+function finishStep(){S.seen[step().id]=1;}
+function nextStep(){
+  finishStep();
+  if(S.pi<STEPS.length-1){S.pi++;enterStep();S.refocus='h';render();toTop();}
+  else{S.phase='end';S.msg=null;S.refocus='h';render();toTop();confetti(90);}
+}
+function onExMore(){S.rev++;S.refocus='af';render();}
+
+/* выбор ответа */
+function prepItem(){
+  const st=step(),m=S.mc,it=st.items[m.i];
+  m.no=[];m.lock=false;
+  m.ord=st.fix?it.o.map((_,k)=>k):shuffle(it.o.map((_,k)=>k));
+}
+function mcAdvance(){
+  const st=step(),m=S.mc;
+  if(m.i>=st.items.length-1){nextStep();return;}
+  m.i++;prepItem();S.msg=null;S.refocus='af';render();
+}
+function onMC(k){
+  const st=step(),m=S.mc,it=st.items[m.i],o=it.o[k];
+  if(m.lock)return;
+  if(o.ok){m.lock=true;if(m.i===st.items.length-1)S.seen[st.id]=1;S.refocus='af';render();say('ok',esc(o.why)||'Верно.');}
+  else{m.no.push(k);mist();render();say('bad',esc(o.why)||'Не то. Подумайте ещё.');}
+}
+
+/* основа: отметить подлежащее и сказуемое */
+function onWd(i){
+  const B=S.bs;
+  if(B.ok)return;
+  B.marks[i]=((B.marks[i]||0)+1)%3;
+  B.flags={};B.hintIdx=null;
+  render();
+}
+function evalBases(it,marks){
+  const exp={};
+  it.subj.forEach(i=>{exp[i]=1;});it.pred.forEach(i=>{exp[i]=2;});
+  const good=[],bad=[],miss=[];
+  marks.forEach((m,i)=>{if(m){if(exp[i]===m)good.push(i);else bad.push(i);}});
+  Object.keys(exp).forEach(i=>{if(!marks[i])miss.push(+i);});
+  return {good,bad,miss};
+}
+function onBsCheck(){
+  const st=step(),B=S.bs,it=st.items[B.i],toks=tokens(it.s);
+  if(!B.marks.some(Boolean)){say('info','Отметьте подлежащее (одно нажатие) и сказуемое (два нажатия).');return;}
+  const r=evalBases(it,B.marks);
+  B.flags={};r.good.forEach(i=>{B.flags[i]='good';});r.bad.forEach(i=>{B.flags[i]='bad';});B.hintIdx=null;
+  if(r.bad.length||r.miss.length){
+    mist();render();
+    let m='';
+    if(r.bad.length){
+      const i=r.bad[0];
+      if(B.marks[i]===1)m=`«${esc(toks[i].w)}» не подлежащее. Найдите сказуемое и спросите: кто это делает?`;
+      else m=`«${esc(toks[i].w)}» не сказуемое. Сказуемое говорит, что делает или что происходит с подлежащим.`;
+    }
+    if(r.miss.length)m+=(m?' ':'')+`Отмечено не всё: не хватает ${r.miss.length}. В сложном предложении основ две.`;
+    say('bad',m);return;
+  }
+  if(st.type){
+    if(!B.typ){render();say('info','Основы найдены верно. Теперь выберите: предложение простое или сложное?');return;}
+    if(B.typ!==it.type){mist();render();say('bad',esc(it.trapType||(it.type==='простое'?'Основа одна, поэтому предложение простое.':'Основ две, поэтому предложение сложное.')));return;}
+  }
+  B.ok=true;if(B.i===st.items.length-1)S.seen[st.id]=1;S.refocus='af';render();say('ok',esc(it.why));
+}
+function onBsHint(){
+  const st=step(),B=S.bs,it=st.items[B.i];
+  if(S.hints<1||B.ok)return;
+  S.hints--;B.hintIdx=it.pred.slice();
+  render();say('info','Начните со сказуемого: что здесь происходит? Слова в рамке — подсказка.');
+}
+function bsAdvance(){
+  const st=step(),B=S.bs;
+  if(B.i>=st.items.length-1){nextStep();return;}
+  const i=B.i+1;S.bs=newBases();S.bs.i=i;S.msg=null;S.refocus='af';render();
+}
+
+/* запятые */
+function onCgap(i){
+  const C=S.cm;
+  if(C.ok)return;
+  if(C.cuts[i])delete C.cuts[i];else C.cuts[i]=1;
+  C.flags={};render();
+}
+function whyNot(it,P,i){
+  const w=P.words[i].w,w2=P.words[i+1].w;
+  if(it.uni&&it.uni.indexOf(i)>=0)return `«${esc(w)} ${esc(w2)}» — один союз, внутри него запятой нет. Запятая стоит перед ним.`;
+  if(it.one)return `В этом предложении основа одна: ${esc(it.one)}. Запятая между частями нужна, когда основ две.`;
+  return `После слова «${esc(w)}» первая часть ещё не закончилась: границы между основами здесь нет. Запятая стоит там, где кончается одна основа и начинается другая.`;
+}
+function cmAdvanceOrDone(it,st){const C=S.cm;C.ok=true;if(C.i===st.items.length-1)S.seen[st.id]=1;S.refocus='af';render();say('ok',esc(it.why));}
+function onCmCheck(){
+  const st=step(),C=S.cm,it=st.items[C.i],P=it._p,n=P.words.length;
+  if(!Object.keys(C.cuts).length){say('info','Нажмите в промежутке между словами, чтобы поставить запятую. Если запятая не нужна, нажмите «Запятая не нужна».');return;}
+  const good=[],bad=[],miss=[];
+  for(let i=0;i<n-1;i++){
+    if(C.cuts[i]&&P.exp[i])good.push(i);
+    else if(C.cuts[i]&&!P.exp[i])bad.push(i);
+    else if(!C.cuts[i]&&P.exp[i])miss.push(i);
+  }
+  C.flags={};good.forEach(i=>{C.flags[i]='good';});bad.forEach(i=>{C.flags[i]='bad';});
+  if(!bad.length&&!miss.length){C.flags={};cmAdvanceOrDone(it,st);return;}
+  mist();
+  let m='';
+  if(bad.length)m=whyNot(it,P,bad[0]);
+  if(miss.length)m+=(m?' ':'')+(bad.length?'Кроме того, одной запятой не хватает.':'Запятой не хватает: между частями есть граница. Найдите две основы, граница между ними.');
+  render();say('bad',m);
+}
+function onCmNo(){
+  const st=step(),C=S.cm,it=st.items[C.i];
+  if(C.ok)return;
+  if(it.trap){C.cuts={};C.flags={};cmAdvanceOrDone(it,st);}
+  else{mist();C.flags={};render();say('bad','Запятая здесь нужна: в предложении две основы, а между основами ставится запятая. Найдите границу между ними.');}
+}
+function onCmHint(){
+  const st=step(),C=S.cm,it=st.items[C.i];
+  if(S.hints<1||C.hint||C.ok)return;
+  S.hints--;C.hint=true;render();
+  say('info',it.trap?'Основа выделена. Сколько основ в предложении?':'Основы выделены: подлежащие одной чертой, сказуемые двумя. Где кончается первая часть?');
+}
+function cmAdvance(){
+  const st=step(),C=S.cm;
+  if(C.i>=st.items.length-1){nextStep();return;}
+  S.cm=newComma(C.i+1);S.msg=null;S.refocus='af';render();
+}
+
+/* повторы */
+function onSlot(i){const E=S.ed;if(E.ok)return;E.menu=(E.menu===i)?null:i;render();}
+function onSlotOpt(i,v){const E=S.ed;E.pick[i]=v;E.menu=null;E.flags={};render();}
+function onEdCheck(){
+  const st=step(),E=S.ed;
+  if(st.slots.findIndex((_,i)=>!E.pick[i])>=0){say('info','Выберите замену для каждого «потом»: нажмите на выделенное слово.');return;}
+  E.flags={};
+  let msg='';
+  st.slots.forEach((s,i)=>{if(E.pick[i]==='Потом'){E.flags[i]='bad';if(!msg)msg='Слово «потом» осталось. Замените его другим.';}});
+  if(!msg){const seen={};st.slots.forEach((s,i)=>{const v=E.pick[i];if(seen[v]!==undefined){E.flags[i]='bad';E.flags[seen[v]]='bad';if(!msg)msg=`Слово «${esc(v.toLowerCase())}» повторилось. Каждая замена должна быть своей.`;}else seen[v]=i;});}
+  if(!msg){st.slots.forEach((s,i)=>{if(s.ok.indexOf(E.pick[i])<0){E.flags[i]='bad';if(!msg)msg=esc((s.bad&&s.bad[E.pick[i]])||`Слово «${E.pick[i].toLowerCase()}» здесь по смыслу не подходит.`);}});}
+  if(msg){mist();render();say('bad',msg);return;}
+  E.ok=true;S.seen[st.id]=1;S.refocus='af';render();say('ok','Запись читается легко: повторов нет, а события идут по порядку.');
+}
+
+/* переход по слайдам (стрелки) */
+function slides(){
+  const L=[{k:'brief',t:'Начало',b:0}];
+  STEPS.forEach((s,pi)=>L.push({k:'step',pi,t:s.title,b:s.b}));
+  L.push({k:'end',t:'Дневник готов',b:6});
+  return L;
+}
+function curIdx(L){
+  if(S.phase==='brief')return 0;
+  if(S.phase==='end')return L.length-1;
+  return S.pi+1;
+}
+function goSlide(idx,dir){
+  const L=slides();
+  idx=Math.max(0,Math.min(L.length-1,idx));
+  const T=L[idx];
+  for(let i=1;i<=Math.min(idx,STEPS.length);i++)S.seen[STEPS[i-1].id]=1;
+  S.msg=null;
+  if(T.k==='brief')S.phase='brief';
+  else if(T.k==='step'){S.phase='step';S.pi=T.pi;enterStep();if(step().t==='explain'&&dir<0)S.rev=step().points.length;}
+  else S.phase='end';
+  render();toTop();
+  if(T.k==='end')confetti(60);
+}
+function slideStep(dir){
+  const L=slides(),i=curIdx(L);
+  if(S.phase==='step'){
+    const st=step();
+    if(st.t==='explain'&&dir>0&&!st.all&&S.rev<st.points.length){S.rev++;render();return;}
+  }
+  goSlide(i+dir,dir);
+}
+function renderToc(L,cur){
+  let h='',last=-1;
+  L.forEach((x,k)=>{
+    if(x.b!==last){
+      last=x.b;
+      h+=x.b===0?'<h3><i style="--rc:#d6a64a"></i>Вступление</h3>':x.b===6?'<h3><i style="--rc:#ff8a1f"></i>Финал</h3>':`<h3><i style="--rc:${BC[x.b-1]}"></i>Блок ${x.b} · ${esc(BLOCKS[x.b])}</h3>`;
+    }
+    h+=`<button type="button" data-act="goto" data-i="${k}"${k===cur?' class="cur" aria-current="step"':''}><span class="no">${k+1}</span><span>${esc(x.t)}</span></button>`;
+  });
+  $('#toc').innerHTML=h;
+  const c=$('#toc .cur');
+  if(c)$('#toc').scrollTop=Math.max(0,c.offsetTop-90);
+}
+function toggleToc(force){
+  const el=$('#toc'),open=force===undefined?el.hidden:force;
+  el.hidden=!open;
+  $('#navMid').setAttribute('aria-expanded',String(open));
+  if(open){const L=slides();renderToc(L,curIdx(L));}
+}
+function paintNav(){
+  const L=slides(),i=curIdx(L),T=L[i];
+  $('#navPrev').disabled=i===0;
+  $('#navNext').disabled=i===L.length-1;
+  $('#navNo').textContent=`${i+1} / ${L.length}`;
+  $('#navTitle').textContent=T.k==='step'?`${BLOCKS[T.b]} · ${T.t}`:T.t;
+  if(!$('#toc').hidden)renderToc(L,i);
+}
+
+/* ======================= события ======================= */
+document.addEventListener('click',e=>{
+  if(!$('#toc').hidden&&!e.target.closest('#toc,#navMid'))toggleToc(false);
+  if(S&&S.ed&&S.ed.menu!==null&&!e.target.closest('.slw')){S.ed.menu=null;render();}
+  const b=e.target.closest('[data-act]');
+  if(!b||b.disabled)return;
+  switch(b.dataset.act){
+    case 'prev':slideStep(-1);break;
+    case 'next':slideStep(1);break;
+    case 'toc':toggleToc();break;
+    case 'goto':{const k=+b.dataset.i,cur=curIdx(slides());toggleToc(false);goSlide(k,k>cur?1:-1);break;}
+    case 'start':S.phase='step';S.pi=0;enterStep();S.refocus='h';render();toTop();break;
+    case 'exmore':onExMore();break;
+    case 'exdone':nextStep();break;
+    case 'mc':onMC(+b.dataset.k);break;
+    case 'mcnext':mcAdvance();break;
+    case 'wd':onWd(+b.dataset.i);break;
+    case 'typ':S.bs.typ=b.dataset.v;S.bs.flags={};render();break;
+    case 'bscheck':onBsCheck();break;
+    case 'bshint':onBsHint();break;
+    case 'bsreset':{const B=S.bs;B.marks=[];B.flags={};B.typ='';B.hintIdx=null;S.msg=null;render();break;}
+    case 'bsnext':bsAdvance();break;
+    case 'cgap':onCgap(+b.dataset.i);break;
+    case 'cmcheck':onCmCheck();break;
+    case 'cmno':onCmNo();break;
+    case 'cmhint':onCmHint();break;
+    case 'cmreset':{const C=S.cm;C.cuts={};C.flags={};S.msg=null;render();break;}
+    case 'cmnext':cmAdvance();break;
+    case 'slot':onSlot(+b.dataset.i);break;
+    case 'slotopt':onSlotOpt(+b.dataset.i,b.dataset.v);break;
+    case 'edcheck':onEdCheck();break;
+    case 'edreset':S.ed=newEdit();S.msg=null;render();break;
+    case 'ednext':nextStep();break;
+    case 'again':S=newState();render();toTop();break;
+  }
+});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){
+    if(!$('#toc').hidden)toggleToc(false);
+    else if(S.ed&&S.ed.menu!==null){S.ed.menu=null;render();}
+    return;
+  }
+  if((e.key==='ArrowRight'||e.key==='ArrowLeft')&&!e.altKey&&!e.ctrlKey&&!e.metaKey&&!e.shiftKey
+     &&!/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)){
+    e.preventDefault();slideStep(e.key==='ArrowRight'?1:-1);
+  }
+});
+
+S=newState();
+render();
+})();
+</script>
+</body>
+</html>
