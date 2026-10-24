@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>Проклятие призрака Бубу</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:ital,wght@0,500;0,600;0,700;1,500&family=Nunito:wght@500;600;700;800;900&family=Rubik+Wet+Paint&display=swap">
+<style>
+/* Layout concept: a Halloween night around a haunted house. On the left a narrow house whose nine windows are the route (a window lights up for every finished step, the lit windows are also buttons) with a small remote under it (arrows, step counter, slide list). The task lies on a sheet of old parchment on the right. The friendly ghost Bubu sits in the bottom right corner: his speech bubble is the answer panel and his face changes with the answer. A moon, bats and a pumpkin hill sit far behind. Headings are set in a dripping display face, sentences in a book serif so commas stay easy to see. */
+*{box-sizing:border-box}
+:root{
+  color-scheme:dark;
+  --gx:clamp(16px,4vw,36px);
+  --n0:#0f0a24;--n1:#1d1240;--n2:#3a1a52;--n3:#5a2350;
+  --glow:#ff9a2e;--glow2:#ffd36a;
+  --parch:#f8edcc;--pline:rgba(120,80,30,.2);--pbd:#d9bd82;
+  --ink:#2a1c10;--ink-soft:#6a5238;--tint:#fff6dc;--tint-line:#ecd9a4;--card:#fffaf0;
+  --c:#b84c05;--c-deep:#7f3203;--ct:#fde5d0;
+  --ok:#1f8a4c;--ok-t:#e0f3e6;--bad:#c23b2e;--mint:#17a58a;--amber:#d98200;--focus:#2f7cf0;
+  --f-head:"Rubik Wet Paint","Arial Black",system-ui,sans-serif;
+  --f-ui:"Nunito","Segoe UI",system-ui,-apple-system,Arial,sans-serif;
+  --f-text:"Literata",Georgia,"Times New Roman",serif;
+}
+/* у каждого блока урока свой цвет */
+html[data-b="1"]{--c:#b84c05;--c-deep:#7f3203;--ct:#fde5d0}
+html[data-b="2"]{--c:#6d3fc0;--c-deep:#4a2790;--ct:#ece3fb}
+html[data-b="3"]{--c:#2f7d32;--c-deep:#1f5522;--ct:#e0f2e1}
+html[data-b="4"]{--c:#a32d6e;--c-deep:#731d4d;--ct:#f8e1ee}
+html[data-b="5"]{--c:#13707f;--c-deep:#0b4b56;--ct:#d9eff2}
+[hidden]{display:none!important}
+html{height:100%;background:var(--n0)}
+body{position:relative;min-height:100%;margin:0;color:#f4ecff;font:600 17px/1.55 var(--f-ui);background-color:var(--n0);background-image:radial-gradient(900px 520px at 85% 6%,rgba(255,241,196,.14),transparent 60%),linear-gradient(180deg,var(--n0) 0%,var(--n1) 45%,var(--n2) 78%,var(--n3) 100%);background-attachment:fixed;-webkit-text-size-adjust:100%}
+h1,h2,h3,p,ol,ul{margin:0}
+
+/* ---------- ночь за окном: звёзды, луна, летучие мыши, холм с тыквами ---------- */
+.sky{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.stars{position:absolute;left:0;top:0;width:2px;height:2px;border-radius:50%;background:#fff;box-shadow:6vw 9vh #fff,14vw 4vh #ffe9b0,21vw 15vh #fff,29vw 7vh #cfe0ff,36vw 21vh #fff,44vw 5vh #fff,52vw 13vh #ffe9b0,58vw 3vh #fff,66vw 19vh #cfe0ff,73vw 9vh #fff,81vw 24vh #fff,88vw 14vh #ffe9b0,95vw 6vh #fff,3vw 28vh #cfe0ff,11vw 36vh #fff,24vw 31vh #fff,41vw 33vh #ffe9b0,63vw 35vh #fff,77vw 38vh #cfe0ff,92vw 31vh #fff;animation:twinkle 9s ease-in-out infinite}
+.moon{position:absolute;top:5vh;right:6vw;width:clamp(64px,8vw,112px);aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 36% 34%,#fffbe6,#ffe9a8 60%,#f1cc72);box-shadow:0 0 70px 22px rgba(255,233,168,.22)}
+.moon::before,.moon::after{content:"";position:absolute;border-radius:50%;background:rgba(190,150,70,.28)}
+.moon::before{left:58%;top:24%;width:20%;height:20%}
+.moon::after{left:24%;top:58%;width:26%;height:26%}
+.bat{position:absolute;left:-90px;width:44px;fill:#07041a;animation:fly 40s linear infinite}
+.bat.b1{top:14vh}
+.bat.b2{top:30vh;width:34px;animation-duration:55s;animation-delay:-20s}
+.bat.b3{top:8vh;width:28px;animation-duration:48s;animation-delay:-34s}
+.hill{position:absolute;left:0;bottom:0;width:100%;height:30vh;min-height:150px}
+
+/* ---------- каркас: дом слева, пергамент справа ---------- */
+.shell{position:relative;z-index:1;display:grid;grid-template-columns:200px minmax(0,860px);gap:30px;justify-content:center;align-items:start;max-width:1180px;margin:0 auto;padding:26px max(var(--gx),env(safe-area-inset-right,0px)) 220px max(var(--gx),env(safe-area-inset-left,0px))}
+.side{position:sticky;top:22px;display:grid;gap:14px;justify-items:center}
+.house{--w:min(200px,27vh);position:relative;width:var(--w)}
+.roof{position:relative;height:calc(var(--w)*.36);background:linear-gradient(180deg,#3b2468,#2a1a4a);clip-path:polygon(50% 0,100% 100%,0 100%);margin:0 -4%}
+.chim{position:absolute;right:20%;top:30%;width:11%;height:40%;background:#2a1a4a}
+.hbody{display:grid;grid-template-columns:repeat(3,1fr);column-gap:9%;row-gap:calc(var(--w)*.05);padding:9% 10% 9%;background:linear-gradient(180deg,#2a1a4a,#21143e);border-left:2px solid #3b2468;border-right:2px solid #3b2468}
+.win{all:unset;box-sizing:border-box;cursor:pointer;position:relative;display:block;aspect-ratio:3/4;border-radius:42% 42% 5px 5px/26% 26% 5px 5px;background:#120a2a;border:2px solid #3b2468;transition:background .4s,box-shadow .4s,border-color .4s}
+.win::before,.win::after{content:"";position:absolute;background:rgba(20,10,40,.55)}
+.win::before{left:50%;top:6%;bottom:0;width:2px;transform:translateX(-50%)}
+.win::after{left:0;right:0;top:46%;height:2px}
+.win:hover{border-color:var(--glow)}
+.win:focus-visible{outline:3px solid var(--glow2);outline-offset:3px}
+.win.on{background:radial-gradient(circle at 50% 70%,#fff2b8,#ffc94a 60%,#ff9a2e);border-color:#ffb43a;box-shadow:0 0 16px 4px rgba(255,170,40,.55)}
+.win.on::before,.win.on::after{background:rgba(110,50,10,.55)}
+.win.cur:not(.on){border-color:var(--glow2);animation:wpulse 1.6s ease-in-out infinite}
+.win.pop{animation:popin .6s ease-out}
+.hbase{position:relative;height:calc(var(--w)*.2);background:#1a0f33;border:2px solid #3b2468;border-top:0}
+.door{position:absolute;left:50%;bottom:0;width:22%;height:86%;transform:translateX(-50%);border-radius:50% 50% 0 0/40% 40% 0 0;background:#0b0620;border:2px solid #3b2468;border-bottom:0}
+.house.done{filter:drop-shadow(0 0 22px rgba(255,170,40,.55))}
+.pult{display:flex;align-items:center;gap:8px;width:100%;padding:8px;border-radius:99px;background:rgba(20,10,44,.82);border:2px solid #3b2468;box-shadow:0 10px 24px -10px rgba(0,0,0,.7)}
+.pbtn{all:unset;box-sizing:border-box;cursor:pointer;flex:none;display:grid;place-items:center;width:40px;height:40px;border-radius:50%;background:var(--glow);color:#2a1100}
+.pbtn svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:3.4;stroke-linecap:round;stroke-linejoin:round}
+.pbtn:hover:not(:disabled){background:var(--glow2)}
+.pbtn:active:not(:disabled){transform:scale(.94)}
+.pbtn:disabled{opacity:.3;cursor:default}
+.pbtn:focus-visible,.pmid:focus-visible{outline:3px solid var(--glow2);outline-offset:2px}
+.pmid{all:unset;box-sizing:border-box;cursor:pointer;flex:1;min-width:0;padding:6px 4px;text-align:center;color:#ffe9c8;font:800 12.5px/1.2 var(--f-ui);letter-spacing:.02em;white-space:nowrap;border-radius:99px}
+.pmid:hover{background:rgba(255,255,255,.08)}
+
+/* ---------- заголовок и пергамент ---------- */
+.main{min-width:0}
+.topline{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:8px 16px;margin-bottom:14px}
+.topline h1{font:400 clamp(26px,3.6vw,40px)/1.05 var(--f-head);color:var(--glow);text-shadow:0 0 18px rgba(255,154,46,.45);letter-spacing:.01em}
+.topline small{display:block;margin-top:4px;font:700 13px/1.2 var(--f-ui);color:#cdbbf2}
+.stat{padding:6px 12px;border-radius:99px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.22);color:#f1e8ff;font:800 12.5px/1.2 var(--f-ui);white-space:nowrap}
+.parch{position:relative;min-height:min(58vh,500px);color:var(--ink);background:radial-gradient(120% 90% at 50% 0,#fbf2d6,#f3e2b4 70%,#e9d29a 100%);border-radius:22px 26px 20px 28px/26px 20px 28px 22px;box-shadow:inset 0 0 0 2px rgba(180,130,60,.45),inset 0 0 70px rgba(150,100,40,.28),0 30px 60px -20px rgba(0,0,0,.7);overflow:hidden}
+.parch::after{content:"";position:absolute;right:0;top:0;width:96px;height:96px;opacity:.5;pointer-events:none;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96' fill='none' stroke='%236a5238' stroke-width='1.2'%3E%3Cpath d='M96 0V96M96 0H0M96 0L10 86M96 0L40 96M96 0L0 60'/%3E%3Cpath d='M96 28Q74 26 68 0M96 54Q58 46 46 0M96 80Q44 66 22 0'/%3E%3C/svg%3E") no-repeat}
+
+.sh-head{position:relative;display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;padding:26px 32px 4px}
+.sh-head>*:not(.wm){position:relative;z-index:1}
+.nut{position:relative;display:inline-grid;place-items:center;flex:none;min-width:48px;height:44px;padding:0 8px;border-radius:50% 50% 46% 46%/58% 58% 42% 42%;background:var(--c);color:#fff;font:800 19px/1 var(--f-ui);box-shadow:inset 0 -5px 0 rgba(0,0,0,.18)}
+.nut::before{content:"";position:absolute;left:50%;top:-7px;width:8px;height:10px;margin-left:-4px;border-radius:3px 3px 0 0;background:#3c7a2a}
+.sh-head h2{flex:1 1 8ch;min-width:0;font:400 clamp(24px,3.2vw,34px)/1.1 var(--f-head);color:var(--c-deep);text-wrap:balance;outline:none}
+.sh-head .meta{margin-left:auto;padding:6px 14px;border-radius:99px;background:var(--ct);color:var(--c-deep);font:900 11.5px/1.2 var(--f-ui);letter-spacing:.1em;text-transform:uppercase}
+.sh-head.hero .nut{background:linear-gradient(135deg,#b84c05,#6d3fc0)}
+.sh-body{padding:14px 32px 34px}
+.lead{max-width:60ch;margin-bottom:12px;font:600 19px/1.6 var(--f-ui)}
+.task{max-width:66ch;margin-bottom:16px;color:var(--ink-soft)}
+.rules{display:grid;gap:10px;margin:8px 0 22px;padding:0;list-style:none}
+.rules li{display:flex;gap:12px;padding:10px 16px;border-radius:16px;background:var(--tint);border:1px solid var(--tint-line)}
+.rules li::before{content:"";flex:none;width:12px;height:12px;margin-top:.5em;border-radius:50%;background:var(--c)}
+@media (min-width:900px){.rules{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.row{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;margin-top:18px}
+.sub{margin:18px 0 10px;font:900 13px/1.2 var(--f-ui);letter-spacing:.08em;text-transform:uppercase;color:var(--c-deep)}
+
+/* ---------- кнопки ---------- */
+.btn{all:unset;box-sizing:border-box;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:52px;padding:0 28px;border-radius:99px;font:900 15px/1 var(--f-ui);letter-spacing:.01em;text-align:center;transition:transform .12s,box-shadow .12s,filter .12s}
+.btn:focus-visible,.opt:focus-visible,.seg button:focus-visible,.gp:focus-visible,.dx:focus-visible,.toc button:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.btn-go{background:var(--c);color:#fff;box-shadow:0 12px 20px -10px rgba(40,20,5,.8),inset 0 -3px 0 rgba(0,0,0,.2)}
+.btn-go:hover{filter:brightness(1.1);transform:translateY(-1px)}
+.btn-go:active{transform:translateY(1px);box-shadow:0 4px 8px -4px rgba(40,20,5,.8),inset 0 -1px 0 rgba(0,0,0,.2)}
+.btn-line{border:2px solid var(--c);color:var(--c-deep);background:var(--card)}
+.btn-line:hover:not(:disabled){background:var(--ct)}
+.btn-line:disabled{opacity:.4;cursor:default}
+.btn.sm{min-height:42px;padding:0 18px;font-size:13.5px}
+
+/* ---------- объяснение ---------- */
+.ex{display:grid;gap:12px;margin:0 0 6px;padding:0;list-style:none}
+.ex>li{display:grid;grid-template-columns:44px minmax(0,1fr);gap:16px;align-items:start;padding:16px 20px 16px 16px;border-radius:20px;background:var(--tint);border:1px solid var(--tint-line);font-size:18px;line-height:1.6}
+.ex>li>.no{display:grid;place-items:center;width:44px;height:44px;border-radius:50%;background:var(--c);color:#fff;font:900 17px/1 var(--f-ui)}
+.ex>li.new{animation:rise .35s ease-out}
+.ex b{font-weight:900}
+.ex i{font-family:var(--f-text);font-size:1.04em}
+.ex i b{color:var(--c-deep);font-size:1.2em}
+.ex .box{display:block;margin-top:10px;padding:12px 18px;background:var(--card);border:1px solid var(--tint-line);border-radius:14px;font-family:var(--f-text);font-size:1.04em}
+.ex .box span{display:block}
+.ex .box b{color:var(--c-deep);font-size:1.2em}
+
+/* ---------- выбор ответа ---------- */
+.prog{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}
+.prog i{width:30px;height:8px;border-radius:99px;background:rgba(120,80,30,.22)}
+.prog i.d{background:var(--c)}
+.prog i.c{background:var(--glow2);box-shadow:0 0 0 2px var(--ink)}
+.mc-p{margin:4px 0 12px;font-size:19px}
+.big{font:600 clamp(21px,3.1vw,30px)/1.5 var(--f-text)}
+.blank{display:inline-block;min-width:3.4ch;margin:0 .15em;border-bottom:3px dashed var(--c);color:var(--c-deep);text-align:center}
+.opts{display:grid;gap:12px;margin-top:8px;counter-reset:o}
+.opts.four{grid-template-columns:repeat(2,minmax(0,1fr))}
+.opt{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;gap:16px;min-height:62px;padding:12px 22px 12px 14px;background:var(--card);color:var(--ink);border:2px solid var(--pbd);border-radius:20px;font:600 clamp(17px,2.3vw,21px)/1.4 var(--f-text);box-shadow:0 4px 0 var(--pbd);counter-increment:o;transition:transform .12s,border-color .12s}
+.opt::before{content:counter(o);flex:none;display:grid;place-items:center;width:38px;height:38px;border-radius:50%;background:var(--ct);color:var(--c-deep);font:900 15px/1 var(--f-ui)}
+.opt:hover:not(:disabled){border-color:var(--c);transform:translateY(-2px)}
+.opt:active:not(:disabled){transform:translateY(1px);box-shadow:0 1px 0 var(--pbd)}
+.opt.no{opacity:.45;cursor:not-allowed;box-shadow:none;transform:none}
+.opt.no .ot{text-decoration:line-through}
+.opt.right{background:var(--ok-t);border-color:var(--ok);box-shadow:0 4px 0 var(--ok)}
+.opt.right::before{content:"✓";background:var(--ok);color:#fff}
+.opt:disabled{cursor:default}
+.result{margin:10px 0 4px;padding:14px 18px;background:var(--ok-t);border:1px solid #b8dcc4;border-radius:16px;font-size:17px}
+.seg{display:flex;flex-wrap:wrap;gap:8px}
+
+/* ---------- запятые: слова на строках пергамента и промежутки между ними ---------- */
+.sent2{margin:14px 0 16px;padding:6px 22px;border-radius:20px;border:1px solid var(--tint-line);background-color:rgba(255,250,240,.7);background-image:repeating-linear-gradient(180deg,transparent 0 calc(2.4em - 2px),var(--pline) calc(2.4em - 2px) 2.4em);background-origin:content-box;font:600 clamp(23px,3.4vw,33px)/2.4 var(--f-text);color:var(--ink)}
+.tx{display:inline;padding:0 .04em}
+.tx.s{text-decoration:underline;text-decoration-thickness:3px;text-underline-offset:7px;text-decoration-color:var(--mint)}
+.tx.p{text-decoration:underline double;text-decoration-thickness:2px;text-underline-offset:7px;text-decoration-color:var(--amber)}
+.gw{position:relative;display:inline-block;vertical-align:middle}
+.gp{all:unset;box-sizing:border-box;position:relative;cursor:pointer;display:inline-grid;place-items:center;width:26px;height:1.7em;margin:0 1px;border-radius:8px}
+.gp::before{content:"";position:absolute;left:50%;top:14%;bottom:14%;border-left:2px dashed #b8975a;transform:translateX(-50%)}
+.gp:hover:not(:disabled){background:var(--ct)}
+.gp:hover:not(:disabled)::before,.gp:focus-visible::before{border-left:3px solid var(--c)}
+.gp.has{width:auto;min-width:32px;margin:0 2px}
+.gp.has::before{display:none}
+.gp .sg{display:inline-grid;place-items:center;min-width:1.2em;height:1.2em;padding:0 .1em;background:var(--c);color:#fff;border-radius:50%;font:900 .85em/1 var(--f-ui);box-shadow:0 4px 8px -3px rgba(40,20,5,.6)}
+.gp.good .sg{background:var(--ok)}
+.gp.bad .sg{background:var(--bad);animation:shake .35s}
+.cm{color:var(--c-deep);font-weight:900}
+
+/* ---------- финал ---------- */
+.found{display:grid;gap:10px;margin:0 0 14px;padding:0;list-style:none}
+.found li{display:grid;grid-template-columns:36px 1fr;gap:14px;align-items:start;padding:12px 16px;border-radius:16px;background:var(--tint);border:1px solid var(--tint-line);font-size:16.5px;line-height:1.55}
+.found .no{display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:var(--c);color:#fff;font:900 14px/1 var(--f-ui)}
+.hw{margin:16px 0;padding:16px 20px;background:#fff0c4;border:2px dashed #c9983a;border-radius:20px;font-size:16.5px}
+.hw b{color:#8a5a10}
+.stats-line{margin:8px 0 4px;font:700 15px/1.6 var(--f-ui)}
+.verdict{display:flex;justify-content:flex-end;margin:4px 0 20px}
+.stamp{display:inline-block;padding:.12em .4em;border:5px solid var(--bad);color:var(--bad);font:400 clamp(24px,4.6vw,38px)/1 var(--f-head);letter-spacing:.02em;text-transform:uppercase;transform:rotate(-7deg);opacity:.9;border-radius:8px}
+.stamp.in{animation:stampIn .55s cubic-bezier(.2,.9,.3,1.2) both}
+
+/* ---------- призрак Бубу: облачко с ответом и лицо ---------- */
+.ghostbox{position:fixed;z-index:30;right:max(18px,env(safe-area-inset-right,0px));bottom:calc(14px + env(safe-area-inset-bottom,0px));display:flex;align-items:flex-end;gap:6px;max-width:min(560px,calc(100vw - 36px))}
+.ghost{flex:none;width:104px;height:auto;fill:#fff;filter:drop-shadow(0 0 16px rgba(190,170,255,.7));animation:bob 4.5s ease-in-out infinite}
+.ghost .eye{fill:#2a1c4a}
+.ghost .cheek{fill:#ffb0c4;opacity:.75}
+.ghost .mo{fill:none;stroke:#2a1c4a;stroke-width:3;stroke-linecap:round;display:none}
+.ghost .m-ok{fill:#7a2a40;stroke:#2a1c4a}
+.ghostbox .m-idle{display:block}
+.ghostbox.ok .m-idle,.ghostbox.bad .m-idle,.ghostbox.free .m-idle{display:none}
+.ghostbox.ok .m-ok,.ghostbox.free .m-ok{display:block}
+.ghostbox.bad .m-bad{display:block}
+.ghostbox.bad .ghost{animation:shake .5s,bob 4.5s ease-in-out infinite}
+.ghostbox.free .ghost{filter:drop-shadow(0 0 26px rgba(255,236,160,.95));animation:bob 2.4s ease-in-out infinite}
+.bubble{position:relative;align-self:flex-end;margin-bottom:34px;display:flex;gap:12px;align-items:flex-start;padding:14px 12px 14px 18px;background:#fff7e0;color:var(--ink);border:3px solid #7c5bd6;border-radius:22px;box-shadow:0 18px 36px -12px rgba(0,0,0,.7)}
+.bubble::after{content:"";position:absolute;right:-13px;bottom:18px;width:20px;height:20px;background:#fff7e0;border-right:3px solid #7c5bd6;border-top:3px solid #7c5bd6;transform:rotate(45deg) skew(12deg,12deg)}
+.bubble .tx2{flex:1;min-width:0;font-size:16.5px;line-height:1.5}
+.bubble .lb{display:block;margin-bottom:2px;font:900 12px/1.2 var(--f-ui);letter-spacing:.14em;text-transform:uppercase;color:#6b46c8}
+.bubble .dx{all:unset;box-sizing:border-box;cursor:pointer;flex:none;display:grid;place-items:center;width:30px;height:30px;margin:-4px 0 0;border-radius:50%;color:#6a5238;font:700 22px/1 var(--f-ui)}
+.bubble .dx:hover{background:rgba(0,0,0,.08)}
+.bubble.ok{border-color:var(--ok)}
+.bubble.ok::after{border-color:var(--ok)}
+.bubble.ok .lb{color:var(--ok)}
+.bubble.bad{border-color:var(--bad)}
+.bubble.bad::after{border-color:var(--bad)}
+.bubble.bad .lb{color:var(--bad)}
+.bubble.pop{animation:rise .3s ease-out}
+
+.confetti{position:absolute;inset:0;z-index:5;overflow:hidden;pointer-events:none}
+.confetti i{position:absolute;top:-16px;width:9px;height:15px;border-radius:2px;opacity:0;animation:cf 2.2s ease-in forwards}
+@keyframes cf{0%{opacity:1;transform:translate(0,0) rotate(0)}100%{opacity:0;transform:translate(var(--dx),460px) rotate(var(--r))}}
+@keyframes popin{0%{transform:scale(.6);opacity:.3}60%{transform:scale(1.12)}100%{transform:none;opacity:1}}
+@keyframes shake{20%{transform:translateX(-4px)}40%{transform:translateX(4px)}60%{transform:translateX(-3px)}80%{transform:translateX(3px)}}
+@keyframes rise{from{transform:translateY(8px);opacity:0}to{transform:none;opacity:1}}
+@keyframes stampIn{0%{transform:rotate(-14deg) scale(2.2);opacity:0}60%{transform:rotate(-7deg) scale(.96);opacity:1}100%{transform:rotate(-7deg) scale(1);opacity:.9}}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+@keyframes twinkle{0%,100%{opacity:1}50%{opacity:.55}}
+@keyframes fly{from{transform:translateX(0)}to{transform:translateX(calc(100vw + 180px))}}
+@keyframes wpulse{50%{box-shadow:0 0 0 4px rgba(255,211,106,.45)}}
+
+/* ---------- список слайдов ---------- */
+.toc{position:fixed;z-index:40;left:max(var(--gx),env(safe-area-inset-left,0px));top:calc(26px + env(safe-area-inset-top,0px));width:min(400px,calc(100% - 2*var(--gx)));max-height:calc(100vh - 60px);overflow:auto;padding:6px 14px 14px;background:#fffaf0;color:var(--ink);border-radius:22px;box-shadow:0 30px 60px -16px rgba(0,0,0,.8),0 0 0 2px #7c5bd6}
+.toc h3{display:flex;align-items:center;gap:8px;margin:14px 0 6px;font:900 12px/1.2 var(--f-ui);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft)}
+.toc h3 i{flex:none;width:12px;height:12px;border-radius:50%;background:var(--rc)}
+.toc .st{margin:10px 2px 0;font:800 13px/1.3 var(--f-ui);color:var(--ink-soft)}
+.toc button{all:unset;box-sizing:border-box;cursor:pointer;display:flex;gap:12px;align-items:baseline;width:100%;padding:9px 12px;border-radius:14px;font:700 16px/1.3 var(--f-ui)}
+.toc button:hover{background:var(--ct)}
+.toc button.cur{background:var(--glow2);color:#3a2100;font-weight:900}
+.toc .no{flex:none;min-width:2ch;font:900 12.5px/1.3 var(--f-ui);color:var(--ink-soft)}
+.toc button.cur .no{color:#3a2100}
+
+@media (max-width:1000px){
+  .shell{grid-template-columns:160px minmax(0,1fr);gap:20px}
+  .house{--w:min(160px,25vh)}
+  .stat{padding:5px 10px;font-size:11.5px;white-space:normal;text-align:center}
+}
+@media (max-width:760px){
+  .shell{grid-template-columns:minmax(0,1fr);gap:12px;padding-top:12px;padding-bottom:260px}
+  .side{position:static;display:block}
+  .house{--w:100%}
+  .roof,.hbase,.chim{display:none}
+  .hbody{grid-template-columns:repeat(9,1fr);column-gap:2.2%;row-gap:0;padding:8px 10px;border:2px solid #3b2468;border-radius:14px}
+  .stat{display:none}
+  .win{border-radius:40% 40% 4px 4px/24% 24% 4px 4px}
+  .pult{position:fixed;z-index:31;left:max(12px,env(safe-area-inset-left,0px));right:max(12px,env(safe-area-inset-right,0px));bottom:calc(10px + env(safe-area-inset-bottom,0px));width:auto}
+  .pmid{font-size:14px}
+  .ghostbox{left:max(12px,env(safe-area-inset-left,0px));right:max(12px,env(safe-area-inset-right,0px));bottom:calc(74px + env(safe-area-inset-bottom,0px));max-width:none;justify-content:flex-end}
+  .ghost{width:64px}
+  .bubble{flex:1;margin-bottom:14px;padding:10px 8px 10px 14px}
+  .bubble .tx2{font-size:15px;line-height:1.42}
+  .topline{margin-bottom:10px}
+  .sh-head{padding:20px 20px 4px}
+  .sh-body{padding:10px 20px 26px}
+  .ex>li{grid-template-columns:38px minmax(0,1fr);gap:12px;padding:12px 14px 12px 12px;font-size:17px}
+  .ex>li>.no{width:38px;height:38px}
+  .sent2{padding:4px 12px}
+  .opts.four{grid-template-columns:minmax(0,1fr)}
+  .moon{display:none}
+  .gp{width:28px}
+  .gp.has{min-width:34px}
+  .toc{left:max(12px,env(safe-area-inset-left,0px));right:max(12px,env(safe-area-inset-right,0px));width:auto;top:auto;bottom:calc(74px + env(safe-area-inset-bottom,0px));max-height:62vh}
+  .parch::after{width:70px;height:70px;background-size:contain}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
+}
+</style>
+</head>
+<body>
+<div class="sky" aria-hidden="true">
+  <div class="stars"></div>
+  <div class="moon"></div>
+  <svg class="bat b1" viewBox="0 0 64 28"><path d="M32 6L35 2L36 8C40 6 46 4 52 6C56 7 60 4 64 2C62 8 60 12 58 14C56 12 52 13 50 16C48 14 44 14 42 17C40 15 37 16 36 20L32 26L28 20C27 16 24 15 22 17C20 14 16 14 14 16C12 13 8 12 6 14C4 12 2 8 0 2C4 4 8 7 12 6C18 4 24 6 28 8L29 2Z"/></svg>
+  <svg class="bat b2" viewBox="0 0 64 28"><path d="M32 6L35 2L36 8C40 6 46 4 52 6C56 7 60 4 64 2C62 8 60 12 58 14C56 12 52 13 50 16C48 14 44 14 42 17C40 15 37 16 36 20L32 26L28 20C27 16 24 15 22 17C20 14 16 14 14 16C12 13 8 12 6 14C4 12 2 8 0 2C4 4 8 7 12 6C18 4 24 6 28 8L29 2Z"/></svg>
+  <svg class="bat b3" viewBox="0 0 64 28"><path d="M32 6L35 2L36 8C40 6 46 4 52 6C56 7 60 4 64 2C62 8 60 12 58 14C56 12 52 13 50 16C48 14 44 14 42 17C40 15 37 16 36 20L32 26L28 20C27 16 24 15 22 17C20 14 16 14 14 16C12 13 8 12 6 14C4 12 2 8 0 2C4 4 8 7 12 6C18 4 24 6 28 8L29 2Z"/></svg>
+  <svg class="hill" viewBox="0 0 1440 260" preserveAspectRatio="xMidYMax slice" focusable="false">
+    <path d="M0 150Q220 90 480 130T960 110T1440 140V260H0Z" fill="#1a0f33"/>
+    <path d="M0 192Q300 142 640 182T1440 162V260H0Z" fill="#120a26"/>
+    <g fill="none" stroke="#0a0618" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"><path d="M120 260V172M120 192L92 162M120 176L150 148M92 162L80 142M150 148L170 150M92 162L70 164"/></g>
+    <g transform="translate(1170 222)">
+      <ellipse cx="0" cy="0" rx="32" ry="26" fill="#e8741a"/>
+      <path d="M-11 -25C-19 -10 -19 10 -11 25M11 -25C19 -10 19 10 11 25" fill="none" stroke="#b8530f" stroke-width="3"/>
+      <rect x="-4" y="-34" width="8" height="11" rx="2" fill="#3c7a2a"/>
+      <path d="M-16 -4l8 -9 8 9zM2 -4l8 -9 8 9z" fill="#ffd36a"/>
+      <path d="M-15 9q15 15 30 0q-8 4 -15 4t-15 -4z" fill="#ffd36a"/>
+    </g>
+    <g transform="translate(1262 238) scale(.7)">
+      <ellipse cx="0" cy="0" rx="32" ry="26" fill="#d9660f"/>
+      <path d="M-11 -25C-19 -10 -19 10 -11 25M11 -25C19 -10 19 10 11 25" fill="none" stroke="#a84a0c" stroke-width="3"/>
+      <rect x="-4" y="-34" width="8" height="11" rx="2" fill="#3c7a2a"/>
+    </g>
+    <g transform="translate(300 232) scale(.8)">
+      <ellipse cx="0" cy="0" rx="32" ry="26" fill="#e8741a"/>
+      <path d="M-11 -25C-19 -10 -19 10 -11 25M11 -25C19 -10 19 10 11 25" fill="none" stroke="#b8530f" stroke-width="3"/>
+      <rect x="-4" y="-34" width="8" height="11" rx="2" fill="#3c7a2a"/>
+      <path d="M-16 -4l8 -9 8 9zM2 -4l8 -9 8 9z" fill="#ffd36a"/>
+      <path d="M-15 9q15 15 30 0q-8 4 -15 4t-15 -4z" fill="#ffd36a"/>
+    </g>
+  </svg>
+</div>
+<div class="shell">
+  <aside class="side">
+    <div class="house" id="house" aria-label="Дом на холме: окна показывают пройденные шаги">
+      <div class="roof"><i class="chim"></i></div>
+      <div class="hbody" id="wins"></div>
+      <div class="hbase"><i class="door"></i></div>
+    </div>
+    <nav class="pult" aria-label="Переход по слайдам">
+      <button type="button" class="pbtn" id="navPrev" data-act="prev" aria-label="Предыдущий слайд" title="Назад (стрелка влево)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 4 7 12l8 8"/></svg></button>
+      <button type="button" class="pmid" id="navMid" data-act="toc" aria-expanded="false" aria-controls="toc" title="Список слайдов"><span id="navNo"></span></button>
+      <button type="button" class="pbtn" id="navNext" data-act="next" aria-label="Следующий слайд" title="Дальше (стрелка вправо)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 4 8 8-8 8"/></svg></button>
+    </nav>
+    <span class="stat" id="stats"></span>
+  </aside>
+  <main class="main">
+    <header class="topline">
+      <div><h1>Проклятие призрака Бубу</h1><small id="now"></small></div>
+    </header>
+    <article class="parch" id="stage"></article>
+  </main>
+</div>
+<div class="ghostbox" id="ghost">
+  <div class="bubble" id="pa" role="status" aria-live="polite" hidden></div>
+  <svg class="ghost" viewBox="0 0 100 120" aria-hidden="true" focusable="false">
+    <path d="M50 6C28 6 14 24 14 48v58c0 5 5 7 8 4l8-7 9 9c2 2 5 2 7 0l4-6 4 6c2 2 5 2 7 0l9-9 8 7c3 3 8 1 8-4V48C86 24 72 6 50 6z"/>
+    <ellipse class="eye" cx="38" cy="46" rx="6" ry="8"/><ellipse class="eye" cx="62" cy="46" rx="6" ry="8"/>
+    <ellipse class="cheek" cx="29" cy="62" rx="6" ry="4"/><ellipse class="cheek" cx="71" cy="62" rx="6" ry="4"/>
+    <path class="mo m-idle" d="M42 66q8 7 16 0"/>
+    <path class="mo m-ok" d="M38 64q12 16 24 0z"/>
+    <path class="mo m-bad" d="M40 74q5-6 10 0t10 0"/>
+  </svg>
+</div>
+<div class="toc" id="toc" aria-label="Список слайдов" hidden></div>
+
+<script>
+(function(){
+'use strict';
+
+/* ======================= помощники ======================= */
+const $=(s,r)=>(r||document).querySelector(s);
+const $$=(s,r)=>Array.prototype.slice.call((r||document).querySelectorAll(s));
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+const reduceMotion=()=>window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+/* для заданий с запятыми: в строке запятые стоят правильно, слова приходят без них; exp — после каких слов нужна запятая */
+function parseComma(s){
+  const words=[],exp={};
+  s.split(/\s+/).filter(Boolean).forEach((x,i)=>{
+    const m=x.match(/^(.*?)(,?)([.!?]?)$/);
+    words.push({w:m[1],end:m[3]});
+    if(m[2])exp[i]=1;
+  });
+  return {words,exp};
+}
+const CI=(s,subj,pred,why,o)=>{const P=parseComma(s);return Object.assign({s,subj,pred,why,_p:P,trap:!Object.keys(P.exp).length},o||{});};
+
+const BLOCKS={1:'Разминка',2:'Однородные члены',3:'Склей в одно',4:'«Который»',5:'Приглашение'};
+const BC=['#b84c05','#6d3fc0','#2f7d32','#a32d6e','#13707f'];
+
+/* выбор формы слова «который»: слово, род, верная форма */
+const FORMS=['который','которая','которое','которые'];
+const KW=(a,b,word,g,right)=>({p:`<span class="big">${a}<span class="blank">___</span>${b}</span>`,
+  o:FORMS.map(f=>f===right?{t:f,ok:1,why:`Верно. Слово «${word}»: ${g}, значит «${f}».`}:{t:f,why:`Слово «${word}»: ${g}${/\.$/.test(g)?'':'.'} Нужно «${right}», а не «${f}».`})});
+
+/* ======================= содержание урока =======================
+   Типы шагов: explain (карточки с пунктами), mc (выбор ответа), commas (поставить запятую между словами). */
+const STEPS=[
+ {id:'warm',t:'explain',b:1,all:1,title:'Бубу заедает',go:'Дальше',meta:'устно',points:[
+   'Бубу заколдован: он повторяет слова, как заевшая пластинка. Послушайте его и скажите то же самое <b>одним предложением</b>.',
+   'Что вы сделали со словами? Подумайте, как это можно назвать.']},
+
+ {id:'exA',t:'explain',b:2,title:'Однородные члены',go:'К заданию',points:[
+   'Бубу говорит: <i>Мы взяли тыкву, свечи и фонарь.</i> Слова «тыкву», «свечи» и «фонарь» отвечают на один вопрос и относятся к одному слову «взяли». Такие слова называются <b>однородными членами</b>.',
+   'Если союза нет, между однородными членами ставится <b>запятая</b>. Перед одиночным <b>«и»</b> запятой нет. Перед <b>«а»</b> и <b>«но»</b> запятая есть.<span class="box"><span>Мы взяли тыкву<b>,</b> свечи и фонарь.</span><span>Мы искали не свечу<b>,</b> а фонарь.</span><span>Свеча маленькая<b>,</b> но яркая.</span></span>',
+   '<b>Ловушка из прошлого урока.</b> «И» между однородными сказуемыми запятой не требует: основа одна. <i>Бубу вылетел из камина и пролетел по залу.</i> А «и» между двумя основами запятую требует: <i>Бубу вылетел из камина<b>,</b> и все ахнули.</i> Поэтому сначала найдите основы.']},
+
+ {id:'cmA',t:'commas',b:2,title:'Поставь запятые',
+  intro:'Нажимайте в промежутках между словами, чтобы поставить запятую. Если запятая не нужна, нажмите «Запятая не нужна». Потом нажмите «Проверить».',items:[
+   CI('Мы купили для вечеринки тыквы, свечи и конфеты.',[0],[1],'Однородные члены «тыквы, свечи и конфеты». Запятая стоит после «тыквы», перед одиночным «и» запятой нет.',{listAnd:1,no:'Здесь запятая не нужна: запятые ставятся между однородными членами, а эти слова не однородные.',miss:'Запятой не хватает. Найдите однородные члены: между ними без союза ставится запятая.',need:'Запятая здесь нужна. Найдите однородные члены: между ними без союза ставится запятая.',hint:'Основа выделена. Какие слова в предложении однородные?'}),
+   CI('Мальчик быстро надел костюм и выбежал на улицу.',[0],[2,5],'Подлежащее одно, «мальчик», а сказуемых два: «надел» и «выбежал». Основа одна, поэтому запятая не нужна.',{one:'подлежащее «мальчик» одно, а сказуемых два'}),
+   CI('Мы искали не фонарь, а свечу.',[0],[1],'Перед «а» запятая: «не фонарь, а свечу». Основа здесь одна, «мы искали».',{no:'Здесь запятая не нужна. В этом предложении она стоит перед словом «а».',miss:'Запятой не хватает. Она нужна перед «а».',need:'Запятая здесь нужна: перед «а» она стоит всегда.',hint:'Основа выделена. Перед каким словом нужна запятая?'}),
+   CI('Вечеринка закончилась, но никто не ушёл.',[0,3],[1,5],'Две основы: «вечеринка закончилась» и «никто не ушёл». Запятая стоит перед «но».'),
+   CI('Мы пели, играли и танцевали до утра.',[0],[1,2,4],'Однородные сказуемые «пели, играли и танцевали»: основа одна. Запятая стоит после «пели», перед одиночным «и» запятой нет.',{listAnd:1,no:'Здесь запятая не нужна. Запятая стоит между однородными сказуемыми, но не перед одиночным «и».',miss:'Запятой не хватает. Найдите однородные сказуемые: между ними без союза ставится запятая.',need:'Запятая здесь нужна. Найдите однородные сказуемые: между ними без союза ставится запятая.',hint:'Основа выделена. Сколько в предложении сказуемых?'})
+ ]},
+
+ {id:'mcA',t:'mc',b:3,title:'Склей в одно',intro:'Соедините короткие предложения в одно так, чтобы слова не повторялись и запятые стояли правильно.',items:[
+   {p:'<span class="big">Я люблю вырезать тыквы. Я люблю рисовать паутину. Я люблю пугать друзей.</span>',o:[
+     {t:'Я люблю вырезать тыквы, рисовать паутину и пугать друзей.',ok:1,why:'Верно. Запятая стоит после «тыквы», а перед одиночным «и» запятой нет.'},
+     {t:'Я люблю вырезать тыквы рисовать паутину и пугать друзей.',why:'Между однородными членами не хватает запятой после «тыквы».'},
+     {t:'Я люблю вырезать тыквы, рисовать паутину, и пугать друзей.',why:'Перед одиночным «и» между однородными членами запятая не нужна.'}]},
+   {p:'<span class="big">Бубу открыл дверь. Бубу вошёл в зал.</span>',o:[
+     {t:'Бубу открыл дверь и вошёл в зал.',ok:1,why:'Верно. Подлежащее одно, сказуемых два: основа одна, запятая не нужна.'},
+     {t:'Бубу открыл дверь, и вошёл в зал.',why:'Основа одна, поэтому запятая перед «и» не нужна.'},
+     {t:'Бубу открыл дверь, Бубу вошёл в зал.',why:'Повтор остался: «Бубу» стоит дважды. Подлежащее достаточно назвать один раз.'}]},
+   {p:'<span class="big">Он говорил тихо. Он говорил медленно. Он говорил таинственно.</span>',o:[
+     {t:'Он говорил тихо, медленно и таинственно.',ok:1,why:'Верно. Запятая стоит после «тихо», а перед одиночным «и» запятой нет.'},
+     {t:'Он говорил тихо медленно и таинственно.',why:'Между однородными членами не хватает запятой после «тихо».'},
+     {t:'Он говорил тихо, медленно, и таинственно.',why:'Перед одиночным «и» запятая не нужна.'}]}
+ ]},
+
+ {id:'exB',t:'explain',b:4,title:'«Который»',go:'К заданию',points:[
+   'Бубу говорит: <i>Я увидел призрака. Призрак пел.</i> Слово «призрак» повторяется. Скажем короче: <i>Я увидел призрака<b>,</b> который пел.</i> Слово <b>«который»</b> заменяет повторяющееся слово и соединяет две части в одно предложение.',
+   '«Который» меняется по роду и числу, как слово, которое он заменяет: <i>сундук</i> (м.р.) → <b>который</b>, <i>тыква</i> (ж.р.) → <b>которая</b>, <i>окно</i> (ср.р.) → <b>которое</b>, <i>следы</i> (мн.ч.) → <b>которые</b>.',
+   'У каждой части своя основа, между ними запятая. Если часть с «который» стоит в середине, запятая ставится с двух сторон:<span class="box"><span>Дом<b>,</b> который стоит на холме<b>,</b> давно пустует.</span></span>']},
+
+ {id:'mcB1',t:'mc',b:4,fix:1,title:'Выбери слово',intro:'Выберите нужную форму слова «который». Подумайте, какое слово оно заменяет.',items:[
+   KW('Я нашёл сундук, ',' стоит в подвале.','сундук','м.р.','который'),
+   KW('Мне понравилась тыква, ',' светится в темноте.','тыква','ж.р.','которая'),
+   KW('Бубу показал окно, ',' горит на чердаке.','окно','ср.р.','которое'),
+   KW('Мы увидели следы, ',' вели к воротам.','следы','мн.ч.','которые'),
+   KW('Я позвал дядю, ',' любит страшные истории.','дядя','м.р., хотя оканчивается на -я','который')
+ ]},
+
+ {id:'mcB2',t:'mc',b:4,title:'Склей с «который»',intro:'Соедините два предложения в одно с помощью слова «который».',items:[
+   {p:'<span class="big">Мы нашли книгу. Книга лежала на чердаке.</span>',o:[
+     {t:'Мы нашли книгу, которая лежала на чердаке.',ok:1,why:'Верно. «Которая» заменяет слово «книга» (ж.р.), перед ним запятая.'},
+     {t:'Мы нашли книгу которая лежала на чердаке.',why:'Между двумя основами («мы нашли» и «которая лежала») нужна запятая.'},
+     {t:'Мы нашли книгу, книга лежала на чердаке.',why:'Повтор остался: «книга» стоит дважды. Заменить его поможет слово «который».'}]},
+   {p:'<span class="big">Охотник взял фонарь. Фонарь лежал на столе.</span>',o:[
+     {t:'Охотник взял фонарь, который лежал на столе.',ok:1,why:'Верно. «Который» заменяет слово «фонарь» (м.р.), перед ним запятая.'},
+     {t:'Охотник взял фонарь который лежал на столе.',why:'Между двумя основами нужна запятая.'},
+     {t:'Охотник взял фонарь, которая лежал на столе.',why:'Слово «фонарь» м.р., поэтому нужно «который», а не «которая».'}]},
+   {p:'<span class="big">Ведьма варит зелье. Ведьма живёт рядом.</span>',o:[
+     {t:'Ведьма, которая живёт рядом, варит зелье.',ok:1,why:'Верно. Часть с «которая» стоит в середине, поэтому запятые с двух сторон.'},
+     {t:'Ведьма, которая живёт рядом варит зелье.',why:'Часть «которая живёт рядом» стоит в середине, нужна ещё одна запятая после «рядом».'},
+     {t:'Ведьма которая живёт рядом варит зелье.',why:'Часть с «которая» нужно отделить запятыми с двух сторон.'}]}
+ ]},
+
+ {id:'cmB',t:'commas',b:4,title:'Запятые со словом «который»',
+  intro:'Найдите границы между основами и поставьте запятые. В одном предложении запятых будет две.',items:[
+   CI('Я потерял плащ, который мне сшила бабушка.',[0,6],[1,5],'Две основы: «я потерял» и «бабушка сшила». Запятая стоит перед «который».'),
+   CI('Призрак, который жил на чердаке, исчез.',[0,1],[2,5],'Часть «который жил на чердаке» стоит в середине, поэтому запятые с двух сторон.'),
+   CI('Мы пришли в дом, который стоит на холме.',[0,4],[1,5],'Две основы: «мы пришли» и «который стоит». Запятая стоит перед «который».')
+ ]},
+
+ {id:'fin',t:'explain',b:5,title:'Приглашение на вечеринку',go:'Снять проклятие',meta:'устно',points:[
+   'Помогите Бубу составить приглашение. Вот три факта:<span class="box"><span>Вечеринка пройдёт в старом доме.</span><span>Дом стоит на холме.</span><span>На вечеринку придут Анна, Павел и Игорь.</span></span>Соберите из них два предложения. Повторяющиеся слова уберите, запятые поставьте правильно. Скажите вслух.',
+   'Один из вариантов:<span class="box"><span><b>Вечеринка пройдёт в старом доме, который стоит на холме.</b></span><span><b>На неё придут Анна, Павел и Игорь.</b></span></span>Не повторяться помогли слово «который» и слово «неё» вместо «вечеринку».']}
+];
+
+/* ======================= реплики Бубу на вступлении и в конце ======================= */
+const HI={kind:'hi',html:'Помогите! Я повторяю слова и не ставлю запятых. Войдите в дом, и мы всё исправим.'};
+const FREE={kind:'free',html:'Свободен! Теперь я говорю коротко и с запятыми. Спасибо, помощник!'};
+
+/* ======================= состояние ======================= */
+let S;
+const newState=()=>({phase:'brief',pi:0,mistakes:0,hints:3,msg:HI,refocus:null,rev:1,seen:{},mc:null,cm:null});
+const step=()=>STEPS[S.pi];
+const mist=()=>{S.mistakes++;paintStats();};
+
+/* ======================= сообщения ======================= */
+const LABEL={info:'Подсказка',ok:'Верно',bad:'Не то',hi:'Бубу',free:'Бубу'};
+function paintPA(){
+  const el=$('#pa'),g=$('#ghost');
+  g.classList.remove('ok','bad','free');
+  if(!S.msg){el.hidden=true;el.innerHTML='';return;}
+  el.hidden=false;
+  if(S.msg.kind==='ok'||S.msg.kind==='bad'||S.msg.kind==='free')g.classList.add(S.msg.kind);
+  el.className='bubble '+(S.msg.kind==='ok'?'ok':S.msg.kind==='bad'?'bad':'');
+  el.innerHTML=`<div class="tx2"><span class="lb">${LABEL[S.msg.kind]}</span>${S.msg.html}</div><button type="button" class="dx" data-act="dockx" aria-label="Закрыть сообщение">×</button>`;
+  el.classList.remove('pop');void el.offsetWidth;el.classList.add('pop');
+}
+/* облачко лежит поверх страницы: прокручиваем так, чтобы кнопки задания остались над ним */
+function nudge(){
+  const el=$('#pa'),row=$$('#stage .row,#stage .opts').pop();
+  if(el.hidden||!row)return;
+  const d=el.getBoundingClientRect(),r=row.getBoundingClientRect();
+  if(r.bottom>d.top-12&&r.left<d.right&&r.right>d.left)window.scrollBy({top:r.bottom-d.top+20,behavior:reduceMotion()?'auto':'smooth'});
+}
+function say(kind,html){S.msg={kind,html};paintPA();setTimeout(nudge,0);}
+const statsText=()=>`Ошибки ${S.mistakes} · Подсказки ${S.hints}`;
+function paintStats(){$('#stats').textContent=statsText();}
+
+/* ======================= экраны ======================= */
+const head=(title,meta)=>`<div class="sh-head"><span class="nut">${S.pi+1}</span><h2 data-h tabindex="-1">${title}</h2><span class="meta">${meta}</span></div>`;
+const V={};
+
+V.brief=()=>`
+<div class="sh-head hero"><span class="nut">★</span><h2 data-h tabindex="-1">Дом на холме</h2><span class="meta">Хэллоуин</span></div>
+<div class="sh-body">
+<p class="lead">В старом доме на холме живёт добрый призрак Бубу. Сто лет назад его заколдовали: он повторяет одни и те же слова и не может поставить ни одной запятой.</p>
+<p class="lead">Проклятие снимется, если помощник охотников за привидениями научит Бубу говорить коротко и правильно. Вы и есть этот помощник. Время до полуночи.</p>
+<ul class="rules"><li>Сначала объяснение, потом задания.</li><li>За каждое задание в доме загорается окно.</li><li>Ошибки не страшны, подсказок три. Слайды переключают стрелки.</li></ul>
+<div class="row"><button type="button" class="btn btn-go" data-act="start" data-af>Войти в дом</button></div>
+</div>`;
+
+V.explain=st=>{
+  const total=st.points.length,n=st.all?total:Math.min(S.rev,total),last=n>=total;
+  const list=st.points.slice(0,n).map((p,i)=>`<li${i===n-1&&n>1&&!st.all?' class="new"':''}><span class="no">${i+1}</span><div>${p}</div></li>`).join('');
+  const btn=last?`<button type="button" class="btn btn-go" data-act="exdone" data-af>${st.go||'К заданию'}</button>`:`<button type="button" class="btn btn-go" data-act="exmore" data-af>Дальше</button>`;
+  return `${head(st.title,st.meta||'объяснение')}<div class="sh-body"><ol class="ex">${list}</ol><div class="row">${btn}</div></div>`;
+};
+
+V.mc=st=>{
+  const m=S.mc,it=st.items[m.i],total=st.items.length;
+  const dots=`<div class="prog" aria-hidden="true">${st.items.map((_,i)=>`<i class="${i<m.i?'d':i===m.i?'c':''}"></i>`).join('')}</div>`;
+  let af=false;
+  const opts=m.ord.map(k=>{
+    const o=it.o[k],dis=m.no.includes(k)||m.lock;
+    const a=!dis&&!af?(af=true,' data-af'):'';
+    const cls=['opt'];
+    if(m.no.includes(k))cls.push('no');
+    if(m.lock&&o.ok)cls.push('right');
+    return `<button type="button" class="${cls.join(' ')}" data-act="mc" data-k="${k}"${dis?' disabled':''}${a}><span class="ot">${esc(o.t)}</span></button>`;
+  }).join('');
+  const ctl=m.lock?`<div class="row"><button type="button" class="btn btn-go" data-act="mcnext" data-af>${m.i===total-1?'Дальше':'Следующее'}</button></div>`:'';
+  return `${head(st.title,'задание')}<div class="sh-body">${st.intro?`<p class="task">${st.intro}</p>`:''}${dots}<p class="mc-p">${it.p}</p><div class="opts${st.fix?' four':''}">${opts}</div>${ctl}</div>`;
+};
+
+V.commas=st=>{
+  const C=S.cm,it=st.items[C.i],P=it._p,total=st.items.length,n=P.words.length;
+  const dots=`<div class="prog" aria-hidden="true">${st.items.map((_,i)=>`<i class="${i<C.i?'d':i===C.i?'c':''}"></i>`).join('')}</div>`;
+  const mark=i=>it.subj.indexOf(i)>=0?1:(it.pred.indexOf(i)>=0?2:0);
+  const show=C.ok||C.hint;
+  const h=P.words.map((x,i)=>{
+    const m=show?mark(i):0;
+    const cls='tx'+(m===1?' s':m===2?' p':'');
+    let after='';
+    if(i<n-1){
+      if(C.ok)after=P.exp[i]?'<span class="cm">,</span>':'';
+      else after=`<span class="gw"><button type="button" class="gp${C.cuts[i]?' has':''}${C.flags[i]?' '+C.flags[i]:''}" data-act="cgap" data-i="${i}" aria-label="Промежуток после слова «${esc(x.w)}»${C.cuts[i]?', стоит запятая':''}">${C.cuts[i]?'<span class="sg">,</span>':''}</button></span>`;
+    }
+    return `<span class="${cls}">${esc(x.w)}</span>${x.end?`<span>${x.end}</span>`:''}${after} `;
+  }).join('');
+  const res=C.ok?`<div class="result">${esc(it.why)}</div>`:'';
+  const ctl=C.ok?`<div class="row"><button type="button" class="btn btn-go" data-act="cmnext" data-af>${C.i===total-1?'Дальше':'Следующее'}</button></div>`
+    :`<div class="row"><button type="button" class="btn btn-go" data-act="cmcheck">Проверить</button><button type="button" class="btn btn-line sm" data-act="cmno">Запятая не нужна</button><button type="button" class="btn btn-line sm" data-act="cmhint"${S.hints<1||C.hint?' disabled':''}>Подсказка</button><button type="button" class="btn btn-line sm" data-act="cmreset">Сбросить</button></div>`;
+  return `${head(st.title,'запятые')}<div class="sh-body"><p class="task">${st.intro}</p>${dots}<div class="sent2" aria-label="Предложение">${h}</div>${res}${ctl}</div>`;
+};
+
+V.end=()=>{
+  const rank=S.mistakes<=6?'главный охотник за привидениями':S.mistakes<=14?'охотник за привидениями':'помощник охотников';
+  return `<div class="sh-head hero"><span class="nut">✓</span><h2 data-h tabindex="-1">Проклятие снято</h2><span class="meta">полночь</span></div>
+<div class="sh-body"><div class="verdict"><span class="stamp in">Бубу свободен</span></div>
+<p class="lead">Бубу больше не повторяется и ставит запятые сам. Во всех окнах дома горит свет.</p>
+<h3 class="sub">Что мы узнали</h3><ol class="found">
+<li><span class="no">1</span><span><b>Однородные члены</b> отвечают на один вопрос и относятся к одному слову. Между ними запятая, а перед одиночным «и» запятой нет.</span></li>
+<li><span class="no">2</span><span><b>Перед «а» и «но»</b> запятая есть: <i>Мы искали не свечу, а фонарь.</i></span></li>
+<li><span class="no">3</span><span><b>«И» между однородными сказуемыми</b> запятой не требует, ведь основа одна. Между двумя основами запятая нужна.</span></li>
+<li><span class="no">4</span><span><b>«Который»</b> заменяет повторяющееся слово и меняется по роду и числу. Часть с ним отделяется запятой, а в середине предложения запятыми с двух сторон.</span></li>
+</ol>
+<div class="hw"><b>Домашнее задание.</b> Рабочий лист: спишите предложения, поставьте запятые и подчеркните основы.</div>
+<p class="stats-line">Ошибок: ${S.mistakes}. Подсказок использовано: ${3-S.hints}. Звание: <b>${rank}</b>.</p>
+<div class="row"><button type="button" class="btn btn-go" data-act="again" data-af>Пройти ещё раз</button></div></div>`;
+};
+
+/* ======================= отрисовка ======================= */
+function viewHtml(){
+  if(S.phase==='brief')return V.brief();
+  if(S.phase==='end')return V.end();
+  const st=step();
+  return V[st.t](st);
+}
+function nowText(){
+  if(S.phase==='brief')return 'Знакомимся с домом';
+  if(S.phase==='end')return 'Проклятие снято';
+  const st=step();
+  return `Блок ${st.b} · ${BLOCKS[st.b]}`;
+}
+/* дом слева: окно загорается, когда шаг пройден */
+function paintHouse(){
+  const box=$('#wins');
+  if(!box.children.length)box.innerHTML=STEPS.map((s,k)=>`<button type="button" class="win" data-act="goto" data-i="${k+1}" title="${esc(s.title)}" aria-label="Шаг ${k+1}: ${esc(s.title)}"></button>`).join('');
+  $$('#wins .win').forEach((w,k)=>{
+    const on=S.phase==='end'||!!S.seen[STEPS[k].id],cur=S.phase==='step'&&S.pi===k,was=w.classList.contains('on');
+    w.classList.toggle('on',on);w.classList.toggle('cur',cur);
+    if(cur)w.setAttribute('aria-current','step');else w.removeAttribute('aria-current');
+    if(on&&!was){w.classList.add('pop');setTimeout(()=>w.classList.remove('pop'),800);}
+  });
+  $('#house').classList.toggle('done',S.phase==='end');
+}
+function render(){
+  document.documentElement.dataset.b=S.phase==='step'?String(step().b):'1';
+  $('#now').textContent=nowText();
+  $('#stage').innerHTML=viewHtml();
+  paintStats();paintPA();paintNav();paintHouse();
+  if(S.refocus){
+    const el=(S.refocus==='af'&&$('#stage [data-af]'))||$('#stage [data-h]');
+    if(el)el.focus({preventScroll:true});
+    S.refocus=null;
+  }
+}
+const toTop=()=>window.scrollTo({top:0,behavior:reduceMotion()?'auto':'smooth'});
+function confetti(n){
+  if(reduceMotion())return;
+  const host=$('#stage');
+  const old=host.querySelector('.confetti');if(old)old.remove();
+  const box=document.createElement('div');
+  box.className='confetti';box.setAttribute('aria-hidden','true');
+  const colors=['#ff9a2e','#ffd36a','#6d3fc0','#2f7d32','#a32d6e','#ffffff'];
+  for(let i=0;i<n;i++){
+    const p=document.createElement('i');
+    p.style.left=(Math.random()*100)+'%';
+    p.style.background=colors[i%colors.length];
+    p.style.setProperty('--dx',(Math.random()*160-80)+'px');
+    p.style.setProperty('--r',(Math.random()*720-360)+'deg');
+    p.style.animationDelay=(Math.random()*.6)+'s';
+    p.style.animationDuration=(1.6+Math.random()*1.2)+'s';
+    box.appendChild(p);
+  }
+  host.appendChild(box);
+  setTimeout(()=>box.remove(),3600);
+}
+
+/* ======================= ход урока ======================= */
+function newComma(i){return {i:i||0,cuts:{},flags:{},ok:false,hint:false};}
+function enterStep(){
+  S.rev=1;S.msg=null;
+  const st=step();
+  if(st.t==='mc'){S.mc={i:0,no:[],lock:false,ord:[]};prepItem();}
+  if(st.t==='commas')S.cm=newComma(0);
+}
+function finishStep(){S.seen[step().id]=1;}
+function nextStep(){
+  finishStep();
+  if(S.pi<STEPS.length-1){S.pi++;enterStep();S.refocus='h';render();toTop();}
+  else{S.phase='end';S.msg=FREE;S.refocus='h';render();toTop();confetti(90);}
+}
+function onExMore(){S.rev++;S.refocus='af';render();}
+
+/* выбор ответа */
+function prepItem(){
+  const st=step(),m=S.mc,it=st.items[m.i];
+  m.no=[];m.lock=false;
+  m.ord=st.fix?it.o.map((_,k)=>k):shuffle(it.o.map((_,k)=>k));
+}
+function mcAdvance(){
+  const st=step(),m=S.mc;
+  if(m.i>=st.items.length-1){nextStep();return;}
+  m.i++;prepItem();S.msg=null;S.refocus='af';render();
+}
+function onMC(k){
+  const st=step(),m=S.mc,it=st.items[m.i],o=it.o[k];
+  if(m.lock)return;
+  if(o.ok){m.lock=true;if(m.i===st.items.length-1)S.seen[st.id]=1;S.refocus='af';render();say('ok',esc(o.why)||'Верно.');}
+  else{m.no.push(k);mist();render();say('bad',esc(o.why)||'Не то. Подумайте ещё.');}
+}
+
+/* запятые */
+function onCgap(i){
+  const C=S.cm;
+  if(C.ok)return;
+  if(C.cuts[i])delete C.cuts[i];else C.cuts[i]=1;
+  C.flags={};render();
+}
+function whyNot(it,P,i){
+  const w=P.words[i].w,w2=P.words[i+1].w;
+  if(it.one)return `В этом предложении основа одна: ${esc(it.one)}. Запятая между частями нужна, когда основ две.`;
+  if(it.listAnd&&w2.toLowerCase()==='и')return 'Перед одиночным «и» между однородными членами запятая не нужна.';
+  if(it.no)return esc(it.no);
+  return `После слова «${esc(w)}» первая часть ещё не закончилась: границы между основами здесь нет. Запятая стоит там, где кончается одна основа и начинается другая.`;
+}
+function cmDone(it,st){const C=S.cm;C.ok=true;if(C.i===st.items.length-1)S.seen[st.id]=1;S.refocus='af';render();say('ok',esc(it.why));}
+function onCmCheck(){
+  const st=step(),C=S.cm,it=st.items[C.i],P=it._p,n=P.words.length;
+  if(!Object.keys(C.cuts).length){say('info','Нажмите в промежутке между словами, чтобы поставить запятую. Если запятая не нужна, нажмите «Запятая не нужна».');return;}
+  const good=[],bad=[],miss=[];
+  for(let i=0;i<n-1;i++){
+    if(C.cuts[i]&&P.exp[i])good.push(i);
+    else if(C.cuts[i]&&!P.exp[i])bad.push(i);
+    else if(!C.cuts[i]&&P.exp[i])miss.push(i);
+  }
+  C.flags={};good.forEach(i=>{C.flags[i]='good';});bad.forEach(i=>{C.flags[i]='bad';});
+  if(!bad.length&&!miss.length){C.flags={};cmDone(it,st);return;}
+  mist();
+  let m='';
+  if(bad.length)m=whyNot(it,P,bad[0]);
+  if(miss.length)m+=(m?' ':'')+(bad.length?'Кроме того, одной запятой не хватает.':(it.miss?esc(it.miss):'Запятой не хватает: между частями есть граница. Найдите две основы, граница между ними.'));
+  render();say('bad',m);
+}
+function onCmNo(){
+  const st=step(),C=S.cm,it=st.items[C.i];
+  if(C.ok)return;
+  if(it.trap){C.cuts={};C.flags={};cmDone(it,st);}
+  else{mist();C.flags={};render();say('bad',it.need?esc(it.need):'Запятая здесь нужна: в предложении две основы, а между основами ставится запятая. Найдите границу между ними.');}
+}
+function onCmHint(){
+  const st=step(),C=S.cm,it=st.items[C.i];
+  if(S.hints<1||C.hint||C.ok)return;
+  S.hints--;C.hint=true;render();
+  say('info',it.hint?esc(it.hint):it.trap?'Основа выделена. Сколько основ в предложении?':'Основы выделены: подлежащие одной чертой, сказуемые двумя. Где кончается первая часть?');
+}
+function cmAdvance(){
+  const st=step(),C=S.cm;
+  if(C.i>=st.items.length-1){nextStep();return;}
+  S.cm=newComma(C.i+1);S.msg=null;S.refocus='af';render();
+}
+
+/* переход по слайдам (стрелки) */
+function slides(){
+  const L=[{k:'brief',t:'Знакомство с домом',b:0}];
+  STEPS.forEach((s,pi)=>L.push({k:'step',pi,t:s.title,b:s.b}));
+  L.push({k:'end',t:'Проклятие снято',b:6});
+  return L;
+}
+function curIdx(L){
+  if(S.phase==='brief')return 0;
+  if(S.phase==='end')return L.length-1;
+  return S.pi+1;
+}
+function goSlide(idx,dir){
+  const L=slides();
+  idx=Math.max(0,Math.min(L.length-1,idx));
+  const T=L[idx];
+  for(let i=1;i<=Math.min(idx-1,STEPS.length);i++)S.seen[STEPS[i-1].id]=1;
+  S.msg=null;
+  if(T.k==='brief'){S.phase='brief';S.msg=HI;}
+  else if(T.k==='step'){S.phase='step';S.pi=T.pi;enterStep();if(step().t==='explain'&&dir<0)S.rev=step().points.length;}
+  else{S.phase='end';S.msg=FREE;}
+  render();toTop();
+  if(T.k==='end')confetti(60);
+}
+function slideStep(dir){
+  const L=slides(),i=curIdx(L);
+  if(S.phase==='step'){
+    const st=step();
+    if(st.t==='explain'&&dir>0&&!st.all&&S.rev<st.points.length){S.rev++;render();return;}
+  }
+  goSlide(i+dir,dir);
+}
+function renderToc(L,cur){
+  let h=`<p class="st">${esc(statsText())}</p>`,last=-1;
+  L.forEach((x,k)=>{
+    if(x.b!==last){
+      last=x.b;
+      h+=x.b===0?'<h3><i style="--rc:#ffd36a"></i>Вступление</h3>':x.b===6?'<h3><i style="--rc:#ff9a2e"></i>Финал</h3>':`<h3><i style="--rc:${BC[x.b-1]}"></i>Блок ${x.b} · ${esc(BLOCKS[x.b])}</h3>`;
+    }
+    h+=`<button type="button" data-act="goto" data-i="${k}"${k===cur?' class="cur" aria-current="step"':''}><span class="no">${x.k==='step'?x.pi+1:x.k==='end'?'★':'№'}</span><span>${esc(x.t)}</span></button>`;
+  });
+  $('#toc').innerHTML=h;
+  const c=$('#toc .cur');
+  if(c)$('#toc').scrollTop=Math.max(0,c.offsetTop-90);
+}
+function toggleToc(force){
+  const el=$('#toc'),open=force===undefined?el.hidden:force;
+  el.hidden=!open;
+  $$('[data-act="toc"]').forEach(b=>b.setAttribute('aria-expanded',String(open)));
+  if(open){const L=slides();renderToc(L,curIdx(L));}
+}
+function paintNav(){
+  const L=slides(),i=curIdx(L),T=L[i];
+  $('#navPrev').disabled=i===0;
+  $('#navNext').disabled=i===L.length-1;
+  $('#navNo').textContent=T.k==='step'?`Шаг ${T.pi+1} из ${STEPS.length}`:T.k==='end'?'Финал':'Начало';
+  if(!$('#toc').hidden)renderToc(L,i);
+}
+
+/* ======================= события ======================= */
+document.addEventListener('click',e=>{
+  if(!$('#toc').hidden&&!e.target.closest('#toc,[data-act="toc"]'))toggleToc(false);
+  const b=e.target.closest('[data-act]');
+  if(!b||b.disabled)return;
+  switch(b.dataset.act){
+    case 'prev':slideStep(-1);break;
+    case 'next':slideStep(1);break;
+    case 'toc':toggleToc();break;
+    case 'dockx':S.msg=null;paintPA();break;
+    case 'goto':{const k=+b.dataset.i,cur=curIdx(slides());toggleToc(false);goSlide(k,k>cur?1:-1);break;}
+    case 'start':S.phase='step';S.pi=0;enterStep();S.refocus='h';render();toTop();break;
+    case 'exmore':onExMore();break;
+    case 'exdone':nextStep();break;
+    case 'mc':onMC(+b.dataset.k);break;
+    case 'mcnext':mcAdvance();break;
+    case 'cgap':onCgap(+b.dataset.i);break;
+    case 'cmcheck':onCmCheck();break;
+    case 'cmno':onCmNo();break;
+    case 'cmhint':onCmHint();break;
+    case 'cmreset':{const C=S.cm;C.cuts={};C.flags={};S.msg=null;render();break;}
+    case 'cmnext':cmAdvance();break;
+    case 'again':S=newState();render();toTop();break;
+  }
+});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){
+    if(!$('#toc').hidden)toggleToc(false);
+    return;
+  }
+  if((e.key==='ArrowRight'||e.key==='ArrowLeft')&&!e.altKey&&!e.ctrlKey&&!e.metaKey&&!e.shiftKey
+     &&!/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)){
+    e.preventDefault();slideStep(e.key==='ArrowRight'?1:-1);
+  }
+});
+
+S=newState();
+render();
+})();
+</script>
+</body>
+</html>
