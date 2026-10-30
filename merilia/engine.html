@@ -95,6 +95,8 @@ button{font-family:inherit;cursor:pointer;border:none;color:inherit}
 .tq{font-size:40px;font-weight:900;text-align:center;line-height:1.5;color:var(--ink)}
 .tq.small{font-size:30px;line-height:1.45}
 .tq .u{color:var(--tealDark)}
+.fr{display:inline-flex;flex-direction:column;align-items:center;font-size:.9em;line-height:1.05;vertical-align:middle;margin:0 4px}
+.fr sup{border-bottom:3px solid currentColor;padding:0 5px 2px}.fr sub{padding-top:2px}
 .blank{display:inline-flex;align-items:center;justify-content:center;min-width:100px;height:68px;margin:0 6px;padding:0 12px;border-radius:16px;background:#fff;
   border:4px dashed var(--teal);vertical-align:middle;font-size:40px;font-weight:900;color:var(--ink);cursor:pointer}
 .blank.act{border-style:solid;border-color:var(--gold);box-shadow:0 0 0 5px rgba(255,213,107,.6)}
@@ -229,7 +231,7 @@ time:{
     {t:'in',q:'2 ч 40 мин + 1 ч 35 мин = {} ч {} мин',a:[4,15]},
     {t:'clock',h:7,m:45,o:['7:45','9:35','8:45','7:09'],a:'7:45'},
     {t:'ch',q:'Сколько дней в сентябре?',o:['28','30','31'],a:'30'}],
- 4:[{t:'in',q:'1 век = {} лет',a:[100]},{t:'in',q:'3 сут 5 ч = {} ч',a:[77]},{t:'in',q:'250 мин = {} ч {} мин',a:[4,10]},
+ 4:[{t:'in',q:'<span class="fr"><sup>1</sup><sub>4</sub></span> ч = {} мин',a:[15]},{t:'in',q:'3 сут 5 ч = {} ч',a:[77]},{t:'in',q:'250 мин = {} ч {} мин',a:[4,10]},
     {t:'in',q:'5 ч 10 мин − 2 ч 45 мин = {} ч {} мин',a:[2,25]},{t:'cmp',l:'3 мин 5 с',r:'185 с',a:'='},
     {t:'in',q:'Урок начался в 8 ч 30 мин и длился 45 мин.<br>Он закончился в {} ч {} мин.',a:[9,15],small:1},
     {t:'in',q:'Поезд ехал с 22 ч вечера до 6 ч утра.<br>Он был в пути {} ч.',a:[8],small:1}]},
@@ -243,9 +245,10 @@ area:{
     {t:'in',q:'S = 48 см², длина 8 см.<br>Ширина = {} см',a:[6],small:1},{t:'in',q:'4 дм² 5 см² = {} см²',a:[405]},
     {t:'in',q:'Фигура из двух прямоугольников:<br>5 см × 4 см и 3 см × 2 см. S = {} см²',a:[26],small:1},
     {t:'cmp',l:'7 м²',r:'700 дм²',a:'='},{t:'in',q:'2 м² − 50 дм² = {} дм²',a:[150]}],
- 4:[{t:'in',q:'1 а = {} м²',a:[100]},{t:'in',q:'1 га = {} а',a:[100]},{t:'in',q:'1 га = {} м²',a:[10000]},
+ 4:[{t:'in',q:'<span class="fr"><sup>1</sup><sub>2</sub></span> м² = {} дм²',a:[50]},{t:'in',q:'1 а = {} м²',a:[100]},{t:'in',q:'1 га = {} а',a:[100]},{t:'in',q:'1 га = {} м²',a:[10000]},
     {t:'in',q:'3 га 5 а = {} а',a:[305]},{t:'cmp',l:'2 га',r:'150 а',a:'>'},
     {t:'in',q:'Поле — прямоугольник 200 м × 50 м.<br>Его площадь {} а',a:[100],small:1},
+    {t:'in',q:'Прямоугольный треугольник, катеты 6 см и 4 см.<br>S = {} см²',a:[12],small:1},
     {t:'ch',q:'Что удобнее измерять в гектарах?',o:['площадь тетради','площадь поля','площадь комнаты'],a:'площадь поля',txt:1}]},
 volume:{
  2:[{t:'cubes',d:[3,2,2],q:'Каждый кубик — 1 см³. Объём фигуры {} см³',a:[12]},{t:'in',q:'1 дм³ = {} см³',a:[1000]},
@@ -257,7 +260,7 @@ volume:{
     {t:'in',q:'V = 36 см³, длина 4 см, ширина 3 см.<br>Высота = {} см',a:[3],small:1},{t:'in',q:'2 дм³ 40 см³ = {} см³',a:[2040]},
     {t:'cmp',l:'5 л',r:'5 дм³',a:'='},{t:'in',q:'Аквариум 5 дм × 3 дм × 4 дм.<br>В него войдёт {} л воды',a:[60],small:1}],
  4:[{t:'in',q:'1 м³ = {} дм³',a:[1000]},{t:'in',q:'3 м³ 25 дм³ = {} дм³',a:[3025]},{t:'cmp',l:'4 м³',r:'3999 дм³',a:'>'},
-    {t:'in',q:'Бассейн 10 м × 5 м × 2 м.<br>V = {} м³',a:[100],small:1},{t:'in',q:'1 см³ = {} мм³',a:[1000]},
+    {t:'in',q:'Бассейн 10 м × 5 м × 2 м.<br>V = {} м³',a:[100],small:1},{t:'in',q:'<span class="fr"><sup>1</sup><sub>4</sub></span> м³ = {} дм³',a:[250]},
     {t:'in',q:'Куб со стороной 3 дм.<br>V = {} дм³',a:[27],small:1},{t:'in',q:'В бочке 2 м³ воды.<br>Это {} л',a:[2000],small:1}]},
 mass:{
  3:[{t:'in',q:'1 кг = {} г',a:[1000]},{t:'in',q:'1 ц = {} кг',a:[100]},{t:'in',q:'1 т = {} ц',a:[10]},
@@ -267,7 +270,7 @@ mass:{
  4:[{t:'in',q:'5 т 40 кг = {} кг',a:[5040]},{t:'in',q:'3070 кг = {} т {} кг',a:[3,70]},{t:'in',q:'2 ц 50 кг · 4 = {} т',a:[1]},
     {t:'in',q:'7 т − 2 т 350 кг = {} т {} кг',a:[4,650]},{t:'cmp',l:'3 ц 5 кг',r:'350 кг',a:'<'},
     {t:'in',q:'6 кг 300 г : 3 = {} кг {} г',a:[2,100]},
-    {t:'in',q:'Грузовик везёт 4 ящика по 250 кг.<br>Масса груза {} т',a:[1],small:1}]},
+    {t:'in',q:'<span class="fr"><sup>3</sup><sub>4</sub></span> т = {} кг',a:[750]},{t:'in',q:'<span class="fr"><sup>2</sup><sub>5</sub></span> кг = {} г',a:[400]}]},
 speed:{
  3:[{t:'in',q:'Велосипедист едет со скоростью 12 км/ч.<br>За 3 ч он проедет {} км',a:[36],small:1},
     {t:'in',q:'Улитка проползла 20 м за 5 мин.<br>Её скорость {} м/мин',a:[4],small:1},
@@ -278,7 +281,8 @@ speed:{
  4:[{t:'in',q:'Два велосипедиста едут навстречу друг другу<br>со скоростями 12 км/ч и 15 км/ч.<br>Скорость сближения {} км/ч',a:[27],small:1},
     {t:'in',q:'Между городами 216 км. Навстречу выехали машины<br>со скоростями 50 км/ч и 58 км/ч.<br>Они встретятся через {} ч',a:[2],small:1},
     {t:'in',q:'Пешеход прошёл 3 км за 50 мин.<br>Его скорость {} м/мин',a:[60],small:1},
-    {t:'in',q:'Катер прошёл 96 км за 4 ч.<br>Его скорость {} км/ч',a:[24],small:1},
+    {t:'in',q:'Велосипедист догоняет пешехода. Между ними 20 км.<br>Скорость велосипедиста 15 км/ч, пешехода 5 км/ч.<br>Он догонит пешехода через {} ч',a:[2],small:1},
+    {t:'in',q:'Машина едет за автобусом: 70 км/ч и 50 км/ч.<br>Скорость сближения при движении вдогонку {} км/ч',a:[20],small:1},
     {t:'in',q:'Из одного города в разные стороны вышли поезда<br>со скоростями 70 км/ч и 80 км/ч.<br>Через 2 ч между ними будет {} км',a:[300],small:1},
     {t:'ch',q:'Пешеходы идут в разные стороны со скоростями 4 км/ч и 5 км/ч. Скорость удаления —',o:['1 км/ч','9 км/ч','20 км/ч'],a:'9 км/ч'}]},
 };
@@ -372,7 +376,7 @@ function go(d){ const n=curTask+d, list=tasks();
 /* ---------- task builders ---------- */
 const BUILD={
  in(body,t,api,extra=''){
-   const plain=t.q.replace(/<br>/g,' '); const long=!t.small && (plain.length>22 || (plain.match(/\{\}/g)||[]).length>1 && plain.length>16);
+   const plain=t.q.replace(/<[^>]+>/g,''); const long=!t.small && (plain.length>22 || (plain.match(/\{\}/g)||[]).length>1 && plain.length>16);
    const q=el('div','tq'+(t.small?' small':'')); if(long) q.style.fontSize='34px'; let i=0;
    q.innerHTML=extra+t.q.replace(/\{\}( [^ <{]+)?/g,(m,u)=>`<span style="white-space:nowrap"><span class="blank" data-i="${i++}"></span>${u||''}</span>`); body.appendChild(q);
    const blanks=[...q.querySelectorAll('.blank')]; let act=0;
