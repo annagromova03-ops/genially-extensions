@@ -301,8 +301,9 @@ function tb(html,fn,cls=''){const b=el('button','tbtn '+cls,html); b.onclick=()=
 function cover(){ curLand=null; setBg('throne'); setTools([]); scr.innerHTML='';
   const t=el('div','abs fade'); t.style.cssText='left:0;right:0;top:44px;text-align:center';
   t.innerHTML=`<div class="ribbon" style="font-size:72px;padding:18px 80px 22px">Королевство Мерилия</div>
-    <div style="margin-top:22px;font-size:28px;font-weight:900;color:#fff;text-shadow:0 2px 6px rgba(0,0,0,.55)">Тренажёр по единицам измерения</div>`;
-  const story=el('div','card abs fade'); story.style.cssText='left:330px;top:300px;width:940px;padding:30px 40px;text-align:center';
+    <div style="margin-top:22px;font-size:28px;font-weight:900;color:#fff;text-shadow:0 2px 6px rgba(0,0,0,.55)">Тренажёр по единицам измерения</div>
+    <div style="margin-top:12px"><span style="display:inline-block;background:linear-gradient(#ffd56b,#e8a923);color:#5a3a00;font-weight:900;font-size:26px;padding:8px 26px;border-radius:30px;border:3px solid #fff;box-shadow:0 5px 0 #8a5a00">По программе Л.Г. Петерсон · 2–4 класс</span></div>`;
+  const story=el('div','card abs fade'); story.style.cssText='left:330px;top:330px;width:940px;padding:30px 40px;text-align:center';
   story.innerHTML=`<div style="font-size:27px;font-weight:800;line-height:1.4">Колдунья <b style="color:#7b3fbf">Путаница</b> перепутала все меры в королевстве:
     торт весит «три метра», а часы на башне показывают килограммы! Королева Мерилия просит тебя пройти по землям,
     навести порядок и собрать <b style="color:#b07800">королевские печати</b>.</div>
