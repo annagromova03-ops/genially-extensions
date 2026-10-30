@@ -1,0 +1,458 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Королевство Мерилия</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&family=Lobster&display=swap" rel="stylesheet">
+<style>
+:root{
+  --gold:#e8a923; --gold2:#ffd56b; --goldDark:#8a5a00;
+  --teal:#1fa5a3; --tealDark:#0d5e5d; --teal2:#7fe0d8;
+  --ink:#1d3557; --parch:#fffaf0; --parch2:#fbefd5;
+  --ok:#3bb54a; --okDark:#1e6b27; --bad:#e85d5d; --badDark:#8a2121;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:#0d3b3d;font-family:'Nunito',Arial,sans-serif;color:var(--ink);
+  -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+#stage{position:absolute;left:50%;top:50%;width:1600px;height:900px;transform-origin:50% 50%;overflow:hidden;background:#0d3b3d}
+#bg{position:absolute;inset:0;background-size:cover;background-position:center;transition:opacity .35s}
+#screen{position:absolute;inset:0}
+.abs{position:absolute}
+button{font-family:inherit;cursor:pointer;border:none;color:inherit}
+.emo{font-family:'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif;line-height:1}
+.fade{animation:fadein .35s ease-out}
+@keyframes fadein{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.pop{animation:pop .45s ease-out}
+@keyframes pop{0%{transform:scale(.5);opacity:0}70%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-10px)}40%{transform:translateX(10px)}60%{transform:translateX(-6px)}80%{transform:translateX(6px)}}
+.shake{animation:shake .4s}
+
+/* ---- royal ribbon title ---- */
+.ribbon{position:relative;display:inline-block;padding:14px 60px 16px;background:linear-gradient(#2cc0bd,#178f8d);color:#fff;
+  font-family:'Lobster',cursive;font-size:44px;border-radius:12px;box-shadow:0 6px 0 var(--tealDark),0 10px 24px rgba(0,0,0,.25);
+  text-shadow:0 3px 0 var(--tealDark)}
+.ribbon::before,.ribbon::after{content:'';position:absolute;top:14px;width:40px;height:100%;background:#147f7d;z-index:-1}
+.ribbon::before{left:-26px;clip-path:polygon(0 0,100% 0,100% 100%,0 100%,30% 50%)}
+.ribbon::after{right:-26px;clip-path:polygon(0 0,100% 0,70% 50%,100% 100%,0 100%)}
+
+/* ---- parchment card ---- */
+.card{background:linear-gradient(180deg,var(--parch),var(--parch2));border-radius:28px;border:5px solid var(--gold);
+  box-shadow:0 0 0 4px rgba(255,255,255,.65),0 12px 0 rgba(138,90,0,.55),0 22px 40px rgba(0,0,0,.25);position:relative}
+.card::before{content:'';position:absolute;inset:8px;border:2px dashed rgba(232,169,35,.55);border-radius:20px;pointer-events:none}
+.corner{position:absolute;width:34px;height:34px;font-size:30px;line-height:1}
+.gembtn{height:84px;padding:0 44px;border-radius:24px;font-weight:900;font-size:34px;color:#fff;background:linear-gradient(#2cc0bd,#178f8d);
+  box-shadow:0 7px 0 var(--tealDark),0 12px 18px rgba(0,0,0,.2);text-shadow:0 2px 0 var(--tealDark);transition:transform .12s}
+.gembtn:hover{transform:translateY(-2px)} .gembtn:active{transform:translateY(5px);box-shadow:0 2px 0 var(--tealDark)}
+.gembtn.gold{background:linear-gradient(#ffd56b,#e8a923);color:#5a3a00;text-shadow:0 2px 0 rgba(255,255,255,.5);box-shadow:0 7px 0 var(--goldDark),0 12px 18px rgba(0,0,0,.2)}
+.gembtn.green{background:linear-gradient(#5fd36c,#2f9e3c);box-shadow:0 7px 0 var(--okDark);text-shadow:0 2px 0 var(--okDark)}
+
+/* ---- top tools ---- */
+#tools{position:absolute;right:22px;top:20px;display:flex;gap:10px;z-index:40}
+.tbtn{height:58px;min-width:58px;padding:0 18px;border-radius:18px;background:var(--parch);border:4px solid var(--gold);font-weight:900;font-size:22px;
+  display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 5px 0 var(--goldDark)}
+.tbtn:active{transform:translateY(3px);box-shadow:0 2px 0 var(--goldDark)}
+.tbtn.arrow{font-size:28px;padding:0;color:var(--tealDark)}
+.tbtn[disabled]{opacity:.4;pointer-events:none}
+
+/* ---- cover ---- */
+.gradeBtn{width:250px;height:150px;border-radius:30px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.gradeBtn b{font-size:66px;line-height:1}
+.gradeBtn span{font-size:26px}
+
+/* ---- map ---- */
+.spot{background:none;position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:6px;transition:transform .15s}
+.spot:hover{transform:translate(-50%,-54%) scale(1.04)}
+.spot .ic{width:96px;height:96px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff7d6,#ffd56b 55%,#e8a923);border:5px solid #fff;
+  box-shadow:0 6px 0 var(--goldDark),0 0 0 6px rgba(232,169,35,.35),0 10px 22px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;font-size:50px;position:relative}
+.spot .nm{background:var(--parch);border:3px solid var(--gold);border-radius:16px;padding:4px 14px;font-weight:900;font-size:21px;white-space:nowrap;box-shadow:0 4px 0 var(--goldDark)}
+.spot.locked .ic{filter:grayscale(1) brightness(.85)}
+.spot.locked .ic::after{content:'🔒';position:absolute;right:-10px;bottom:-8px;font-size:38px;font-family:'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif}
+.spot.locked{cursor:not-allowed}
+.spot.done .ic::after{content:'✓';position:absolute;right:-12px;top:-12px;width:44px;height:44px;border-radius:50%;background:var(--ok);color:#fff;font-size:30px;font-weight:900;
+  display:flex;align-items:center;justify-content:center;border:3px solid #fff;font-family:'Nunito'}
+.pulse .ic{animation:pulse 1.8s ease-in-out infinite}
+@keyframes pulse{0%,100%{box-shadow:0 6px 0 var(--goldDark),0 0 0 6px rgba(232,169,35,.35),0 10px 22px rgba(0,0,0,.35)}50%{box-shadow:0 6px 0 var(--goldDark),0 0 0 18px rgba(255,213,107,.45),0 10px 22px rgba(0,0,0,.35)}}
+.sealbar{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);display:flex;gap:14px;align-items:center;padding:10px 22px;border-radius:26px;
+  background:rgba(255,250,240,.93);border:4px solid var(--gold);box-shadow:0 6px 0 var(--goldDark)}
+.seal{width:70px;height:70px}
+.seal.off{filter:grayscale(1);opacity:.35}
+
+/* ---- land ---- */
+.bubble{position:absolute;background:#fff;border-radius:26px;padding:18px 24px;font-size:24px;font-weight:800;line-height:1.3;border:4px solid var(--teal);
+  box-shadow:0 7px 0 var(--tealDark),0 14px 24px rgba(0,0,0,.2);z-index:5}
+.bubble .who{position:absolute;top:-19px;left:20px;background:var(--teal);color:#fff;font-weight:900;font-size:18px;padding:3px 14px;border-radius:14px}
+.bubble::after{content:'';position:absolute;left:-30px;top:30px;border:16px solid transparent;border-right:20px solid var(--teal)}
+.bubble b{color:#c0392b}
+.taskcard{position:absolute;padding:24px 30px 22px;z-index:4}
+.dots{display:flex;gap:8px;justify-content:center;margin-bottom:12px}
+.dot{width:30px;height:30px;border-radius:50%;background:#e9dcc0;border:3px solid #cdb68a;font-size:15px;font-weight:900;color:#8a6d3a;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.dot.cur{background:var(--gold2);border-color:var(--gold);color:#5a3a00;transform:scale(1.15)}
+.dot.ok{background:var(--ok);border-color:var(--okDark);color:#fff}
+.dot.skip{background:#d4c6a8;border-color:#a3926d;color:#fff}
+.tq{font-size:40px;font-weight:900;text-align:center;line-height:1.5;color:var(--ink)}
+.tq.small{font-size:30px;line-height:1.45}
+.tq .u{color:var(--tealDark)}
+.blank{display:inline-flex;align-items:center;justify-content:center;min-width:100px;height:68px;margin:0 6px;padding:0 12px;border-radius:16px;background:#fff;
+  border:4px dashed var(--teal);vertical-align:middle;font-size:40px;font-weight:900;color:var(--ink);cursor:pointer}
+.blank.act{border-style:solid;border-color:var(--gold);box-shadow:0 0 0 5px rgba(255,213,107,.6)}
+.blank.right{border:4px solid var(--ok);background:#e3f8e5;color:var(--okDark)}
+.blank.wrong{border:4px solid var(--bad);background:#fde2e2;animation:shake .4s}
+.keypad{display:grid;grid-template-columns:repeat(6,72px);gap:8px;justify-content:center}
+.key{height:58px;border-radius:16px;background:#fff;border:3px solid #cdb68a;font-size:32px;font-weight:900;box-shadow:0 5px 0 #cdb68a;color:var(--ink)}
+.key:active{transform:translateY(3px);box-shadow:0 2px 0 #cdb68a}
+.key.del{background:#fde8d5}
+.key.go{grid-column:1 / -1;background:linear-gradient(#5fd36c,#2f9e3c);color:#fff;border-color:var(--okDark);box-shadow:0 5px 0 var(--okDark);font-size:26px}
+.opts{display:flex;gap:18px;justify-content:center;flex-wrap:wrap}
+.opt{min-width:130px;height:90px;padding:0 26px;border-radius:22px;background:#fff;border:4px solid var(--teal);box-shadow:0 6px 0 var(--tealDark);
+  font-size:36px;font-weight:900;color:var(--ink);transition:transform .12s}
+.opt.txt{font-size:26px;height:auto;min-height:80px;padding:12px 24px}
+.opt:hover{transform:translateY(-3px)}
+.opt.right{background:#e3f8e5;border-color:var(--ok);box-shadow:0 6px 0 var(--okDark);color:var(--okDark)}
+.opt.wrong{background:#fde2e2;border-color:var(--bad);box-shadow:0 6px 0 var(--badDark);animation:shake .4s}
+.opt[disabled]{pointer-events:none}
+.cmpRow{display:flex;align-items:center;justify-content:center;gap:26px}
+.qty{min-width:230px;padding:16px 26px;border-radius:22px;background:#fff;border:4px solid #cdb68a;font-size:42px;font-weight:900;text-align:center}
+.sign{width:110px;height:110px;border-radius:24px;border:4px dashed var(--teal);background:#fff;font-size:70px;font-weight:900;display:flex;align-items:center;justify-content:center;color:var(--tealDark)}
+.sign.right{border:4px solid var(--ok);background:#e3f8e5;color:var(--okDark)}
+.fb{margin-top:16px;height:54px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:900;opacity:0;transition:opacity .2s}
+.fb.ok{opacity:1;background:#e3f8e5;color:var(--okDark);border:3px solid var(--ok)}
+.fb.bad{opacity:1;background:#fde2e2;color:var(--badDark);border:3px solid var(--bad)}
+.nextBtn{position:absolute;right:30px;bottom:-40px;z-index:6}
+.teach{position:absolute;left:24px;bottom:16px;z-index:30;display:flex;gap:10px;align-items:center}
+.tnote{background:rgba(13,59,61,.88);color:#ffe9a8;border:2px dashed var(--gold2);font-size:19px;font-weight:800;padding:8px 14px;border-radius:12px;max-width:760px}
+.tshow{background:var(--gold2);color:#5a3a00;font-weight:900;font-size:18px;padding:9px 16px;border-radius:12px;border:3px solid var(--goldDark)}
+.burst{position:absolute;pointer-events:none;font-size:44px;z-index:60;animation:fly 1.1s ease-out forwards}
+@keyframes fly{to{transform:translate(var(--dx),var(--dy)) rotate(var(--r));opacity:0}}
+.overlay{position:absolute;inset:0;background:rgba(13,59,61,.55);z-index:50;display:flex;align-items:center;justify-content:center}
+.lvlchip{display:inline-block;background:var(--gold2);color:#5a3a00;border:3px solid var(--gold);border-radius:14px;font-weight:900;font-size:20px;padding:3px 12px}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="bg"></div>
+  <div id="screen"></div>
+  <div id="tools"></div>
+</div>
+<script>
+const TEACHER=/[?&]teacher=1/.test(location.search);
+const $=(s,r=document)=>r.querySelector(s);
+function el(t,c,h){const e=document.createElement(t); if(c)e.className=c; if(h!=null)e.innerHTML=h; return e;}
+const stage=$('#stage');
+function fit(){const s=Math.min(innerWidth/1600,innerHeight/900); stage.style.transform=`translate(-50%,-50%) scale(${s})`;}
+addEventListener('resize',fit); fit();
+stage.addEventListener('scroll',()=>{stage.scrollTop=0;stage.scrollLeft=0;});
+const IMG=n=>`img/${n}.jpg`;
+['throne','map','length','time','area','volume','mass','speed'].forEach(n=>{const i=new Image(); i.src=IMG(n);});
+function setBg(n){ $('#bg').style.backgroundImage=`url(${IMG(n)})`; }
+
+/* sound */
+let AC=null;
+function tone(seq){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)(); let t=AC.currentTime;
+  for(const [f,d,ty] of seq){const o=AC.createOscillator(),g=AC.createGain(); o.type=ty||'triangle'; o.frequency.value=f;
+  g.gain.setValueAtTime(.0001,t); g.gain.exponentialRampToValueAtTime(.16,t+.02); g.gain.exponentialRampToValueAtTime(.0001,t+d);
+  o.connect(g); g.connect(AC.destination); o.start(t); o.stop(t+d+.02); t+=d*.8;}}catch(e){}}
+const sOk=()=>tone([[587,.12],[740,.12],[880,.24]]), sBad=()=>tone([[240,.16,'square'],[200,.22,'square']]), sTap=()=>tone([[700,.05]]);
+const sSeal=()=>tone([[523,.15],[659,.15],[784,.15],[1047,.4]]);
+function burst(x,y,set=['⭐','✨','👑','💎','🌟']){for(let i=0;i<16;i++){const b=el('div','burst emo',set[i%set.length]); b.style.left=x+'px'; b.style.top=y+'px';
+  const a=Math.random()*Math.PI*2,d=150+Math.random()*230; b.style.setProperty('--dx',Math.cos(a)*d+'px'); b.style.setProperty('--dy',Math.sin(a)*d-60+'px');
+  b.style.setProperty('--r',(Math.random()*600-300)+'deg'); stage.appendChild(b); setTimeout(()=>b.remove(),1200);}}
+
+/* ---------- drawings ---------- */
+function clockSVG(h,m,size=230){
+  let s=`<svg width="${size}" height="${size}" viewBox="0 0 200 200"><circle cx="100" cy="100" r="94" fill="#fffaf0" stroke="#e8a923" stroke-width="10"/><circle cx="100" cy="100" r="82" fill="#fff" stroke="#f3e2b8" stroke-width="3"/>`;
+  for(let i=1;i<=12;i++){const a=i*Math.PI/6; s+=`<text x="${100+66*Math.sin(a)}" y="${100-66*Math.cos(a)+8}" text-anchor="middle" font-family="Nunito,Arial" font-weight="900" font-size="22" fill="#1d3557">${i}</text>`;}
+  for(let i=0;i<60;i++){const a=i*Math.PI/30, r1=i%5?78:74; s+=`<line x1="${100+r1*Math.sin(a)}" y1="${100-r1*Math.cos(a)}" x2="${100+82*Math.sin(a)}" y2="${100-82*Math.cos(a)}" stroke="#1d3557" stroke-width="${i%5?1.2:3}"/>`;}
+  const ha=((h%12)+m/60)*30, ma=m*6;
+  s+=`<line x1="100" y1="100" x2="${100+42*Math.sin(ha*Math.PI/180)}" y2="${100-42*Math.cos(ha*Math.PI/180)}" stroke="#1d3557" stroke-width="9" stroke-linecap="round"/>`;
+  s+=`<line x1="100" y1="100" x2="${100+64*Math.sin(ma*Math.PI/180)}" y2="${100-64*Math.cos(ma*Math.PI/180)}" stroke="#1fa5a3" stroke-width="6" stroke-linecap="round"/>`;
+  return s+`<circle cx="100" cy="100" r="7" fill="#e8a923"/></svg>`;}
+function gridSVG(rows,cell=32){const R=rows.length,C=Math.max(...rows.map(r=>r.length)); const pad=4;
+  let s=`<svg width="${C*cell+pad*2}" height="${R*cell+pad*2}" viewBox="0 0 ${C*cell+pad*2} ${R*cell+pad*2}">`;
+  for(let r=0;r<R;r++)for(let c=0;c<C;c++){const f=rows[r][c]==='#';
+    s+=`<rect x="${pad+c*cell}" y="${pad+r*cell}" width="${cell}" height="${cell}" fill="${f?'#7fe0d8':'#fff'}" stroke="${f?'#1fa5a3':'#d9e7ea'}" stroke-width="${f?2.5:1.5}"/>`;}
+  return s+'</svg>';}
+function cubesSVG(a,b,c,s=24){const w=s*0.866,h=s*0.5; const L=[];
+  for(let k=0;k<c;k++)for(let j=0;j<b;j++)for(let i=0;i<a;i++)L.push([i,j,k]);
+  L.sort((p,q)=>(p[0]+p[1]+p[2])-(q[0]+q[1]+q[2]));
+  const ox=b*w+6, oy=c*s+6, W=(a+b)*w+12, H=(a+b)*h+c*s+12;
+  const P=(x,y)=>x.toFixed(1)+','+y.toFixed(1);
+  let g='';
+  for(const [i,j,k] of L){const x=ox+(i-j)*w, y=oy+(i+j)*h-k*s;
+    g+=`<polygon points="${P(x,y)} ${P(x+w,y+h)} ${P(x,y+2*h)} ${P(x-w,y+h)}" fill="#bff3ee" stroke="#0d5e5d" stroke-width="1.6"/>`;
+    g+=`<polygon points="${P(x-w,y+h)} ${P(x,y+2*h)} ${P(x,y+2*h+s)} ${P(x-w,y+h+s)}" fill="#5cc9c3" stroke="#0d5e5d" stroke-width="1.6"/>`;
+    g+=`<polygon points="${P(x,y+2*h)} ${P(x+w,y+h)} ${P(x+w,y+h+s)} ${P(x,y+2*h+s)}" fill="#2ea9a4" stroke="#0d5e5d" stroke-width="1.6"/>`;}
+  return `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">${g}</svg>`;}
+function sealSVG(icon,color,size=70){return `<svg class="seal" width="${size}" height="${size}" viewBox="0 0 100 100">
+  <path d="M30 70 L22 98 L36 90 L44 100 L48 74 Z" fill="#c0392b"/><path d="M70 70 L78 98 L64 90 L56 100 L52 74 Z" fill="#c0392b"/>
+  <circle cx="50" cy="46" r="40" fill="${color}" stroke="#8a5a00" stroke-width="4"/><circle cx="50" cy="46" r="32" fill="none" stroke="#fff" stroke-width="2.5" stroke-dasharray="4 4"/>
+  <text x="50" y="58" text-anchor="middle" font-size="34" font-family="Apple Color Emoji,Segoe UI Emoji,Noto Color Emoji">${icon}</text></svg>`;}
+
+/* ---------- LANDS ---------- */
+const LANDS=[
+ {id:'length',name:'Долина Длины',who:'Линеечка',icon:'📏',color:'#ffd56b',map:[47,73],col:[560,1560],grades:[2,3,4],
+  intro:'Путаница перепутала все мерки в моей долине! Помоги мне снова <b>правильно измерить</b> дороги и заборы.'},
+ {id:'time',name:'Часовая башня',who:'Минутка',icon:'⏰',color:'#c9a7ff',map:[19,33],col:[760,1560],grades:[2,3,4],
+  intro:'Часы в башне сбились, и время перепуталось! Давай вместе <b>наведём порядок со временем</b>.'},
+ {id:'area',name:'Сад Площадей',who:'Клеточка',icon:'🌷',color:'#ffb3c7',map:[50,12],col:[560,1560],grades:[2,3,4],
+  intro:'Путаница перемешала мои грядки! Помоги узнать, <b>сколько места</b> занимает каждая клумба.'},
+ {id:'volume',name:'Озеро Объёмов',who:'Литра',icon:'💧',color:'#9fe3ff',map:[23,70],col:[760,1560],grades:[2,3,4],
+  intro:'Все мои кувшины и бочки перепутались! Помоги узнать, <b>сколько в них помещается</b>.'},
+ {id:'mass',name:'Гора Весов',who:'Гирька',icon:'⚖️',color:'#ffc48a',map:[81,24],col:[660,1560],grades:[3,4],
+  intro:'Мои весы сошли с ума — гири перепутались! Помоги мне <b>правильно всё взвесить</b>.'},
+ {id:'speed',name:'Дорога Скорости',who:'Стрелка',icon:'🏎️',color:'#ff9f9f',map:[79,66],col:[540,1560],grades:[3,4],
+  intro:'Путаница перепутала все дорожные знаки! Помоги мне посчитать <b>скорость, время и путь</b>.'},
+];
+
+/* task types: in = blanks {} ; cmp = compare ; ch = choice ; clock ; grid ; cubes  */
+const T={
+length:{
+ 2:[{t:'in',q:'1 дм = {} см',a:[10]},{t:'in',q:'1 м = {} дм',a:[10]},{t:'in',q:'4 м = {} см',a:[400]},
+    {t:'cmp',l:'5 дм',r:'48 см',a:'>'},{t:'cmp',l:'1 км',r:'999 м',a:'>'},{t:'in',q:'2 см 5 мм = {} мм',a:[25]},
+    {t:'in',q:'35 см + 4 дм = {} см',a:[75]},
+    {t:'ch',q:'Чем удобнее измерить длину дороги до соседнего города?',o:['мм','см','м','км'],a:'км'}],
+ 3:[{t:'in',q:'3 м 5 дм = {} дм',a:[35]},{t:'in',q:'407 см = {} м {} см',a:[4,7]},{t:'in',q:'2 км 30 м = {} м',a:[2030]},
+    {t:'cmp',l:'6 м 3 см',r:'630 см',a:'<'},{t:'in',q:'4 м 6 дм + 2 м 7 дм = {} м {} дм',a:[7,3]},
+    {t:'in',q:'5 дм 2 см − 3 дм 8 см = {} дм {} см',a:[1,4]},
+    {t:'ch',q:'Сколько миллиметров в 1 метре?',o:['10','100','1000','10 000'],a:'1000'}],
+ 4:[{t:'in',q:'3 км 45 м = {} м',a:[3045]},{t:'in',q:'12 050 м = {} км {} м',a:[12,50]},{t:'cmp',l:'7 м 8 см',r:'78 дм',a:'<'},
+    {t:'in',q:'2 м 35 см · 4 = {} м {} см',a:[9,40]},{t:'in',q:'8 км 400 м : 4 = {} км {} м',a:[2,100]},
+    {t:'in',q:'5 км − 1 км 250 м = {} км {} м',a:[3,750]},{t:'in',q:'6 дм 4 см · 5 = {} м {} дм',a:[3,2]}]},
+time:{
+ 2:[{t:'in',q:'1 ч = {} мин',a:[60]},{t:'in',q:'1 сут = {} ч',a:[24]},{t:'in',q:'2 ч = {} мин',a:[120]},
+    {t:'cmp',l:'1 ч',r:'58 мин',a:'>'},{t:'in',q:'1 ч 15 мин = {} мин',a:[75]},{t:'cmp',l:'2 сут',r:'50 ч',a:'<'},
+    {t:'clock',h:3,m:30,o:['3:30','6:15','3:06','6:03'],a:'3:30'}],
+ 3:[{t:'in',q:'1 мин = {} с',a:[60]},{t:'in',q:'1 нед = {} сут',a:[7]},{t:'in',q:'1 год = {} мес',a:[12]},
+    {t:'in',q:'3 мин 20 с = {} с',a:[200]},{t:'cmp',l:'100 с',r:'2 мин',a:'<'},
+    {t:'in',q:'2 ч 40 мин + 1 ч 35 мин = {} ч {} мин',a:[4,15]},
+    {t:'clock',h:7,m:45,o:['7:45','9:35','8:45','7:09'],a:'7:45'},
+    {t:'ch',q:'Сколько дней в сентябре?',o:['28','30','31'],a:'30'}],
+ 4:[{t:'in',q:'1 век = {} лет',a:[100]},{t:'in',q:'3 сут 5 ч = {} ч',a:[77]},{t:'in',q:'250 мин = {} ч {} мин',a:[4,10]},
+    {t:'in',q:'5 ч 10 мин − 2 ч 45 мин = {} ч {} мин',a:[2,25]},{t:'cmp',l:'3 мин 5 с',r:'185 с',a:'='},
+    {t:'in',q:'Урок начался в 8 ч 30 мин и длился 45 мин.<br>Он закончился в {} ч {} мин.',a:[9,15],small:1},
+    {t:'in',q:'Поезд ехал с 22 ч вечера до 6 ч утра.<br>Он был в пути {} ч.',a:[8],small:1}]},
+area:{
+ 2:[{t:'grid',rows:['####','####','####'],q:'Сторона клеточки — 1 см. Площадь фигуры {} см²',a:[12]},
+    {t:'in',q:'Длина прямоугольника 6 см, ширина 3 см.<br>S = {} см²',a:[18],small:1},
+    {t:'in',q:'1 дм² = {} см²',a:[100]},{t:'in',q:'1 м² = {} дм²',a:[100]},{t:'cmp',l:'3 дм²',r:'250 см²',a:'>'},
+    {t:'in',q:'Сторона квадрата 5 см.<br>S = {} см²',a:[25],small:1},
+    {t:'ch',q:'В каких единицах удобно измерить площадь комнаты?',o:['см²','дм²','м²'],a:'м²'}],
+ 3:[{t:'grid',rows:['####..','####..','######','######'],q:'Сторона клеточки — 1 см. Площадь фигуры {} см²',a:[20]},
+    {t:'in',q:'S = 48 см², длина 8 см.<br>Ширина = {} см',a:[6],small:1},{t:'in',q:'4 дм² 5 см² = {} см²',a:[405]},
+    {t:'in',q:'Фигура из двух прямоугольников:<br>5 см × 4 см и 3 см × 2 см. S = {} см²',a:[26],small:1},
+    {t:'cmp',l:'7 м²',r:'700 дм²',a:'='},{t:'in',q:'2 м² − 50 дм² = {} дм²',a:[150]}],
+ 4:[{t:'in',q:'1 а = {} м²',a:[100]},{t:'in',q:'1 га = {} а',a:[100]},{t:'in',q:'1 га = {} м²',a:[10000]},
+    {t:'in',q:'3 га 5 а = {} а',a:[305]},{t:'cmp',l:'2 га',r:'150 а',a:'>'},
+    {t:'in',q:'Поле — прямоугольник 200 м × 50 м.<br>Его площадь {} а',a:[100],small:1},
+    {t:'ch',q:'Что удобнее измерять в гектарах?',o:['площадь тетради','площадь поля','площадь комнаты'],a:'площадь поля',txt:1}]},
+volume:{
+ 2:[{t:'cubes',d:[3,2,2],q:'Каждый кубик — 1 см³. Объём фигуры {} см³',a:[12]},{t:'in',q:'1 дм³ = {} см³',a:[1000]},
+    {t:'in',q:'1 л = {} дм³',a:[1]},{t:'in',q:'Коробка: 4 см × 3 см × 2 см.<br>V = {} см³',a:[24],small:1},
+    {t:'cmp',l:'2 дм³',r:'1500 см³',a:'>'},{t:'in',q:'1 м³ = {} дм³',a:[1000]},
+    {t:'ch',q:'Чем измеряют, сколько воды в ведре?',o:['литрами','метрами','часами'],a:'литрами',txt:1}],
+ 3:[{t:'cubes',d:[4,3,2],q:'Каждый кубик — 1 см³. Объём фигуры {} см³',a:[24]},
+    {t:'in',q:'a = 5 дм, b = 4 дм, c = 3 дм.<br>V = {} дм³',a:[60],small:1},
+    {t:'in',q:'V = 36 см³, длина 4 см, ширина 3 см.<br>Высота = {} см',a:[3],small:1},{t:'in',q:'2 дм³ 40 см³ = {} см³',a:[2040]},
+    {t:'cmp',l:'5 л',r:'5 дм³',a:'='},{t:'in',q:'Аквариум 5 дм × 3 дм × 4 дм.<br>В него войдёт {} л воды',a:[60],small:1}],
+ 4:[{t:'in',q:'1 м³ = {} дм³',a:[1000]},{t:'in',q:'3 м³ 25 дм³ = {} дм³',a:[3025]},{t:'cmp',l:'4 м³',r:'3999 дм³',a:'>'},
+    {t:'in',q:'Бассейн 10 м × 5 м × 2 м.<br>V = {} м³',a:[100],small:1},{t:'in',q:'1 см³ = {} мм³',a:[1000]},
+    {t:'in',q:'Куб со стороной 3 дм.<br>V = {} дм³',a:[27],small:1},{t:'in',q:'В бочке 2 м³ воды.<br>Это {} л',a:[2000],small:1}]},
+mass:{
+ 3:[{t:'in',q:'1 кг = {} г',a:[1000]},{t:'in',q:'1 ц = {} кг',a:[100]},{t:'in',q:'1 т = {} ц',a:[10]},
+    {t:'in',q:'3 кг 250 г = {} г',a:[3250]},{t:'cmp',l:'2 т',r:'18 ц',a:'>'},
+    {t:'in',q:'4 кг 600 г + 2 кг 700 г = {} кг {} г',a:[7,300]},
+    {t:'ch',q:'В каких единицах удобно измерить массу слона?',o:['г','кг','т'],a:'т'}],
+ 4:[{t:'in',q:'5 т 40 кг = {} кг',a:[5040]},{t:'in',q:'3070 кг = {} т {} кг',a:[3,70]},{t:'in',q:'2 ц 50 кг · 4 = {} т',a:[1]},
+    {t:'in',q:'7 т − 2 т 350 кг = {} т {} кг',a:[4,650]},{t:'cmp',l:'3 ц 5 кг',r:'350 кг',a:'<'},
+    {t:'in',q:'6 кг 300 г : 3 = {} кг {} г',a:[2,100]},
+    {t:'in',q:'Грузовик везёт 4 ящика по 250 кг.<br>Масса груза {} т',a:[1],small:1}]},
+speed:{
+ 3:[{t:'in',q:'Велосипедист едет со скоростью 12 км/ч.<br>За 3 ч он проедет {} км',a:[36],small:1},
+    {t:'in',q:'Улитка проползла 20 м за 5 мин.<br>Её скорость {} м/мин',a:[4],small:1},
+    {t:'in',q:'Поезд прошёл 240 км со скоростью 60 км/ч.<br>Он был в пути {} ч',a:[4],small:1},
+    {t:'ch',q:'Какая формула помогает найти путь?',o:['s = v · t','s = v + t','s = v : t'],a:'s = v · t'},
+    {t:'in',q:'Самолёт летит со скоростью 800 км/ч.<br>За 2 ч он пролетит {} км',a:[1600],small:1},
+    {t:'in',q:'Стрелка ехала 2 ч со скоростью 70 км/ч<br>и ещё 1 ч со скоростью 60 км/ч.<br>Всего она проехала {} км',a:[200],small:1}],
+ 4:[{t:'in',q:'Два велосипедиста едут навстречу друг другу<br>со скоростями 12 км/ч и 15 км/ч.<br>Скорость сближения {} км/ч',a:[27],small:1},
+    {t:'in',q:'Между городами 216 км. Навстречу выехали машины<br>со скоростями 50 км/ч и 58 км/ч.<br>Они встретятся через {} ч',a:[2],small:1},
+    {t:'in',q:'Пешеход прошёл 3 км за 50 мин.<br>Его скорость {} м/мин',a:[60],small:1},
+    {t:'in',q:'Катер прошёл 96 км за 4 ч.<br>Его скорость {} км/ч',a:[24],small:1},
+    {t:'in',q:'Из одного города в разные стороны вышли поезда<br>со скоростями 70 км/ч и 80 км/ч.<br>Через 2 ч между ними будет {} км',a:[300],small:1},
+    {t:'ch',q:'Пешеходы идут в разные стороны со скоростями 4 км/ч и 5 км/ч. Скорость удаления —',o:['1 км/ч','9 км/ч','20 км/ч'],a:'9 км/ч'}]},
+};
+
+/* ---------- state ---------- */
+let grade=null; const seals=new Set();
+let curLand=null, curTask=0, solved={}; // solved[landId] = Set of indices
+const tools=$('#tools'), scr=$('#screen');
+const PRAISE=['Верно!','Отлично!','Молодец!','Точно!','Великолепно!','Так держать!'];
+const praise=()=>PRAISE[Math.floor(Math.random()*PRAISE.length)];
+
+function setTools(list){tools.innerHTML=''; list.forEach(b=>tools.appendChild(b));}
+function tb(html,fn,cls=''){const b=el('button','tbtn '+cls,html); b.onclick=()=>{sTap(); fn();}; return b;}
+
+/* ---------- COVER ---------- */
+function cover(){ curLand=null; setBg('throne'); setTools([]); scr.innerHTML='';
+  const t=el('div','abs fade'); t.style.cssText='left:0;right:0;top:44px;text-align:center';
+  t.innerHTML=`<div class="ribbon" style="font-size:72px;padding:18px 80px 22px">Королевство Мерилия</div>
+    <div style="margin-top:22px;font-size:28px;font-weight:900;color:#fff;text-shadow:0 2px 6px rgba(0,0,0,.55)">Тренажёр по единицам измерения</div>`;
+  const story=el('div','card abs fade'); story.style.cssText='left:330px;top:300px;width:940px;padding:30px 40px;text-align:center';
+  story.innerHTML=`<div style="font-size:27px;font-weight:800;line-height:1.4">Колдунья <b style="color:#7b3fbf">Путаница</b> перепутала все меры в королевстве:
+    торт весит «три метра», а часы на башне показывают килограммы! Королева Мерилия просит тебя пройти по землям,
+    навести порядок и собрать <b style="color:#b07800">королевские печати</b>.</div>
+    <div style="margin-top:22px;font-size:26px;font-weight:900;color:var(--tealDark)">Выбери свой класс:</div>
+    <div style="display:flex;gap:30px;justify-content:center;margin-top:16px" id="gb"></div>`;
+  scr.append(t,story);
+  [2,3,4].forEach(g=>{const b=el('button','gembtn gradeBtn'+(g===3?' gold':''),`<b>${g}</b><span>класс</span>`); b.onclick=()=>{sTap(); grade=g; seals.clear(); solved={}; map();}; $('#gb',story).appendChild(b);});
+  const cr=el('div','abs','«Твой идеальный урок» · @ideallesson'); cr.style.cssText='right:20px;bottom:12px;font-size:17px;font-weight:800;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.7)';
+  scr.appendChild(cr);
+}
+
+/* ---------- MAP ---------- */
+const open=L=>L.grades.includes(grade);
+function map(){ curLand=null; setBg('map'); scr.innerHTML='';
+  setTools([tb(`<span class="lvlchip">${grade} класс</span> сменить`,cover)]);
+  const h=el('div','abs fade'); h.style.cssText='left:24px;top:20px'; h.innerHTML='<div class="ribbon" style="font-size:40px">Карта королевства</div>'; scr.appendChild(h);
+  const openL=LANDS.filter(open); const next=openL.find(L=>!seals.has(L.id));
+  LANDS.forEach(L=>{ const lk=!open(L);
+    const s=el('button','spot'+(lk?' locked':'')+(seals.has(L.id)?' done':'')+(next===L?' pulse':''),`<div class="ic"><span class="emo">${L.icon}</span></div><div class="nm">${L.name}</div>`);
+    s.style.left=(L.map[0]*16)+'px'; s.style.top=(L.map[1]*9)+'px';
+    s.onclick=()=>{ if(lk){ sBad(); s.classList.remove('shake'); void s.offsetWidth; s.classList.add('shake'); toast('Эта земля откроется в 3 классе!'); return;} sTap(); land(L); };
+    scr.appendChild(s); });
+  const bar=el('div','sealbar');
+  bar.innerHTML=`<span style="font-weight:900;font-size:22px;margin-right:4px">Печати:</span>`+openL.map(L=>sealSVG(L.icon,L.color).replace('class="seal"',`class="seal${seals.has(L.id)?'':' off'}"`)).join('');
+  if(openL.every(L=>seals.has(L.id))){ const f=el('button','gembtn gold','👑 К королеве!'); f.style.cssText='height:62px;font-size:26px;padding:0 26px;margin-left:10px'; f.onclick=finale; bar.appendChild(f);}
+  scr.appendChild(bar);
+}
+function toast(msg){const t=el('div','abs card fade',`<div style="padding:16px 30px;font-size:26px;font-weight:900">${msg}</div>`); t.style.cssText+='left:50%;top:120px;transform:translateX(-50%);z-index:60';
+  scr.appendChild(t); setTimeout(()=>t.remove(),1800);}
+
+/* ---------- LAND ---------- */
+function land(L,idx=0){ curLand=L; curTask=idx; solved[L.id]=solved[L.id]||new Set(); setBg(L.id); renderTask(); }
+function tasks(){ return T[curLand.id][grade]; }
+
+function renderTask(){ const L=curLand, list=tasks(), k=curTask, task=list[k];
+  scr.innerHTML='';
+  setTools([tb('<span class="emo">🗺️</span> Карта',map), tb('◀',()=>go(-1),'arrow'), tb('▶',()=>go(1),'arrow')]);
+  if(k===0) tools.children[1].disabled=true;
+  const [x0,x1]=L.col, W=x1-x0;
+  const title=el('div','abs'); title.style.cssText=`left:${x0}px;top:22px`; title.innerHTML=`<div class="ribbon" style="font-size:38px;padding:10px 44px 12px">${L.name}</div>`; scr.appendChild(title);
+  const bub=el('div','bubble fade'); bub.style.cssText+=`left:${x0+20}px;top:118px;width:${W-20}px`;
+  const intro= k===0 && !solved[L.id].size ? L.intro : taskHint(task);
+  bub.innerHTML=`<div class="who">${L.who}</div>${intro}`; scr.appendChild(bub);
+  const card=el('div','card taskcard fade'); card.style.cssText+=`left:${x0}px;top:${task.t==='in'&&!task.small?290:(task.t==='grid'||task.t==='cubes'||task.t==='clock')?230:262}px;width:${W}px`;
+  const dots=el('div','dots'); list.forEach((_,i)=>{const d=el('div','dot'+(i===k?' cur':'')+(solved[L.id].has(i)?' ok':''),i+1); d.onclick=()=>{sTap(); curTask=i; renderTask();}; dots.appendChild(d);});
+  card.appendChild(dots);
+  const body=el('div'); card.appendChild(body);
+  const fb=el('div','fb'); card.appendChild(fb);
+  scr.appendChild(card);
+  const api={
+    win(){ if(api.won) return; api.won=true; api.done=true; solved[L.id].add(k); sOk(); fb.className='fb ok'; fb.textContent=praise();
+      dots.children[k].classList.add('ok'); const r=card.getBoundingClientRect(), s=stage.getBoundingClientRect(), z=s.width/1600;
+      burst((r.left-s.left)/z+W/2,(r.top-s.top)/z+120); addNext(); },
+    bad(msg){ sBad(); fb.className='fb bad'; fb.textContent=msg||'Попробуй ещё раз!'; },
+    reveal:null, done:false
+  };
+  function addNext(){ const nb=el('button','gembtn green nextBtn pop', k===list.length-1?'Получить печать 🏅':'Дальше ➜'); nb.onclick=()=>{sTap(); go(1);}; card.appendChild(nb); }
+  BUILD[task.t](body,task,api);
+  if(solved[L.id].has(k)){ api.reveal&&api.reveal(true); api.won=true; fb.className='fb ok'; fb.textContent='Уже решено!'; addNext(); }
+  if(TEACHER){ const t=el('div','teach'); t.innerHTML=`<div class="tnote">🎓 Ответ: ${answerText(task)}</div>`; const b=el('button','tshow','Показать ответ'); b.onclick=()=>api.reveal&&api.reveal(); t.appendChild(b); scr.appendChild(t); }
+}
+function taskHint(t){ return ({in:'Впиши ответ в окошко — нажимай на цифры <b>или печатай</b> на клавиатуре.',cmp:'Сравни величины. Не забудь перевести их <b>в одинаковые единицы</b>!',
+  ch:'Выбери правильный ответ.',clock:'Посмотри на часы. <b>Который час?</b>',grid:'Посчитай <b>клеточки</b> — каждая клеточка это 1 см².',cubes:'Посчитай <b>кубики</b>: сколько в одном слое и сколько слоёв?'})[t.t]; }
+function answerText(t){ if(t.t==='in'||t.t==='grid'||t.t==='cubes'){ let i=0; return t.q.replace(/<br>/g,' ').replace(/\{\}/g,()=>`<b>${t.a[i++]}</b>`);} if(t.t==='cmp') return `${t.l} ${t.a} ${t.r}`; return t.a; }
+
+function go(d){ const n=curTask+d, list=tasks();
+  if(n<0) return;
+  if(n>=list.length){ return sealScreen(); }
+  curTask=n; renderTask(); }
+
+/* ---------- task builders ---------- */
+const BUILD={
+ in(body,t,api,extra=''){
+   const plain=t.q.replace(/<br>/g,' '); const long=!t.small && (plain.length>22 || (plain.match(/\{\}/g)||[]).length>1 && plain.length>16);
+   const q=el('div','tq'+(t.small?' small':'')); if(long) q.style.fontSize='34px'; let i=0;
+   q.innerHTML=extra+t.q.replace(/\{\}( [^ <{]+)?/g,(m,u)=>`<span style="white-space:nowrap"><span class="blank" data-i="${i++}"></span>${u||''}</span>`); body.appendChild(q);
+   const blanks=[...q.querySelectorAll('.blank')]; let act=0;
+   const setAct=j=>{act=j; blanks.forEach((b,x)=>b.classList.toggle('act',x===j&&!api.done));};
+   blanks.forEach((b,j)=>b.onclick=()=>{ if(!api.done){sTap(); setAct(j);} }); setAct(0);
+   const kp=el('div','keypad'); kp.style.marginTop="14px";
+   const press=v=>{ if(api.done) return; const b=blanks[act]; b.classList.remove('wrong','right');
+     if(v==='del') b.textContent=b.textContent.slice(0,-1); else if(b.textContent.length<6) b.textContent+=v; };
+   ['1','2','3','4','5','6','7','8','9','0'].forEach(d=>{const k=el('button','key',d); k.onclick=()=>{sTap(); press(d);}; kp.appendChild(k);});
+   const del=el('button','key del','⌫'); del.onclick=()=>{sTap(); press('del');}; kp.appendChild(del);
+   const nx=el('button','key','➜'); nx.title='Следующее окошко'; nx.onclick=()=>{sTap(); setAct((act+1)%blanks.length);}; if(blanks.length<2) nx.style.visibility='hidden'; kp.appendChild(nx);
+   const ok=el('button','key go','Проверить'); ok.onclick=check; kp.appendChild(ok);
+   body.appendChild(kp);
+   function check(){ if(api.done) return; let bad=0, empty=false;
+     blanks.forEach((b,j)=>{ const v=b.textContent.trim(); if(!v){empty=true; return;} const r=String(t.a[j])===String(parseInt(v,10));
+       b.classList.toggle('right',r); if(!r){ b.classList.remove('wrong'); void b.offsetWidth; b.classList.add('wrong'); bad++; } });
+     if(empty){ api.bad('Заполни все окошки!'); const e=blanks.findIndex(b=>!b.textContent.trim()); setAct(e); return; }
+     const msg= curLand.id==='speed' ? 'Не совсем! Вспомни формулу: s = v · t.' : (t.small||t.t!=='in') ? 'Не совсем! Проверь вычисления ещё раз.' : 'Не совсем! Вспомни, сколько мелких единиц в крупной.';
+     if(bad) { api.bad(msg); setAct(blanks.findIndex(b=>b.classList.contains('wrong'))); }
+     else { setAct(-1); kp.style.opacity=.4; kp.style.pointerEvents='none'; api.win(); } }
+   api.check=check;
+   api.typing=e=>{ if(/^[0-9]$/.test(e.key)) press(e.key); else if(e.key==='Backspace') press('del'); else if(e.key==='Enter') check(); else if(e.key==='Tab'){ e.preventDefault(); setAct((act+1)%blanks.length);} };
+   api.reveal=(silent)=>{ blanks.forEach((b,j)=>{b.textContent=t.a[j]; b.classList.add('right');}); setAct(-1); kp.style.opacity=.4; kp.style.pointerEvents='none'; if(!silent) api.win(); else api.done=true; };
+ },
+ grid(body,t,api){ BUILD.in(body,t,api,`<div style="display:flex;justify-content:center;margin-bottom:10px">${gridSVG(t.rows)}</div>`); body.firstChild.classList.add('small'); },
+ cubes(body,t,api){ BUILD.in(body,t,api,`<div style="display:flex;justify-content:center;margin-bottom:6px">${cubesSVG(...t.d)}</div>`); body.firstChild.classList.add('small'); },
+ cmp(body,t,api){
+   const row=el('div','cmpRow'); row.style.marginTop='30px';
+   row.innerHTML=`<div class="qty">${t.l}</div><div class="sign">?</div><div class="qty">${t.r}</div>`; body.appendChild(row);
+   const sign=$('.sign',row);
+   const o=el('div','opts'); o.style.marginTop='44px'; body.appendChild(o);
+   ['>','<','='].forEach(s=>{const b=el('button','opt',s); b.style.cssText='width:130px;font-size:56px'; b.onclick=()=>{ if(api.done) return;
+     if(s===t.a){ b.classList.add('right'); sign.textContent=s; sign.classList.add('right','pop'); [...o.children].forEach(x=>x.disabled=true); api.win(); }
+     else { b.classList.remove('wrong'); void b.offsetWidth; b.classList.add('wrong'); api.bad('Переведи величины в одинаковые единицы и сравни ещё раз!'); } }; o.appendChild(b);});
+   api.reveal=(silent)=>{ const b=[...o.children].find(x=>x.textContent===t.a); b.classList.add('right'); sign.textContent=t.a; sign.classList.add('right'); [...o.children].forEach(x=>x.disabled=true); if(!silent) api.win(); else api.done=true; };
+ },
+ ch(body,t,api,extra=''){
+   const q=el('div','tq small',extra+t.q); q.style.marginTop='10px'; body.appendChild(q);
+   const o=el('div','opts'); o.style.marginTop='30px'; body.appendChild(o);
+   t.o.forEach(s=>{const b=el('button','opt'+(t.txt||s.length>6?' txt':''),s); b.onclick=()=>{ if(api.done) return;
+     if(s===t.a){ b.classList.add('right'); [...o.children].forEach(x=>x.disabled=true); api.win(); }
+     else { b.classList.remove('wrong'); void b.offsetWidth; b.classList.add('wrong'); api.bad('Подумай ещё!'); } }; o.appendChild(b);});
+   api.reveal=(silent)=>{ const b=[...o.children].find(x=>x.textContent===t.a); b.classList.add('right'); [...o.children].forEach(x=>x.disabled=true); if(!silent) api.win(); else api.done=true; };
+ },
+ clock(body,t,api){ BUILD.ch(body,{...t,q:'Который час?'},api,`<div style="display:flex;justify-content:center">${clockSVG(t.h,t.m)}</div>`); },
+};
+addEventListener('keydown',e=>{
+  if(curLand && (e.key==='ArrowRight'||e.key==='ArrowLeft')){ go(e.key==='ArrowRight'?1:-1); return; }
+  const card=$('.taskcard'); if(curLand && card && currentApi()) currentApi().typing && currentApi().typing(e);
+});
+// keep a handle to the latest api for keyboard typing
+let _api=null; const _orig=BUILD.in; BUILD.in=function(b,t,api,x){ _api=api; return _orig(b,t,api,x); };
+['cmp','ch'].forEach(k=>{const o=BUILD[k]; BUILD[k]=function(b,t,api,x){ _api=api; return o(b,t,api,x); };});
+function currentApi(){ return _api; }
+
+/* ---------- SEAL ---------- */
+function sealScreen(){ const L=curLand, list=tasks(), n=solved[L.id].size; seals.add(L.id); sSeal();
+  const ov=el('div','overlay'); const c=el('div','card pop'); c.style.cssText+='width:720px;padding:40px;text-align:center';
+  c.innerHTML=`<div style="display:flex;justify-content:center">${sealSVG(L.icon,L.color,170)}</div>
+    <div class="ribbon" style="font-size:38px;margin-top:14px">Печать получена!</div>
+    <div style="font-size:28px;font-weight:800;margin-top:22px">${L.name} спасена от Путаницы!<br>Решено заданий: <b style="color:var(--ok)">${n}</b> из ${list.length}</div>
+    <div style="margin-top:26px;display:flex;gap:18px;justify-content:center" id="sb"></div>`;
+  const b1=el('button','gembtn','🗺️ На карту'); b1.onclick=()=>{sTap(); map();};
+  const b2=el('button','gembtn gold','Пройти ещё раз'); b2.style.fontSize='26px'; b2.onclick=()=>{sTap(); solved[L.id]=new Set(); land(L);};
+  $('#sb',c).append(b1,b2); ov.appendChild(c); scr.appendChild(ov); setTimeout(()=>{burst(800,330); burst(560,450); burst(1040,450);},150);
+}
+
+/* ---------- FINALE ---------- */
+function finale(){ curLand=null; setBg('throne'); setTools([tb('<span class="emo">🗺️</span> Карта',map)]); scr.innerHTML='';
+  const c=el('div','abs card pop'); c.style.cssText+='left:300px;top:150px;width:1000px;padding:44px;text-align:center';
+  const openL=LANDS.filter(open);
+  c.innerHTML=`<div class="ribbon" style="font-size:60px">Порядок восстановлен!</div>
+   <div style="font-size:30px;font-weight:800;margin-top:26px;line-height:1.4">Ты собрал(а) все королевские печати! Путаница больше не сможет перепутать меры —
+   ведь теперь ты знаешь, как их измерять. Королева Мерилия объявляет тебя <b style="color:#b07800">Хранителем мер</b>!</div>
+   <div style="display:flex;gap:14px;justify-content:center;margin-top:26px">${openL.map(L=>sealSVG(L.icon,L.color,110)).join('')}</div>`;
+  const again=el('button','gembtn gold','Начать заново'); again.style.marginTop='26px'; again.onclick=()=>{sTap(); cover();}; c.appendChild(again);
+  scr.appendChild(c); sSeal(); setTimeout(()=>{burst(800,250); burst(450,420); burst(1150,420);},200);
+}
+
+cover();
+</script>
+</body>
+</html>
