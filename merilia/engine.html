@@ -208,88 +208,98 @@ const LANDS=[
   intro:'Путаница перепутала все дорожные знаки! Помоги мне посчитать <b>скорость, время и путь</b>.'},
 ];
 
-/* task types: in = blanks {} ; cmp = compare ; ch = choice ; clock ; grid ; cubes  */
+const F=(n,d)=>`<span class="fr"><sup>${n}</sup><sub>${d}</sub></span>`;
+/* T[land][grade] = [ {name, tasks:[...]} ]  — темы по урокам Петерсон */
 const T={
 length:{
- 2:[{t:'in',q:'1 дм = {} см',a:[10]},{t:'in',q:'1 м = {} дм',a:[10]},{t:'in',q:'4 м = {} см',a:[400]},
-    {t:'cmp',l:'5 дм',r:'48 см',a:'>'},{t:'cmp',l:'1 км',r:'999 м',a:'>'},{t:'in',q:'2 см 5 мм = {} мм',a:[25]},
-    {t:'in',q:'35 см + 4 дм = {} см',a:[75]},
-    {t:'ch',q:'Чем удобнее измерить длину дороги до соседнего города?',o:['мм','см','м','км'],a:'км'}],
- 3:[{t:'in',q:'3 м 5 дм = {} дм',a:[35]},{t:'in',q:'407 см = {} м {} см',a:[4,7]},{t:'in',q:'2 км 30 м = {} м',a:[2030]},
-    {t:'cmp',l:'6 м 3 см',r:'630 см',a:'<'},{t:'in',q:'4 м 6 дм + 2 м 7 дм = {} м {} дм',a:[7,3]},
-    {t:'in',q:'5 дм 2 см − 3 дм 8 см = {} дм {} см',a:[1,4]},
-    {t:'ch',q:'Сколько миллиметров в 1 метре?',o:['10','100','1000','10 000'],a:'1000'}],
- 4:[{t:'in',q:'3 км 45 м = {} м',a:[3045]},{t:'in',q:'12 050 м = {} км {} м',a:[12,50]},{t:'cmp',l:'7 м 8 см',r:'78 дм',a:'<'},
-    {t:'in',q:'2 м 35 см · 4 = {} м {} см',a:[9,40]},{t:'in',q:'8 км 400 м : 4 = {} км {} м',a:[2,100]},
-    {t:'in',q:'5 км − 1 км 250 м = {} км {} м',a:[3,750]},{t:'in',q:'6 дм 4 см · 5 = {} м {} дм',a:[3,2]}]},
+ 2:[{name:'Сантиметр, дециметр и метр',tasks:[{t:'in',q:'1 дм = {} см',a:[10]},{t:'in',q:'1 м = {} дм',a:[10]},{t:'in',q:'4 м = {} см',a:[400]},
+      {t:'cmp',l:'5 дм',r:'48 см',a:'>'},{t:'in',q:'35 см + 4 дм = {} см',a:[75]}]},
+    {name:'Миллиметр и километр',tasks:[{t:'in',q:'1 см = {} мм',a:[10]},{t:'in',q:'2 см 5 мм = {} мм',a:[25]},{t:'in',q:'1 км = {} м',a:[1000]},
+      {t:'cmp',l:'1 км',r:'999 м',a:'>'},{t:'ch',q:'Чем удобнее измерить длину дороги до соседнего города?',o:['мм','см','м','км'],a:'км'}]}],
+ 3:[{name:'Таблица мер длины',tasks:[{t:'in',q:'3 м 5 дм = {} дм',a:[35]},{t:'in',q:'407 см = {} м {} см',a:[4,7]},{t:'in',q:'2 км 30 м = {} м',a:[2030]},
+      {t:'cmp',l:'6 м 3 см',r:'630 см',a:'<'},{t:'ch',q:'Сколько миллиметров в 1 метре?',o:['10','100','1000','10 000'],a:'1000'}]},
+    {name:'Сложение и вычитание длин',tasks:[{t:'in',q:'4 м 6 дм + 2 м 7 дм = {} м {} дм',a:[7,3]},{t:'in',q:'5 дм 2 см − 3 дм 8 см = {} дм {} см',a:[1,4]},
+      {t:'in',q:'1 км 200 м + 800 м = {} км',a:[2]},{t:'in',q:'3 м − 45 см = {} см',a:[255]}]}],
+ 4:[{name:'Составные именованные величины',tasks:[{t:'in',q:'3 км 45 м = {} м',a:[3045]},{t:'in',q:'12 050 м = {} км {} м',a:[12,50]},{t:'cmp',l:'7 м 8 см',r:'78 дм',a:'<'},
+      {t:'in',q:'2 м 35 см · 4 = {} м {} см',a:[9,40]},{t:'in',q:'8 км 400 м : 4 = {} км {} м',a:[2,100]},
+      {t:'in',q:'5 км − 1 км 250 м = {} км {} м',a:[3,750]},{t:'in',q:'6 дм 4 см · 5 = {} м {} дм',a:[3,2]}]},
+    {name:'Части величин',tasks:[{t:'in',q:`${F(1,2)} м = {} см`,a:[50]},{t:'in',q:`${F(3,4)} км = {} м`,a:[750]},{t:'in',q:`${F(1,5)} дм = {} см`,a:[2]}]}]},
 time:{
- 2:[{t:'in',q:'1 ч = {} мин',a:[60]},{t:'in',q:'1 сут = {} ч',a:[24]},{t:'in',q:'2 ч = {} мин',a:[120]},
-    {t:'cmp',l:'1 ч',r:'58 мин',a:'>'},{t:'in',q:'1 ч 15 мин = {} мин',a:[75]},{t:'cmp',l:'2 сут',r:'50 ч',a:'<'},
-    {t:'clock',h:3,m:30,o:['3:30','6:15','3:06','6:03'],a:'3:30'}],
- 3:[{t:'in',q:'1 мин = {} с',a:[60]},{t:'in',q:'1 нед = {} сут',a:[7]},{t:'in',q:'1 год = {} мес',a:[12]},
-    {t:'in',q:'3 мин 20 с = {} с',a:[200]},{t:'cmp',l:'100 с',r:'2 мин',a:'<'},
-    {t:'in',q:'2 ч 40 мин + 1 ч 35 мин = {} ч {} мин',a:[4,15]},
-    {t:'clock',h:7,m:45,o:['7:45','9:35','8:45','7:09'],a:'7:45'},
-    {t:'ch',q:'Сколько дней в сентябре?',o:['28','30','31'],a:'30'}],
- 4:[{t:'in',q:'<span class="fr"><sup>1</sup><sub>4</sub></span> ч = {} мин',a:[15]},{t:'in',q:'3 сут 5 ч = {} ч',a:[77]},{t:'in',q:'250 мин = {} ч {} мин',a:[4,10]},
-    {t:'in',q:'5 ч 10 мин − 2 ч 45 мин = {} ч {} мин',a:[2,25]},{t:'cmp',l:'3 мин 5 с',r:'185 с',a:'='},
-    {t:'in',q:'Урок начался в 8 ч 30 мин и длился 45 мин.<br>Он закончился в {} ч {} мин.',a:[9,15],small:1},
-    {t:'in',q:'Поезд ехал с 22 ч вечера до 6 ч утра.<br>Он был в пути {} ч.',a:[8],small:1}]},
+ 2:[{name:'Час и минута',tasks:[{t:'in',q:'1 ч = {} мин',a:[60]},{t:'in',q:'2 ч = {} мин',a:[120]},{t:'cmp',l:'1 ч',r:'58 мин',a:'>'},
+      {t:'in',q:'1 ч 15 мин = {} мин',a:[75]},{t:'clock',h:3,m:30,o:['3:30','6:15','3:06','6:03'],a:'3:30'}]},
+    {name:'Сутки',tasks:[{t:'in',q:'1 сут = {} ч',a:[24]},{t:'in',q:'3 сут = {} ч',a:[72]},{t:'in',q:'48 ч = {} сут',a:[2]},{t:'cmp',l:'2 сут',r:'50 ч',a:'<'}]}],
+ 3:[{name:'Секунда',tasks:[{t:'in',q:'1 мин = {} с',a:[60]},{t:'in',q:'2 мин = {} с',a:[120]},{t:'in',q:'3 мин 20 с = {} с',a:[200]},{t:'cmp',l:'100 с',r:'2 мин',a:'<'}]},
+    {name:'Календарь: неделя, месяц, год',tasks:[{t:'in',q:'1 нед = {} сут',a:[7]},{t:'in',q:'3 нед = {} сут',a:[21]},{t:'in',q:'1 год = {} мес',a:[12]},
+      {t:'ch',q:'Сколько дней в сентябре?',o:['28','30','31'],a:'30'}]},
+    {name:'Часы и действия со временем',tasks:[{t:'clock',h:7,m:45,o:['7:45','9:35','8:45','7:09'],a:'7:45'},
+      {t:'in',q:'2 ч 40 мин + 1 ч 35 мин = {} ч {} мин',a:[4,15]},{t:'in',q:'3 ч 20 мин − 1 ч 50 мин = {} ч {} мин',a:[1,30]}]}],
+ 4:[{name:'Составные именованные величины',tasks:[{t:'in',q:'3 сут 5 ч = {} ч',a:[77]},{t:'in',q:'250 мин = {} ч {} мин',a:[4,10]},
+      {t:'in',q:'5 ч 10 мин − 2 ч 45 мин = {} ч {} мин',a:[2,25]},{t:'cmp',l:'3 мин 5 с',r:'185 с',a:'='},
+      {t:'in',q:'Урок начался в 8 ч 30 мин и длился 45 мин.<br>Он закончился в {} ч {} мин.',a:[9,15],small:1},
+      {t:'in',q:'Поезд ехал с 22 ч вечера до 6 ч утра.<br>Он был в пути {} ч.',a:[8],small:1}]},
+    {name:'Части величин',tasks:[{t:'in',q:`${F(1,4)} ч = {} мин`,a:[15]},{t:'in',q:`${F(3,4)} ч = {} мин`,a:[45]},
+      {t:'in',q:`${F(1,2)} сут = {} ч`,a:[12]},{t:'in',q:`${F(1,3)} мин = {} с`,a:[20]}]}]},
 area:{
- 2:[{t:'grid',rows:['####','####','####'],q:'Сторона клеточки — 1 см. Площадь фигуры {} см²',a:[12]},
-    {t:'in',q:'Длина прямоугольника 6 см, ширина 3 см.<br>S = {} см²',a:[18],small:1},
-    {t:'in',q:'1 дм² = {} см²',a:[100]},{t:'in',q:'1 м² = {} дм²',a:[100]},{t:'cmp',l:'3 дм²',r:'250 см²',a:'>'},
-    {t:'in',q:'Сторона квадрата 5 см.<br>S = {} см²',a:[25],small:1},
-    {t:'ch',q:'В каких единицах удобно измерить площадь комнаты?',o:['см²','дм²','м²'],a:'м²'}],
- 3:[{t:'grid',rows:['####..','####..','######','######'],q:'Сторона клеточки — 1 см. Площадь фигуры {} см²',a:[20]},
-    {t:'in',q:'S = 48 см², длина 8 см.<br>Ширина = {} см',a:[6],small:1},{t:'in',q:'4 дм² 5 см² = {} см²',a:[405]},
-    {t:'in',q:'Фигура из двух прямоугольников:<br>5 см × 4 см и 3 см × 2 см. S = {} см²',a:[26],small:1},
-    {t:'cmp',l:'7 м²',r:'700 дм²',a:'='},{t:'in',q:'2 м² − 50 дм² = {} дм²',a:[150]}],
- 4:[{t:'in',q:'<span class="fr"><sup>1</sup><sub>2</sub></span> м² = {} дм²',a:[50]},{t:'in',q:'1 а = {} м²',a:[100]},{t:'in',q:'1 га = {} а',a:[100]},{t:'in',q:'1 га = {} м²',a:[10000]},
-    {t:'in',q:'3 га 5 а = {} а',a:[305]},{t:'cmp',l:'2 га',r:'150 а',a:'>'},
-    {t:'in',q:'Поле — прямоугольник 200 м × 50 м.<br>Его площадь {} а',a:[100],small:1},
-    {t:'in',q:'Прямоугольный треугольник, катеты 6 см и 4 см.<br>S = {} см²',a:[12],small:1},
-    {t:'ch',q:'Что удобнее измерять в гектарах?',o:['площадь тетради','площадь поля','площадь комнаты'],a:'площадь поля',txt:1}]},
+ 2:[{name:'Площадь фигуры. S = a · b',tasks:[{t:'grid',rows:['####','####','####'],q:'Сторона клеточки — 1 см. Площадь фигуры {} см²',a:[12]},
+      {t:'in',q:'Длина прямоугольника 6 см, ширина 3 см.<br>S = {} см²',a:[18],small:1},{t:'in',q:'Прямоугольник 7 см × 2 см.<br>S = {} см²',a:[14],small:1},
+      {t:'in',q:'Сторона квадрата 5 см.<br>S = {} см²',a:[25],small:1}]},
+    {name:'Единицы площади',tasks:[{t:'in',q:'1 дм² = {} см²',a:[100]},{t:'in',q:'1 м² = {} дм²',a:[100]},{t:'cmp',l:'3 дм²',r:'250 см²',a:'>'},
+      {t:'ch',q:'В каких единицах удобно измерить площадь комнаты?',o:['см²','дм²','м²'],a:'м²'}]}],
+ 3:[{name:'Площадь сложных фигур',tasks:[{t:'grid',rows:['####..','####..','######','######'],q:'Сторона клеточки — 1 см. Площадь фигуры {} см²',a:[20]},
+      {t:'in',q:'S = 48 см², длина 8 см.<br>Ширина = {} см',a:[6],small:1},
+      {t:'in',q:'Фигура из двух прямоугольников:<br>5 см × 4 см и 3 см × 2 см. S = {} см²',a:[26],small:1}]},
+    {name:'Перевод единиц площади',tasks:[{t:'in',q:'4 дм² 5 см² = {} см²',a:[405]},{t:'cmp',l:'7 м²',r:'700 дм²',a:'='},{t:'in',q:'2 м² − 50 дм² = {} дм²',a:[150]}]}],
+ 4:[{name:'Площадь прямоугольного треугольника',tasks:[{t:'in',q:'Прямоугольный треугольник, катеты 6 см и 4 см.<br>S = {} см²',a:[12],small:1},
+      {t:'in',q:'Прямоугольный треугольник, катеты 10 см и 3 см.<br>S = {} см²',a:[15],small:1},
+      {t:'in',q:'Прямоугольник 8 см × 6 см разрезали по диагонали.<br>Площадь каждого треугольника {} см²',a:[24],small:1}]},
+    {name:'Части величин',tasks:[{t:'in',q:`${F(1,2)} м² = {} дм²`,a:[50]},{t:'in',q:`${F(3,4)} м² = {} дм²`,a:[75]},{t:'in',q:`${F(1,4)} дм² = {} см²`,a:[25]}]},
+    {name:'Ар и гектар',tasks:[{t:'in',q:'1 а = {} м²',a:[100]},{t:'in',q:'1 га = {} а',a:[100]},{t:'in',q:'1 га = {} м²',a:[10000]},
+      {t:'in',q:'3 га 5 а = {} а',a:[305]},{t:'cmp',l:'2 га',r:'150 а',a:'>'},
+      {t:'in',q:'Поле — прямоугольник 200 м × 50 м.<br>Его площадь {} а',a:[100],small:1},
+      {t:'ch',q:'Что удобнее измерять в гектарах?',o:['площадь тетради','площадь поля','площадь комнаты'],a:'площадь поля',txt:1}]}]},
 volume:{
- 2:[{t:'cubes',d:[3,2,2],q:'Каждый кубик — 1 см³. Объём фигуры {} см³',a:[12]},{t:'in',q:'1 дм³ = {} см³',a:[1000]},
-    {t:'in',q:'1 л = {} дм³',a:[1]},{t:'in',q:'Коробка: 4 см × 3 см × 2 см.<br>V = {} см³',a:[24],small:1},
-    {t:'cmp',l:'2 дм³',r:'1500 см³',a:'>'},{t:'in',q:'1 м³ = {} дм³',a:[1000]},
-    {t:'ch',q:'Чем измеряют, сколько воды в ведре?',o:['литрами','метрами','часами'],a:'литрами',txt:1}],
- 3:[{t:'cubes',d:[4,3,2],q:'Каждый кубик — 1 см³. Объём фигуры {} см³',a:[24]},
-    {t:'in',q:'a = 5 дм, b = 4 дм, c = 3 дм.<br>V = {} дм³',a:[60],small:1},
-    {t:'in',q:'V = 36 см³, длина 4 см, ширина 3 см.<br>Высота = {} см',a:[3],small:1},{t:'in',q:'2 дм³ 40 см³ = {} см³',a:[2040]},
-    {t:'cmp',l:'5 л',r:'5 дм³',a:'='},{t:'in',q:'Аквариум 5 дм × 3 дм × 4 дм.<br>В него войдёт {} л воды',a:[60],small:1}],
- 4:[{t:'in',q:'1 м³ = {} дм³',a:[1000]},{t:'in',q:'3 м³ 25 дм³ = {} дм³',a:[3025]},{t:'cmp',l:'4 м³',r:'3999 дм³',a:'>'},
-    {t:'in',q:'Бассейн 10 м × 5 м × 2 м.<br>V = {} м³',a:[100],small:1},{t:'in',q:'<span class="fr"><sup>1</sup><sub>4</sub></span> м³ = {} дм³',a:[250]},
-    {t:'in',q:'Куб со стороной 3 дм.<br>V = {} дм³',a:[27],small:1},{t:'in',q:'В бочке 2 м³ воды.<br>Это {} л',a:[2000],small:1}]},
+ 2:[{name:'Объём фигуры',tasks:[{t:'cubes',d:[2,2,2],q:'Каждый кубик — 1 см³. Объём фигуры {} см³',a:[8]},
+      {t:'cubes',d:[3,2,2],q:'Каждый кубик — 1 см³. Объём фигуры {} см³',a:[12]},{t:'in',q:'Коробка: 4 см × 3 см × 2 см.<br>V = {} см³',a:[24],small:1}]},
+    {name:'Единицы объёма и литр',tasks:[{t:'in',q:'1 дм³ = {} см³',a:[1000]},{t:'in',q:'1 м³ = {} дм³',a:[1000]},{t:'in',q:'1 л = {} дм³',a:[1]},
+      {t:'cmp',l:'2 дм³',r:'1500 см³',a:'>'},{t:'ch',q:'Чем измеряют, сколько воды в ведре?',o:['литрами','метрами','часами'],a:'литрами',txt:1}]}],
+ 3:[{name:'Формула объёма V = a · b · c',tasks:[{t:'cubes',d:[4,3,2],q:'Каждый кубик — 1 см³. Объём фигуры {} см³',a:[24]},
+      {t:'in',q:'a = 5 дм, b = 4 дм, c = 3 дм.<br>V = {} дм³',a:[60],small:1},{t:'in',q:'V = 36 см³, длина 4 см, ширина 3 см.<br>Высота = {} см',a:[3],small:1},
+      {t:'in',q:'Аквариум 5 дм × 3 дм × 4 дм.<br>В него войдёт {} л воды',a:[60],small:1}]},
+    {name:'Перевод единиц объёма',tasks:[{t:'in',q:'2 дм³ 40 см³ = {} см³',a:[2040]},{t:'in',q:'4000 см³ = {} дм³',a:[4]},{t:'cmp',l:'5 л',r:'5 дм³',a:'='}]}],
+ 4:[{name:'Составные именованные величины',tasks:[{t:'in',q:'1 м³ = {} дм³',a:[1000]},{t:'in',q:'3 м³ 25 дм³ = {} дм³',a:[3025]},{t:'cmp',l:'4 м³',r:'3999 дм³',a:'>'},
+      {t:'in',q:'В бочке 2 м³ воды.<br>Это {} л',a:[2000],small:1}]},
+    {name:'Объём и части величин',tasks:[{t:'in',q:'Бассейн 10 м × 5 м × 2 м.<br>V = {} м³',a:[100],small:1},{t:'in',q:'Куб со стороной 3 дм.<br>V = {} дм³',a:[27],small:1},
+      {t:'in',q:`${F(1,4)} м³ = {} дм³`,a:[250]},{t:'in',q:`${F(1,2)} л = {} см³`,a:[500]}]}]},
 mass:{
- 3:[{t:'in',q:'1 кг = {} г',a:[1000]},{t:'in',q:'1 ц = {} кг',a:[100]},{t:'in',q:'1 т = {} ц',a:[10]},
-    {t:'in',q:'3 кг 250 г = {} г',a:[3250]},{t:'cmp',l:'2 т',r:'18 ц',a:'>'},
-    {t:'in',q:'4 кг 600 г + 2 кг 700 г = {} кг {} г',a:[7,300]},
-    {t:'ch',q:'В каких единицах удобно измерить массу слона?',o:['г','кг','т'],a:'т'}],
- 4:[{t:'in',q:'5 т 40 кг = {} кг',a:[5040]},{t:'in',q:'3070 кг = {} т {} кг',a:[3,70]},{t:'in',q:'2 ц 50 кг · 4 = {} т',a:[1]},
-    {t:'in',q:'7 т − 2 т 350 кг = {} т {} кг',a:[4,650]},{t:'cmp',l:'3 ц 5 кг',r:'350 кг',a:'<'},
-    {t:'in',q:'6 кг 300 г : 3 = {} кг {} г',a:[2,100]},
-    {t:'in',q:'<span class="fr"><sup>3</sup><sub>4</sub></span> т = {} кг',a:[750]},{t:'in',q:'<span class="fr"><sup>2</sup><sub>5</sub></span> кг = {} г',a:[400]}]},
+ 3:[{name:'Грамм и килограмм',tasks:[{t:'in',q:'1 кг = {} г',a:[1000]},{t:'in',q:'3 кг 250 г = {} г',a:[3250]},{t:'in',q:'2500 г = {} кг {} г',a:[2,500]},
+      {t:'in',q:'4 кг 600 г + 2 кг 700 г = {} кг {} г',a:[7,300]}]},
+    {name:'Центнер и тонна',tasks:[{t:'in',q:'1 ц = {} кг',a:[100]},{t:'in',q:'1 т = {} ц',a:[10]},{t:'cmp',l:'2 т',r:'18 ц',a:'>'},
+      {t:'ch',q:'В каких единицах удобно измерить массу слона?',o:['г','кг','т'],a:'т'}]}],
+ 4:[{name:'Составные именованные величины',tasks:[{t:'in',q:'5 т 40 кг = {} кг',a:[5040]},{t:'in',q:'3070 кг = {} т {} кг',a:[3,70]},{t:'in',q:'2 ц 50 кг · 4 = {} т',a:[1]},
+      {t:'in',q:'7 т − 2 т 350 кг = {} т {} кг',a:[4,650]},{t:'cmp',l:'3 ц 5 кг',r:'350 кг',a:'<'},{t:'in',q:'6 кг 300 г : 3 = {} кг {} г',a:[2,100]}]},
+    {name:'Части величин',tasks:[{t:'in',q:`${F(3,4)} т = {} кг`,a:[750]},{t:'in',q:`${F(2,5)} кг = {} г`,a:[400]},{t:'in',q:`${F(1,2)} ц = {} кг`,a:[50]}]}]},
 speed:{
- 3:[{t:'in',q:'Велосипедист едет со скоростью 12 км/ч.<br>За 3 ч он проедет {} км',a:[36],small:1},
+ 3:[{name:'Скорость, время, расстояние',tasks:[{t:'in',q:'Велосипедист едет со скоростью 12 км/ч.<br>За 3 ч он проедет {} км',a:[36],small:1},
     {t:'in',q:'Улитка проползла 20 м за 5 мин.<br>Её скорость {} м/мин',a:[4],small:1},
     {t:'in',q:'Поезд прошёл 240 км со скоростью 60 км/ч.<br>Он был в пути {} ч',a:[4],small:1},
     {t:'ch',q:'Какая формула помогает найти путь?',o:['s = v · t','s = v + t','s = v : t'],a:'s = v · t'},
     {t:'in',q:'Самолёт летит со скоростью 800 км/ч.<br>За 2 ч он пролетит {} км',a:[1600],small:1},
-    {t:'in',q:'Стрелка ехала 2 ч со скоростью 70 км/ч<br>и ещё 1 ч со скоростью 60 км/ч.<br>Всего она проехала {} км',a:[200],small:1}],
- 4:[{t:'in',q:'Два велосипедиста едут навстречу друг другу<br>со скоростями 12 км/ч и 15 км/ч.<br>Скорость сближения {} км/ч',a:[27],small:1},
-    {t:'in',q:'Между городами 216 км. Навстречу выехали машины<br>со скоростями 50 км/ч и 58 км/ч.<br>Они встретятся через {} ч',a:[2],small:1},
-    {t:'in',q:'Пешеход прошёл 3 км за 50 мин.<br>Его скорость {} м/мин',a:[60],small:1},
-    {t:'in',q:'Велосипедист догоняет пешехода. Между ними 20 км.<br>Скорость велосипедиста 15 км/ч, пешехода 5 км/ч.<br>Он догонит пешехода через {} ч',a:[2],small:1},
-    {t:'in',q:'Машина едет за автобусом: 70 км/ч и 50 км/ч.<br>Скорость сближения при движении вдогонку {} км/ч',a:[20],small:1},
-    {t:'in',q:'Из одного города в разные стороны вышли поезда<br>со скоростями 70 км/ч и 80 км/ч.<br>Через 2 ч между ними будет {} км',a:[300],small:1},
-    {t:'ch',q:'Пешеходы идут в разные стороны со скоростями 4 км/ч и 5 км/ч. Скорость удаления —',o:['1 км/ч','9 км/ч','20 км/ч'],a:'9 км/ч'}]},
+    {t:'in',q:'Стрелка ехала 2 ч со скоростью 70 км/ч<br>и ещё 1 ч со скоростью 60 км/ч.<br>Всего она проехала {} км',a:[200],small:1}]}],
+ 4:[{name:'Повторение: s = v · t',tasks:[{t:'in',q:'Пешеход прошёл 3 км за 50 мин.<br>Его скорость {} м/мин',a:[60],small:1},
+      {t:'in',q:'Машина ехала 3 ч со скоростью 65 км/ч.<br>Она проехала {} км',a:[195],small:1},{t:'in',q:'Катер прошёл 96 км за 4 ч.<br>Его скорость {} км/ч',a:[24],small:1}]},
+    {name:'Встречное движение и в разные стороны',tasks:[{t:'in',q:'Два велосипедиста едут навстречу друг другу<br>со скоростями 12 км/ч и 15 км/ч.<br>Скорость сближения {} км/ч',a:[27],small:1},
+      {t:'in',q:'Между городами 216 км. Навстречу выехали машины<br>со скоростями 50 км/ч и 58 км/ч.<br>Они встретятся через {} ч',a:[2],small:1},
+      {t:'in',q:'Из одного города в разные стороны вышли поезда<br>со скоростями 70 км/ч и 80 км/ч.<br>Через 2 ч между ними будет {} км',a:[300],small:1},
+      {t:'ch',q:'Пешеходы идут в разные стороны со скоростями 4 км/ч и 5 км/ч. Скорость удаления —',o:['1 км/ч','9 км/ч','20 км/ч'],a:'9 км/ч'}]},
+    {name:'Движение вдогонку и с отставанием',tasks:[{t:'in',q:'Велосипедист догоняет пешехода. Между ними 20 км.<br>Скорость велосипедиста 15 км/ч, пешехода 5 км/ч.<br>Он догонит пешехода через {} ч',a:[2],small:1},
+      {t:'in',q:'Машина едет за автобусом: 70 км/ч и 50 км/ч.<br>Скорость сближения при движении вдогонку {} км/ч',a:[20],small:1},
+      {t:'in',q:'Из одного пункта в одну сторону выехали машины<br>со скоростями 60 км/ч и 80 км/ч.<br>Через 3 ч между ними будет {} км',a:[60],small:1}]}]},
 };
 
 /* ---------- state ---------- */
 let grade=null; const seals=new Set();
-let curLand=null, curTask=0, solved={}; // solved[landId] = Set of indices
+let curLand=null, curTask=0, curTopic=0, solved={}; // solved[land|topic] = Set of indices
+const SK=()=>curLand.id+'|'+curTopic;
 const tools=$('#tools'), scr=$('#screen');
 const PRAISE=['Верно!','Отлично!','Молодец!','Точно!','Великолепно!','Так держать!'];
 const praise=()=>PRAISE[Math.floor(Math.random()*PRAISE.length)];
@@ -335,26 +345,43 @@ function toast(msg){const t=el('div','abs card fade',`<div style="padding:16px 3
   scr.appendChild(t); setTimeout(()=>t.remove(),1800);}
 
 /* ---------- LAND ---------- */
-function land(L,idx=0){ curLand=L; curTask=idx; solved[L.id]=solved[L.id]||new Set(); setBg(L.id); renderTask(); }
-function tasks(){ return T[curLand.id][grade]; }
+function topics(L=curLand){ return T[L.id][grade]; }
+function land(L){ curLand=L; setBg(L.id); const tp=topics(L); if(tp.length===1) return startTopic(0); topicMenu(); }
+function startTopic(i,idx=0){ curTopic=i; curTask=idx; solved[SK()]=solved[SK()]||new Set(); renderTask(); }
+function tasks(){ const tp=topics(); return curTopic==='all'? tp.flatMap(x=>x.tasks) : tp[curTopic].tasks; }
+function topicName(){ return curTopic==='all'?'Все темы подряд':topics()[curTopic].name; }
+function plural(n){const a=n%10,b=n%100; return (a===1&&b!==11)?'задание':(a>=2&&a<=4&&(b<10||b>=20))?'задания':'заданий';}
+function topicMenu(){ const L=curLand, tp=topics(); scr.innerHTML=''; setBg(L.id);
+  setTools([tb('<span class="emo">🗺️</span> Карта',map)]);
+  const [x0,x1]=L.col, W=x1-x0;
+  const title=el('div','abs'); title.style.cssText=`left:${x0}px;top:22px`; title.innerHTML=`<div class="ribbon" style="font-size:38px;padding:10px 44px 12px">${L.name}</div>`; scr.appendChild(title);
+  const bub=el('div','bubble fade'); bub.style.cssText+=`left:${x0+20}px;top:118px;width:${W-20}px`; bub.innerHTML=`<div class="who">${L.who}</div>${L.intro}<br><span style="color:var(--tealDark)">Выбери тему, которую вы сейчас проходите:</span>`; scr.appendChild(bub);
+  const card=el('div','card taskcard fade'); card.style.cssText+=`left:${x0}px;top:268px;width:${W}px;display:flex;flex-direction:column;gap:14px`;
+  tp.forEach((t,i)=>{ const k=L.id+'|'+i, d=solved[k]&&solved[k].size>=t.tasks.length;
+    const b=el('button','opt txt',`<span style="display:flex;align-items:center;gap:16px;text-align:left"><span class="emo" style="font-size:34px">${d?'✅':'📜'}</span><span style="flex:1">${t.name}</span><span style="font-size:20px;color:#8a6d3a;white-space:nowrap">${t.tasks.length} ${plural(t.tasks.length)}</span></span>`);
+    b.style.cssText='width:100%;min-height:78px'; b.onclick=()=>{sTap(); startTopic(i);}; card.appendChild(b); });
+  const all=el('button','gembtn gold',`Все темы подряд (${tp.reduce((n,t)=>n+t.tasks.length,0)})`); all.style.cssText='height:66px;font-size:24px;margin-top:4px'; all.onclick=()=>{sTap(); startTopic('all');}; card.appendChild(all);
+  scr.appendChild(card);
+}
 
 function renderTask(){ const L=curLand, list=tasks(), k=curTask, task=list[k];
   scr.innerHTML='';
-  setTools([tb('<span class="emo">🗺️</span> Карта',map), tb('◀',()=>go(-1),'arrow'), tb('▶',()=>go(1),'arrow')]);
-  if(k===0) tools.children[1].disabled=true;
+  setTools([tb('<span class="emo">🗺️</span> Карта',map), tb('◀',()=>go(-1),'arrow'), tb('▶',()=>go(1),'arrow')]); if(k===0) tools.children[1].disabled=true;
+  
   const [x0,x1]=L.col, W=x1-x0;
   const title=el('div','abs'); title.style.cssText=`left:${x0}px;top:22px`; title.innerHTML=`<div class="ribbon" style="font-size:38px;padding:10px 44px 12px">${L.name}</div>`; scr.appendChild(title);
+  if(topics().length>1){ tools.insertBefore(tb('<span class="emo">📜</span> Темы',topicMenu),tools.children[1]); }
   const bub=el('div','bubble fade'); bub.style.cssText+=`left:${x0+20}px;top:118px;width:${W-20}px`;
-  const intro= k===0 && !solved[L.id].size ? L.intro : taskHint(task);
-  bub.innerHTML=`<div class="who">${L.who}</div>${intro}`; scr.appendChild(bub);
+  const intro= k===0 && !solved[SK()].size ? L.intro : taskHint(task);
+  bub.innerHTML=`<div class="who">${L.who}</div><span style="display:block;font-size:18px;color:var(--tealDark);margin-bottom:2px">Тема: ${topicName()}</span>${intro}`; scr.appendChild(bub);
   const card=el('div','card taskcard fade'); card.style.cssText+=`left:${x0}px;top:${task.t==='in'&&!task.small?290:(task.t==='grid'||task.t==='cubes'||task.t==='clock')?230:262}px;width:${W}px`;
-  const dots=el('div','dots'); list.forEach((_,i)=>{const d=el('div','dot'+(i===k?' cur':'')+(solved[L.id].has(i)?' ok':''),i+1); d.onclick=()=>{sTap(); curTask=i; renderTask();}; dots.appendChild(d);});
+  const dots=el('div','dots'); list.forEach((_,i)=>{const d=el('div','dot'+(i===k?' cur':'')+(solved[SK()].has(i)?' ok':''),i+1); d.onclick=()=>{sTap(); curTask=i; renderTask();}; dots.appendChild(d);});
   card.appendChild(dots);
   const body=el('div'); card.appendChild(body);
   const fb=el('div','fb'); card.appendChild(fb);
   scr.appendChild(card);
   const api={
-    win(){ if(api.won) return; api.won=true; api.done=true; solved[L.id].add(k); sOk(); fb.className='fb ok'; fb.textContent=praise();
+    win(){ if(api.won) return; api.won=true; api.done=true; solved[SK()].add(k); sOk(); fb.className='fb ok'; fb.textContent=praise();
       dots.children[k].classList.add('ok'); const r=card.getBoundingClientRect(), s=stage.getBoundingClientRect(), z=s.width/1600;
       burst((r.left-s.left)/z+W/2,(r.top-s.top)/z+120); addNext(); },
     bad(msg){ sBad(); fb.className='fb bad'; fb.textContent=msg||'Попробуй ещё раз!'; },
@@ -362,7 +389,7 @@ function renderTask(){ const L=curLand, list=tasks(), k=curTask, task=list[k];
   };
   function addNext(){ const nb=el('button','gembtn green nextBtn pop', k===list.length-1?'Получить печать 🏅':'Дальше ➜'); nb.onclick=()=>{sTap(); go(1);}; card.appendChild(nb); }
   BUILD[task.t](body,task,api);
-  if(solved[L.id].has(k)){ api.reveal&&api.reveal(true); api.won=true; fb.className='fb ok'; fb.textContent='Уже решено!'; addNext(); }
+  if(solved[SK()].has(k)){ api.reveal&&api.reveal(true); api.won=true; fb.className='fb ok'; fb.textContent='Уже решено!'; addNext(); }
   if(TEACHER){ const t=el('div','teach'); t.innerHTML=`<div class="tnote">🎓 Ответ: ${answerText(task)}</div>`; const b=el('button','tshow','Показать ответ'); b.onclick=()=>api.reveal&&api.reveal(); t.appendChild(b); scr.appendChild(t); }
 }
 function taskHint(t){ return ({in:'Впиши ответ в окошко — нажимай на цифры <b>или печатай</b> на клавиатуре.',cmp:'Сравни величины. Не забудь перевести их <b>в одинаковые единицы</b>!',
@@ -434,14 +461,14 @@ let _api=null; const _orig=BUILD.in; BUILD.in=function(b,t,api,x){ _api=api; ret
 function currentApi(){ return _api; }
 
 /* ---------- SEAL ---------- */
-function sealScreen(){ const L=curLand, list=tasks(), n=solved[L.id].size; seals.add(L.id); sSeal();
+function sealScreen(){ const L=curLand, list=tasks(), n=solved[SK()].size; seals.add(L.id); sSeal();
   const ov=el('div','overlay'); const c=el('div','card pop'); c.style.cssText+='width:720px;padding:40px;text-align:center';
   c.innerHTML=`<div style="display:flex;justify-content:center">${sealSVG(L.icon,L.color,170)}</div>
     <div class="ribbon" style="font-size:38px;margin-top:14px">Печать получена!</div>
-    <div style="font-size:28px;font-weight:800;margin-top:22px">${L.name} спасена от Путаницы!<br>Решено заданий: <b style="color:var(--ok)">${n}</b> из ${list.length}</div>
+    <div style="font-size:28px;font-weight:800;margin-top:22px">${L.name}: тема «${topicName()}» пройдена!<br>Решено заданий: <b style="color:var(--ok)">${n}</b> из ${list.length}</div>
     <div style="margin-top:26px;display:flex;gap:18px;justify-content:center" id="sb"></div>`;
   const b1=el('button','gembtn','🗺️ На карту'); b1.onclick=()=>{sTap(); map();};
-  const b2=el('button','gembtn gold','Пройти ещё раз'); b2.style.fontSize='26px'; b2.onclick=()=>{sTap(); solved[L.id]=new Set(); land(L);};
+  const b2=el('button','gembtn gold', topics().length>1?'📜 Другая тема':'Пройти ещё раз'); b2.style.fontSize='26px'; b2.onclick=()=>{sTap(); if(topics().length>1) topicMenu(); else { solved[SK()]=new Set(); startTopic(curTopic);} };
   $('#sb',c).append(b1,b2); ov.appendChild(c); scr.appendChild(ov); setTimeout(()=>{burst(800,330); burst(560,450); burst(1040,450);},150);
 }
 
