@@ -510,7 +510,7 @@ function toolbar(){ tools.innerHTML='';
 
 function cover(){ cur=-1; toolbar(); scr.innerHTML='';
   const t=el('div','abs col'); t.style.cssText='left:0;right:0;top:70px;text-align:center';
-  t.innerHTML=`<div class="chip" style="background:var(--gold);font-size:24px">Математические разминки · 2–4 класс</div>
+  t.innerHTML=`<div class="chip" style="background:var(--gold);font-size:24px">Математические разминки</div>
     <div class="title" style="font-size:112px;margin-top:22px">Ночь в замке<br>Тыквины</div>
     <div style="font-size:30px;font-weight:700;margin-top:18px;color:#ffe9c7">Логика · головоломки · память · пространственное мышление</div>`;
   const chars=el('div','abs'); chars.style.cssText='left:0;right:0;bottom:30px;display:flex;justify-content:center;align-items:flex-end;gap:70px';
@@ -532,7 +532,7 @@ function menu(){ cur=-1; toolbar(); scr.innerHTML='';
 
 function openRoom(i, level=0){ if(i<0) return; cur=i; curLevel=level; toolbar(); const R=ROOMS[i]; scr.innerHTML='';
   const [cn,cc]=CAT[R.cat];
-  scr.appendChild(el('div','head',`<span class="chip" style="background:${cc}">${cn}</span> <span class="chip" style="background:#fff">${R.grade}</span><div class="title">${R.title}</div>`));
+  scr.appendChild(el('div','head',`<span class="chip" style="background:${cc}">${cn}</span><div class="title">${R.title}</div>`));
   const ch=CH[R.who];
   const say=el('div','say'); say.style.setProperty('--cc',ch.c); say.style.setProperty('--tx','170px');
   const setSay=t=>{ say.innerHTML=`<div class="who">${R.who}</div>${t}`; say.classList.remove('fade'); void say.offsetWidth; say.classList.add('fade'); };
