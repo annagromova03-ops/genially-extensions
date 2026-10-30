@@ -1,0 +1,583 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ночь в замке Тыквины</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --orange:#ff8a1f; --gold:#ffcc33; --pink:#ff4fa3; --cyan:#4fd1ff; --lime:#7cff6b; --violet:#b48cff;
+  --ink:#1a0830; --paper:#fff8ec; --panel1:rgba(64,22,110,.93); --panel2:rgba(38,10,70,.95);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:#12041f;font-family:'Rubik','Arial',sans-serif;color:#fff;
+  -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+#stage{position:absolute;left:50%;top:50%;width:1600px;height:900px;transform-origin:50% 50%;overflow:hidden;border-radius:6px}
+#bg{position:absolute;inset:0}
+#bg svg{width:100%;height:100%}
+#screen{position:absolute;inset:0}
+.abs{position:absolute}
+button{font-family:inherit;cursor:pointer;border:none;color:inherit}
+.emo{font-family:'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif;line-height:1}
+
+/* ---------- headings ---------- */
+.title{font-weight:900;color:#ffb02e;-webkit-text-stroke:3px #3a0f00;paint-order:stroke fill;
+  text-shadow:0 5px 0 #3a0f00,0 0 26px rgba(255,138,31,.5);line-height:1.02}
+.chip{display:inline-block;font-weight:900;font-size:19px;letter-spacing:1.5px;padding:6px 16px;border-radius:30px;color:var(--ink);
+  text-transform:uppercase;box-shadow:0 3px 0 rgba(0,0,0,.35)}
+.head{position:absolute;left:36px;top:22px}
+.head .title{font-size:54px;margin-top:8px}
+
+/* ---------- toolbar ---------- */
+#tools{position:absolute;right:26px;top:24px;display:flex;gap:12px;z-index:20}
+.tbtn{height:64px;min-width:64px;padding:0 18px;border-radius:20px;background:#2a0f45;border:4px solid var(--gold);
+  font-weight:800;font-size:24px;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 5px 0 rgba(0,0,0,.45);transition:transform .12s}
+.tbtn:hover{transform:translateY(-2px)} .tbtn:active{transform:translateY(3px);box-shadow:0 2px 0 rgba(0,0,0,.45)}
+.tbtn.arrow{font-size:34px;padding:0}
+.tbtn[disabled]{opacity:.35;pointer-events:none}
+
+/* ---------- bubble + character ---------- */
+.say{position:absolute;left:36px;top:150px;width:410px;background:var(--paper);color:#2a0f45;border-radius:30px;padding:24px 24px 22px;
+  font-size:25px;line-height:1.33;font-weight:600;border:5px solid var(--cc);box-shadow:0 8px 0 rgba(0,0,0,.35);z-index:5}
+.say b{color:#b0360a}
+.say .who{position:absolute;top:-21px;left:22px;background:var(--cc);color:var(--ink);font-weight:900;font-size:20px;padding:3px 16px;border-radius:18px}
+.say::after{content:'';position:absolute;bottom:-40px;left:var(--tx,160px);border:20px solid transparent;border-top-color:var(--cc)}
+.charbox{position:absolute;left:36px;width:410px;bottom:18px;display:flex;justify-content:center;z-index:4;filter:drop-shadow(0 10px 14px rgba(0,0,0,.45))}
+.charbox svg{display:block}
+.bob{animation:bob 3.2s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+
+/* ---------- panel ---------- */
+.panel{position:absolute;left:480px;top:128px;width:1090px;height:722px;border-radius:34px;
+  background:linear-gradient(180deg,var(--panel1),var(--panel2));border:5px solid var(--orange);
+  box-shadow:0 0 0 6px rgba(255,138,31,.16),0 12px 0 rgba(0,0,0,.4),inset 0 0 40px rgba(255,138,31,.12);overflow:hidden}
+.panel.solved{border-color:var(--lime);box-shadow:0 0 0 6px rgba(124,255,107,.2),0 12px 0 rgba(0,0,0,.4),inset 0 0 40px rgba(124,255,107,.14)}
+.pbody{position:absolute;inset:0;padding:30px 36px}
+.center{display:flex;align-items:center;justify-content:center}
+.col{display:flex;flex-direction:column;align-items:center}
+.q{font-size:34px;font-weight:700;line-height:1.3;text-align:center}
+.q b{color:var(--gold)}
+
+/* level tabs */
+.tabs{position:absolute;right:22px;top:18px;display:flex;gap:8px;z-index:6}
+.tab{height:46px;padding:0 16px;border-radius:14px;background:rgba(0,0,0,.35);border:3px solid rgba(255,255,255,.3);font-weight:800;font-size:19px}
+.tab.on{background:var(--gold);color:var(--ink);border-color:var(--gold)}
+
+/* option buttons */
+.opts{display:flex;gap:22px;flex-wrap:wrap;justify-content:center}
+.opt{min-width:150px;height:100px;padding:0 26px;border-radius:26px;background:#ffcc33;color:#2a0f45;font-weight:900;font-size:42px;
+  border:5px solid #5a3210;box-shadow:0 8px 0 #5a3210;transition:transform .12s;display:flex;align-items:center;justify-content:center;gap:10px}
+.opt.small{display:block;font-size:28px;height:auto;min-height:90px;padding:14px 26px;max-width:860px;text-align:left;line-height:1.25}
+.opt:hover{transform:translateY(-3px)} .opt:active{transform:translateY(4px);box-shadow:0 3px 0 #5a3210}
+.opt.right{background:var(--lime);border-color:#1f6b14;box-shadow:0 8px 0 #1f6b14}
+.opt.wrong{background:#ff6b6b;border-color:#7a1414;box-shadow:0 8px 0 #7a1414;animation:shake .4s}
+.opt.icon{width:150px;height:150px;padding:0}
+.opt[disabled]{pointer-events:none}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-12px)}40%{transform:translateX(12px)}60%{transform:translateX(-8px)}80%{transform:translateX(8px)}}
+.shake{animation:shake .4s}
+
+.bigbtn{height:96px;padding:0 50px;border-radius:30px;background:var(--orange);color:#fff;font-weight:900;font-size:40px;
+  border:5px solid #5a2000;box-shadow:0 9px 0 #5a2000;-webkit-text-stroke:1.5px #5a2000;paint-order:stroke fill}
+.bigbtn:active{transform:translateY(5px);box-shadow:0 4px 0 #5a2000}
+.bigbtn.green{background:#3ccf2c;border-color:#155c0d;box-shadow:0 9px 0 #155c0d;-webkit-text-stroke-color:#155c0d}
+
+/* feedback strip */
+.fb{position:absolute;left:0;right:0;bottom:0;height:86px;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:800;
+  transform:translateY(100%);transition:transform .25s;z-index:7}
+.fb.show{transform:none}
+.fb.ok{background:#3ccf2c;color:#0d3a08}
+.fb.bad{background:#ff6b6b;color:#4a0606}
+
+/* teacher strip */
+.teach{position:absolute;left:480px;right:30px;bottom:6px;height:40px;z-index:15}
+.teach-in{position:absolute;right:0;bottom:0;display:flex;gap:10px;align-items:center}
+.tnote{background:rgba(0,0,0,.55);border:2px dashed var(--gold);color:#ffe9a8;font-size:18px;font-weight:700;padding:6px 14px;border-radius:12px;max-width:740px}
+.tshow{background:var(--gold);color:var(--ink);font-weight:900;font-size:18px;padding:8px 16px;border-radius:12px;border:3px solid #5a3210}
+
+/* timer */
+.timer{width:600px;height:26px;border-radius:14px;background:rgba(0,0,0,.4);border:3px solid rgba(255,255,255,.35);overflow:hidden}
+.timer i{display:block;height:100%;width:100%;background:linear-gradient(90deg,var(--pink),var(--gold));transform-origin:left}
+
+/* menu */
+.room{position:absolute;width:276px;height:300px;border-radius:30px;background:rgba(40,10,70,.92);border:5px solid var(--cc);
+  box-shadow:0 10px 0 rgba(0,0,0,.4);padding:22px 18px;text-align:center;transition:transform .15s}
+.room:hover{transform:translateY(-6px) rotate(-1deg)}
+.room .n{width:76px;height:76px;margin:0 auto;border-radius:50%;background:var(--cc);color:var(--ink);font-size:42px;font-weight:900;display:flex;align-items:center;justify-content:center}
+.room .t{font-size:29px;font-weight:800;margin-top:18px;line-height:1.15;height:68px;display:flex;align-items:center;justify-content:center}
+.room .c{margin-top:14px}
+.room .done{position:absolute;right:-14px;top:-14px;width:62px;height:62px;border-radius:50%;background:var(--lime);color:#12320c;font-size:36px;font-weight:900;
+  display:none;align-items:center;justify-content:center;border:4px solid #12320c;transform:rotate(10deg)}
+.room.isdone .done{display:flex}
+
+/* sudoku */
+.sgrid{position:relative;display:grid;grid-template-columns:repeat(4,124px);gap:10px}
+.scell{width:124px;height:124px;border-radius:22px;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.28);border:3px dashed rgba(255,255,255,.5)}
+.scell.given{background:rgba(255,255,255,.13);border:3px solid rgba(255,255,255,.25)}
+.scell.user{cursor:pointer}
+.scell.user:hover{background:rgba(255,204,51,.18)}
+.scell.err{background:rgba(255,80,80,.45);border-color:#ff6b6b;animation:shake .4s}
+.scell.okc{background:rgba(124,255,107,.25);border:3px solid var(--lime)}
+.scell svg{width:100px;height:auto}
+.sline-v{position:absolute;left:264px;top:-6px;width:6px;height:538px;background:var(--orange);border-radius:4px}
+.sline-h{position:absolute;top:264px;left:-6px;height:6px;width:538px;background:var(--orange);border-radius:4px}
+.pal{display:flex;flex-direction:column;gap:16px}
+.pbtn{width:140px;height:112px;border-radius:24px;background:rgba(255,255,255,.1);border:4px solid rgba(255,255,255,.3);display:flex;align-items:center;justify-content:center}
+.pbtn svg{width:100px;height:auto}
+.pbtn.sel{background:rgba(255,204,51,.3);border-color:var(--gold);box-shadow:0 0 22px rgba(255,204,51,.7)}
+.pbtn.erase{font-size:24px;font-weight:800;height:70px}
+
+/* castle windows */
+.castle{display:grid;grid-template-columns:repeat(3,150px);gap:18px;padding:20px;background:#3b2a52;border-radius:24px;border:6px solid #1a0b2e;
+  background-image:repeating-linear-gradient(0deg,transparent 0 50px,rgba(0,0,0,.25) 50px 54px),repeating-linear-gradient(90deg,transparent 0 98px,rgba(0,0,0,.18) 98px 102px)}
+.win{width:150px;height:150px;border-radius:75px 75px 14px 14px;background:linear-gradient(#ffe9a8,#ffb02e);border:7px solid #2a1240;position:relative;
+  box-shadow:0 0 26px rgba(255,200,80,.55);display:flex;align-items:flex-end;justify-content:center;overflow:hidden}
+.win::before{content:'';position:absolute;left:64px;top:0;width:7px;height:100%;background:#2a1240}
+.win::after{content:'';position:absolute;left:0;top:72px;width:100%;height:7px;background:#2a1240}
+.win .sp{position:relative;z-index:2;margin-bottom:10px}
+.win .sp svg{width:104px;height:auto}
+.win.click{cursor:pointer}
+.win.good{outline:7px solid var(--lime);outline-offset:3px}
+.win.badw{outline:7px solid #ff6b6b;outline-offset:3px}
+.win.miss .sp{opacity:.45}
+
+/* chest */
+.slots{position:absolute;left:50%;top:205px;transform:translateX(-50%);display:flex;gap:10px}
+.slot{width:62px;height:86px;border-radius:12px;background:rgba(255,255,255,.12);border:3px dashed var(--gold);color:#2a0f45;font-size:58px;font-weight:900;
+  display:flex;align-items:center;justify-content:center;cursor:pointer}
+.slot.f{background:var(--gold)}
+.digit{width:130px;height:150px;border-radius:24px;background:var(--gold);color:#2a0f45;font-size:96px;font-weight:900;border:5px solid #5a3210;box-shadow:0 8px 0 #5a3210}
+.digit.used{opacity:.25;pointer-events:none}
+
+/* ghost path */
+.ggrid{display:grid;grid-template-columns:repeat(5,104px);gap:8px;position:relative}
+.gcell{width:104px;height:104px;border-radius:18px;background:rgba(255,255,255,.08);border:3px solid rgba(255,255,255,.22);font-size:56px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.gcell:hover{background:rgba(255,204,51,.2)}
+.gcell.start{background:rgba(79,209,255,.35);border-color:var(--cyan);cursor:default}
+.gcell.trail{background:rgba(124,255,107,.22)}
+.gcell.end{border:5px solid var(--lime)}
+.gcell.no{background:rgba(255,80,80,.45);animation:shake .4s}
+.ghostTok{position:absolute;width:104px;height:104px;display:flex;align-items:center;justify-content:center;transition:left .45s,top .45s;z-index:3;pointer-events:none}
+.arr{width:66px;height:66px;border-radius:16px;background:var(--gold);color:#2a0f45;font-size:44px;font-weight:900;display:flex;align-items:center;justify-content:center;margin:5px}
+.arr.lit{background:var(--lime)}
+
+/* misc */
+.pumpcards{display:flex;gap:16px;justify-content:center}
+.pcard{border-radius:26px;padding:6px;border:5px solid transparent}
+.pcard.click{cursor:pointer}
+.pcard.click:hover{background:rgba(255,204,51,.15)}
+.pcard.right{border-color:var(--lime);background:rgba(124,255,107,.2)}
+.pcard.wrong{border-color:#ff6b6b;animation:shake .4s}
+.who3{display:flex;gap:40px;justify-content:center}
+.wcard{width:250px;height:290px;border-radius:30px;background:rgba(255,255,255,.08);border:5px solid rgba(255,255,255,.25);display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:16px;cursor:pointer}
+.wcard:hover{background:rgba(255,204,51,.15)}
+.wcard .nm{font-size:34px;font-weight:800;margin-top:10px}
+.wcard .lb{margin-top:8px;font-size:20px;font-weight:900;background:var(--lime);color:#12320c;padding:4px 12px;border-radius:14px;visibility:hidden}
+.wcard.right{border-color:var(--lime)} .wcard.right .lb{visibility:visible}
+.wcard.wrong{border-color:#ff6b6b;animation:shake .4s}
+.prow{display:flex;gap:4px;align-items:flex-end}
+.prow .it{display:flex;flex-direction:column;align-items:center;border-radius:16px;padding:4px}
+.prow .it svg{width:84px;height:auto}
+.prow .num{font-size:20px;font-weight:800;color:#ffe9c7}
+.qmark{width:84px;height:96px;border-radius:18px;border:4px dashed var(--gold);font-size:60px;font-weight:900;color:var(--gold);display:flex;align-items:center;justify-content:center}
+.burst{position:absolute;pointer-events:none;font-size:46px;z-index:30;animation:fly 1.1s ease-out forwards}
+@keyframes fly{to{transform:translate(var(--dx),var(--dy)) rotate(var(--r));opacity:0}}
+.pop{animation:pop .45s ease-out}
+@keyframes pop{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}
+.fade{animation:fadein .35s ease-out}
+@keyframes fadein{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="bg"></div>
+  <div id="screen"></div>
+  <div id="tools"></div>
+</div>
+<script>
+const ART = {"tykvina": "<svg width=\"260\" viewBox=\"0 0 220 285\" xmlns=\"http://www.w3.org/2000/svg\">\n  <ellipse cx=\"110\" cy=\"278\" rx=\"70\" ry=\"7\" fill=\"#000\" opacity=\".35\"/>\n  <path d=\"M62 172 L158 172 L186 272 L34 272 Z\" fill=\"#7b2ff7\"/>\n  <path d=\"M62 172 L158 172 L170 215 L50 215 Z\" fill=\"#9152ff\"/>\n  <path d=\"M74 168 L110 196 L146 168 Z\" fill=\"#ff8a1f\"/>\n  <circle cx=\"110\" cy=\"200\" r=\"6\" fill=\"#ffd43b\"/>\n  <ellipse cx=\"64\" cy=\"152\" rx=\"22\" ry=\"38\" fill=\"#ff6b1a\"/>\n  <ellipse cx=\"156\" cy=\"152\" rx=\"22\" ry=\"38\" fill=\"#ff6b1a\"/>\n  <circle cx=\"110\" cy=\"136\" r=\"48\" fill=\"#ffd9b8\"/>\n  <path d=\"M64 120 Q110 90 156 120 L156 106 Q110 78 64 106 Z\" fill=\"#ff6b1a\"/>\n  <ellipse cx=\"110\" cy=\"98\" rx=\"88\" ry=\"17\" fill=\"#3a1166\"/>\n  <path d=\"M58 96 Q90 44 132 4 Q138 52 162 96 Z\" fill=\"#4c1a8c\"/>\n  <path d=\"M60 90 Q110 74 160 90 L162 98 Q110 84 58 98 Z\" fill=\"#ff8a1f\"/>\n  <rect x=\"100\" y=\"80\" width=\"20\" height=\"16\" rx=\"3\" fill=\"none\" stroke=\"#ffd43b\" stroke-width=\"4\"/>\n  <circle cx=\"132\" cy=\"4\" r=\"7\" fill=\"#ffd43b\"/>\n  <circle cx=\"93\" cy=\"138\" r=\"8\" fill=\"#2a1240\"/><circle cx=\"127\" cy=\"138\" r=\"8\" fill=\"#2a1240\"/>\n  <circle cx=\"96\" cy=\"135\" r=\"3\" fill=\"#fff\"/><circle cx=\"130\" cy=\"135\" r=\"3\" fill=\"#fff\"/>\n  <ellipse cx=\"80\" cy=\"155\" rx=\"9\" ry=\"5\" fill=\"#ff8fb1\" opacity=\".8\"/>\n  <ellipse cx=\"140\" cy=\"155\" rx=\"9\" ry=\"5\" fill=\"#ff8fb1\" opacity=\".8\"/>\n  <path d=\"M98 158 Q110 170 122 158\" stroke=\"#2a1240\" stroke-width=\"4\" fill=\"none\" stroke-linecap=\"round\"/>\n</svg>", "setochka": "<svg width=\"240\" viewBox=\"0 0 220 240\" xmlns=\"http://www.w3.org/2000/svg\">\n  <line x1=\"110\" y1=\"0\" x2=\"110\" y2=\"80\" stroke=\"#e8e0ff\" stroke-width=\"3\"/>\n  <path d=\"M65 115 Q30 85 35 70\" stroke=\"#2b1f3d\" stroke-width=\"10\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M65 135 Q15 105 20 120\" stroke=\"#2b1f3d\" stroke-width=\"10\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M65 155 Q17 125 22 170\" stroke=\"#2b1f3d\" stroke-width=\"10\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M65 175 Q35 145 40 215\" stroke=\"#2b1f3d\" stroke-width=\"10\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M155 115 Q190 85 185 70\" stroke=\"#2b1f3d\" stroke-width=\"10\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M155 135 Q205 105 200 120\" stroke=\"#2b1f3d\" stroke-width=\"10\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M155 155 Q203 125 198 170\" stroke=\"#2b1f3d\" stroke-width=\"10\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M155 175 Q185 145 180 215\" stroke=\"#2b1f3d\" stroke-width=\"10\" fill=\"none\" stroke-linecap=\"round\"/>\n  <circle cx=\"110\" cy=\"140\" r=\"62\" fill=\"#2b1f3d\"/>\n  <circle cx=\"110\" cy=\"140\" r=\"62\" fill=\"url(#sg)\"/>\n  <defs><radialGradient id=\"sg\" cx=\".35\" cy=\".3\" r=\".8\"><stop offset=\"0\" stop-color=\"#5c4a80\"/><stop offset=\"1\" stop-color=\"#2b1f3d\" stop-opacity=\"0\"/></radialGradient></defs>\n  <path d=\"M110 84 L80 66 L82 98 Z\" fill=\"#ff4fa3\"/><path d=\"M110 84 L140 66 L138 98 Z\" fill=\"#ff4fa3\"/>\n  <circle cx=\"110\" cy=\"84\" r=\"9\" fill=\"#ff7ec0\"/>\n  <circle cx=\"88\" cy=\"132\" r=\"19\" fill=\"#fff\"/><circle cx=\"132\" cy=\"132\" r=\"19\" fill=\"#fff\"/>\n  <circle cx=\"92\" cy=\"136\" r=\"10\" fill=\"#1a1028\"/><circle cx=\"128\" cy=\"136\" r=\"10\" fill=\"#1a1028\"/>\n  <circle cx=\"95\" cy=\"132\" r=\"4\" fill=\"#fff\"/><circle cx=\"131\" cy=\"132\" r=\"4\" fill=\"#fff\"/>\n  <ellipse cx=\"74\" cy=\"160\" rx=\"9\" ry=\"5\" fill=\"#ff7ec0\" opacity=\".8\"/><ellipse cx=\"146\" cy=\"160\" rx=\"9\" ry=\"5\" fill=\"#ff7ec0\" opacity=\".8\"/>\n  <path d=\"M96 165 Q110 178 124 165\" stroke=\"#fff\" stroke-width=\"4\" fill=\"none\" stroke-linecap=\"round\"/>\n</svg>", "nochka": "<svg width=\"300\" viewBox=\"0 0 260 210\" xmlns=\"http://www.w3.org/2000/svg\">\n  <path d=\"M95 110 Q60 40 8 70 Q30 85 22 105 Q45 100 50 125 Q70 112 92 140 Z\" fill=\"#4a1fa8\"/>\n  <path d=\"M165 110 Q200 40 252 70 Q230 85 238 105 Q215 100 210 125 Q190 112 168 140 Z\" fill=\"#4a1fa8\"/>\n  <path d=\"M92 70 L100 22 L122 60 Z\" fill=\"#8a4fff\"/><path d=\"M168 70 L160 22 L138 60 Z\" fill=\"#8a4fff\"/>\n  <ellipse cx=\"130\" cy=\"118\" rx=\"54\" ry=\"58\" fill=\"#8a4fff\"/>\n  <ellipse cx=\"130\" cy=\"140\" rx=\"32\" ry=\"30\" fill=\"#b48cff\"/>\n  <path d=\"M160 34 L178 24 L176 46 Z\" fill=\"#ffcc33\"/><path d=\"M160 34 L142 22 L146 44 Z\" fill=\"#ffcc33\"/><circle cx=\"160\" cy=\"34\" r=\"6\" fill=\"#ffe066\"/>\n  <circle cx=\"110\" cy=\"104\" r=\"15\" fill=\"#fff\"/><circle cx=\"150\" cy=\"104\" r=\"15\" fill=\"#fff\"/>\n  <circle cx=\"113\" cy=\"107\" r=\"8\" fill=\"#1a1028\"/><circle cx=\"147\" cy=\"107\" r=\"8\" fill=\"#1a1028\"/>\n  <circle cx=\"116\" cy=\"104\" r=\"3\" fill=\"#fff\"/><circle cx=\"150\" cy=\"104\" r=\"3\" fill=\"#fff\"/>\n  <ellipse cx=\"96\" cy=\"126\" rx=\"8\" ry=\"5\" fill=\"#ff7ec0\" opacity=\".8\"/><ellipse cx=\"164\" cy=\"126\" rx=\"8\" ry=\"5\" fill=\"#ff7ec0\" opacity=\".8\"/>\n  <path d=\"M118 128 Q130 138 142 128\" stroke=\"#1a1028\" stroke-width=\"4\" fill=\"none\" stroke-linecap=\"round\"/>\n  <path d=\"M122 131 L125 139 L128 132 Z\" fill=\"#fff\"/><path d=\"M132 132 L135 139 L138 131 Z\" fill=\"#fff\"/>\n</svg>", "businka": "<svg width=\"230\" viewBox=\"0 0 220 250\" xmlns=\"http://www.w3.org/2000/svg\">\n  <ellipse cx=\"110\" cy=\"243\" rx=\"55\" ry=\"6\" fill=\"#000\" opacity=\".3\"/>\n  <path d=\"M45 220 L45 105 A65 65 0 0 1 175 105 L175 220 Q160 202 143 220 Q127 238 110 220 Q93 202 77 220 Q61 238 45 220 Z\" fill=\"#f4f0ff\"/>\n  <path d=\"M150 60 A65 65 0 0 1 175 105 L175 220 Q160 202 150 212 Z\" fill=\"#d8ccff\" opacity=\".7\"/>\n  <ellipse cx=\"88\" cy=\"108\" rx=\"10\" ry=\"15\" fill=\"#2a1240\"/><ellipse cx=\"132\" cy=\"108\" rx=\"10\" ry=\"15\" fill=\"#2a1240\"/>\n  <circle cx=\"91\" cy=\"102\" r=\"4\" fill=\"#fff\"/><circle cx=\"135\" cy=\"102\" r=\"4\" fill=\"#fff\"/>\n  <ellipse cx=\"72\" cy=\"132\" rx=\"10\" ry=\"6\" fill=\"#ff8fb1\" opacity=\".8\"/><ellipse cx=\"148\" cy=\"132\" rx=\"10\" ry=\"6\" fill=\"#ff8fb1\" opacity=\".8\"/>\n  <ellipse cx=\"110\" cy=\"138\" rx=\"9\" ry=\"11\" fill=\"#2a1240\"/>\n  <circle cx=\"70.0\" cy=\"155.2\" r=\"7\" fill=\"#ff4fa3\" stroke=\"#fff\" stroke-width=\"1.5\"/><circle cx=\"83.3\" cy=\"161.3\" r=\"7\" fill=\"#ffcc33\" stroke=\"#fff\" stroke-width=\"1.5\"/><circle cx=\"96.6\" cy=\"165.8\" r=\"7\" fill=\"#4fd1ff\" stroke=\"#fff\" stroke-width=\"1.5\"/><circle cx=\"109.9\" cy=\"168.0\" r=\"7\" fill=\"#7cff6b\" stroke=\"#fff\" stroke-width=\"1.5\"/><circle cx=\"123.2\" cy=\"165.8\" r=\"7\" fill=\"#ff8a1f\" stroke=\"#fff\" stroke-width=\"1.5\"/><circle cx=\"136.5\" cy=\"161.3\" r=\"7\" fill=\"#b48cff\" stroke=\"#fff\" stroke-width=\"1.5\"/><circle cx=\"149.8\" cy=\"155.2\" r=\"7\" fill=\"#ff4fa3\" stroke=\"#fff\" stroke-width=\"1.5\"/>\n</svg>", "p": "<svg width=\"100\" viewBox=\"0 30 200 170\" xmlns=\"http://www.w3.org/2000/svg\">\n  <path d=\"M96 64 Q94 44 108 34 L114 40 Q104 48 106 64 Z\" fill=\"#3f8f2f\"/>\n  <ellipse cx=\"62\" cy=\"128\" rx=\"44\" ry=\"62\" fill=\"#e8620c\"/>\n  <ellipse cx=\"138\" cy=\"128\" rx=\"44\" ry=\"62\" fill=\"#e8620c\"/>\n  <ellipse cx=\"100\" cy=\"128\" rx=\"46\" ry=\"66\" fill=\"#ff8a1f\"/>\n  <ellipse cx=\"84\" cy=\"100\" rx=\"12\" ry=\"26\" fill=\"#ffb366\" opacity=\".6\"/>\n  <path d=\"M70 115 L84 98 L96 115 Z\" fill=\"#3a1500\"/><path d=\"M104 115 L116 98 L130 115 Z\" fill=\"#3a1500\"/>\n        <path d=\"M66 140 Q100 168 134 140 Q120 150 112 146 L106 154 L100 146 L94 154 L88 146 Q80 150 66 140 Z\" fill=\"#3a1500\"/>\n  \n  \n</svg>", "g": "<svg width=\"90\" viewBox=\"0 0 120 140\" xmlns=\"http://www.w3.org/2000/svg\">\n  <path d=\"M15 125 L15 60 A45 45 0 0 1 105 60 L105 125 Q95 112 82 125 Q71 137 60 125 Q49 112 38 125 Q27 137 15 125 Z\" fill=\"#f4f0ff\" stroke=\"#1a0b2e\" stroke-width=\"3\"/>\n  <ellipse cx=\"45\" cy=\"62\" rx=\"7\" ry=\"11\" fill=\"#2a1240\"/><ellipse cx=\"75\" cy=\"62\" rx=\"7\" ry=\"11\" fill=\"#2a1240\"/>\n  <ellipse cx=\"34\" cy=\"82\" rx=\"7\" ry=\"4\" fill=\"#ff8fb1\"/><ellipse cx=\"86\" cy=\"82\" rx=\"7\" ry=\"4\" fill=\"#ff8fb1\"/>\n  <path d=\"M50 88 Q60 96 70 88\" stroke=\"#2a1240\" stroke-width=\"3.5\" fill=\"none\" stroke-linecap=\"round\"/>\n</svg>", "b": "<svg width=\"110\" viewBox=\"0 0 160 110\" xmlns=\"http://www.w3.org/2000/svg\">\n  <path d=\"M58 55 Q36 10 4 30 Q18 40 12 54 Q28 50 30 66 Q44 58 58 76 Z\" fill=\"#4a1fa8\" stroke=\"#1a0b2e\" stroke-width=\"3\"/>\n  <path d=\"M102 55 Q124 10 156 30 Q142 40 148 54 Q132 50 130 66 Q116 58 102 76 Z\" fill=\"#4a1fa8\" stroke=\"#1a0b2e\" stroke-width=\"3\"/>\n  <path d=\"M56 36 L62 8 L74 30 Z\" fill=\"#8a4fff\" stroke=\"#1a0b2e\" stroke-width=\"3\"/><path d=\"M104 36 L98 8 L86 30 Z\" fill=\"#8a4fff\" stroke=\"#1a0b2e\" stroke-width=\"3\"/>\n  <ellipse cx=\"80\" cy=\"60\" rx=\"32\" ry=\"36\" fill=\"#8a4fff\" stroke=\"#1a0b2e\" stroke-width=\"3\"/>\n  <circle cx=\"69\" cy=\"52\" r=\"9\" fill=\"#fff\"/><circle cx=\"91\" cy=\"52\" r=\"9\" fill=\"#fff\"/>\n  <circle cx=\"70\" cy=\"54\" r=\"5\" fill=\"#111\"/><circle cx=\"90\" cy=\"54\" r=\"5\" fill=\"#111\"/>\n  <path d=\"M71 70 Q80 77 89 70\" stroke=\"#1a0b2e\" stroke-width=\"3\" fill=\"none\" stroke-linecap=\"round\"/>\n  <path d=\"M74 72 L76 78 L78 73 Z\" fill=\"#fff\"/><path d=\"M82 73 L84 78 L86 72 Z\" fill=\"#fff\"/>\n</svg>", "s": "<svg width=\"90\" viewBox=\"-5 0 110 105\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M30 43 Q2 27 6 21\" stroke=\"#2b1f3d\" stroke-width=\"6\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M30 52 Q-4 36 0 49\" stroke=\"#2b1f3d\" stroke-width=\"6\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M30 61 Q-4 45 0 73\" stroke=\"#2b1f3d\" stroke-width=\"6\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M30 69 Q6 53 10 95\" stroke=\"#2b1f3d\" stroke-width=\"6\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M70 43 Q98 27 94 21\" stroke=\"#2b1f3d\" stroke-width=\"6\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M70 52 Q104 36 100 49\" stroke=\"#2b1f3d\" stroke-width=\"6\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M70 61 Q104 45 100 73\" stroke=\"#2b1f3d\" stroke-width=\"6\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M70 69 Q94 53 90 95\" stroke=\"#2b1f3d\" stroke-width=\"6\" fill=\"none\" stroke-linecap=\"round\"/>\n  <circle cx=\"50\" cy=\"58\" r=\"27\" fill=\"#2b1f3d\" stroke=\"#fff\" stroke-width=\"2\"/>\n  <circle cx=\"41\" cy=\"54\" r=\"8\" fill=\"#fff\"/><circle cx=\"59\" cy=\"54\" r=\"8\" fill=\"#fff\"/>\n  <circle cx=\"42\" cy=\"56\" r=\"4\" fill=\"#111\"/><circle cx=\"58\" cy=\"56\" r=\"4\" fill=\"#111\"/>\n  <path d=\"M43 68 Q50 74 57 68\" stroke=\"#fff\" stroke-width=\"3\" fill=\"none\" stroke-linecap=\"round\"/></svg>", "chest": "<svg width=\"440\" viewBox=\"0 0 520 380\" xmlns=\"http://www.w3.org/2000/svg\">\n  <ellipse cx=\"260\" cy=\"365\" rx=\"230\" ry=\"14\" fill=\"#000\" opacity=\".35\"/>\n  <path d=\"M30 150 Q30 40 260 40 Q490 40 490 150 Z\" fill=\"#8a4a1c\" stroke=\"#3a1a05\" stroke-width=\"6\"/>\n  <path d=\"M60 150 Q60 60 260 60 Q460 60 460 150\" fill=\"none\" stroke=\"#b06a2c\" stroke-width=\"10\"/>\n  <rect x=\"30\" y=\"150\" width=\"460\" height=\"210\" rx=\"14\" fill=\"#a0581f\" stroke=\"#3a1a05\" stroke-width=\"6\"/>\n  <rect x=\"30\" y=\"150\" width=\"460\" height=\"26\" fill=\"#ffcc33\" stroke=\"#3a1a05\" stroke-width=\"5\"/>\n  <rect x=\"80\" y=\"40\" width=\"34\" height=\"320\" fill=\"#ffcc33\" stroke=\"#3a1a05\" stroke-width=\"5\" opacity=\".95\"/>\n  <rect x=\"406\" y=\"40\" width=\"34\" height=\"320\" fill=\"#ffcc33\" stroke=\"#3a1a05\" stroke-width=\"5\" opacity=\".95\"/>\n  <rect x=\"140\" y=\"200\" width=\"240\" height=\"120\" rx=\"18\" fill=\"#2a1240\" stroke=\"#ffcc33\" stroke-width=\"6\"/>\n  <path d=\"M252 140 L268 140 L268 168 L252 168 Z\" fill=\"#ffcc33\" stroke=\"#3a1a05\" stroke-width=\"4\"/>\n</svg>", "scaleEmpty": "<svg width=\"520\" viewBox=\"0 0 760 520\" xmlns=\"http://www.w3.org/2000/svg\">\n  <path d=\"M300 500 L460 500 L420 470 L340 470 Z\" fill=\"#ffb02e\" stroke=\"#5a3210\" stroke-width=\"5\"/>\n  <rect x=\"368\" y=\"110\" width=\"24\" height=\"365\" fill=\"#ffcc33\" stroke=\"#5a3210\" stroke-width=\"5\"/>\n  <line x1=\"170.0\" y1=\"120.0\" x2=\"590.0\" y2=\"120.0\" stroke=\"#ffcc33\" stroke-width=\"18\" stroke-linecap=\"round\"/>\n  <circle cx=\"380\" cy=\"120\" r=\"20\" fill=\"#ff8a1f\" stroke=\"#5a3210\" stroke-width=\"5\"/>\n  <line x1=\"170.0\" y1=\"120.0\" x2=\"80.0\" y2=\"270.0\" stroke=\"#ffd43b\" stroke-width=\"4\"/>\n        <line x1=\"170.0\" y1=\"120.0\" x2=\"260.0\" y2=\"270.0\" stroke=\"#ffd43b\" stroke-width=\"4\"/>\n        <g transform=\"translate(170.0 270.0)\"></g>\n        <path d=\"M60.0 270.0 L280.0 270.0 Q260.0 310.0 170.0 310.0 Q80.0 310.0 60.0 270.0 Z\" fill=\"#ffb02e\" stroke=\"#5a3210\" stroke-width=\"5\"/><line x1=\"590.0\" y1=\"120.0\" x2=\"500.0\" y2=\"270.0\" stroke=\"#ffd43b\" stroke-width=\"4\"/>\n        <line x1=\"590.0\" y1=\"120.0\" x2=\"680.0\" y2=\"270.0\" stroke=\"#ffd43b\" stroke-width=\"4\"/>\n        <g transform=\"translate(590.0 270.0)\"></g>\n        <path d=\"M480.0 270.0 L700.0 270.0 Q680.0 310.0 590.0 310.0 Q500.0 310.0 480.0 270.0 Z\" fill=\"#ffb02e\" stroke=\"#5a3210\" stroke-width=\"5\"/>\n</svg>", "case1": "<svg width=\"430\" viewBox=\"0 0 760 520\" xmlns=\"http://www.w3.org/2000/svg\">\n  <path d=\"M300 500 L460 500 L420 470 L340 470 Z\" fill=\"#ffb02e\" stroke=\"#5a3210\" stroke-width=\"5\"/>\n  <rect x=\"368\" y=\"110\" width=\"24\" height=\"365\" fill=\"#ffcc33\" stroke=\"#5a3210\" stroke-width=\"5\"/>\n  <line x1=\"174.5890038459008\" y1=\"76.33854492827054\" x2=\"585.4109961540992\" y2=\"163.66145507172945\" stroke=\"#ffcc33\" stroke-width=\"18\" stroke-linecap=\"round\"/>\n  <circle cx=\"380\" cy=\"120\" r=\"20\" fill=\"#ff8a1f\" stroke=\"#5a3210\" stroke-width=\"5\"/>\n  <line x1=\"174.5890038459008\" y1=\"76.33854492827054\" x2=\"84.5890038459008\" y2=\"226.33854492827055\" stroke=\"#ffd43b\" stroke-width=\"4\"/>\n        <line x1=\"174.5890038459008\" y1=\"76.33854492827054\" x2=\"264.58900384590083\" y2=\"226.33854492827055\" stroke=\"#ffd43b\" stroke-width=\"4\"/>\n        <g transform=\"translate(174.5890038459008 226.33854492827055)\"><svg x=\"-65\" y=\"-112\" height=\"110\" width=\"130\" viewBox=\"0 30 200 170\" xmlns=\"http://www.w3.org/2000/svg\">\n  <path d=\"M96 64 Q94 44 108 34 L114 40 Q104 48 106 64 Z\" fill=\"#3f8f2f\"/>\n  <ellipse cx=\"62\" cy=\"128\" rx=\"44\" ry=\"62\" fill=\"#e8620c\"/>\n  <ellipse cx=\"138\" cy=\"128\" rx=\"44\" ry=\"62\" fill=\"#e8620c\"/>\n  <ellipse cx=\"100\" cy=\"128\" rx=\"46\" ry=\"66\" fill=\"#ff8a1f\"/>\n  <ellipse cx=\"84\" cy=\"100\" rx=\"12\" ry=\"26\" fill=\"#ffb366\" opacity=\".6\"/>\n  <path d=\"M70 115 L84 98 L96 115 Z\" fill=\"#3a1500\"/><path d=\"M104 115 L116 98 L130 115 Z\" fill=\"#3a1500\"/>\n        <path d=\"M66 140 Q100 168 134 140 Q120 150 112 146 L106 154 L100 146 L94 154 L88 146 Q80 150 66 140 Z\" fill=\"#3a1500\"/>\n  \n  \n</svg><text x=\"0.0\" y=\"0\" text-anchor=\"middle\" font-family=\"Inter Display\" font-weight=\"900\" font-size=\"34\" fill=\"#ffcc33\" stroke=\"#2a0f45\" stroke-width=\"6\" paint-order=\"stroke\">А</text></g>\n        <path d=\"M64.5890038459008 226.33854492827055 L284.58900384590083 226.33854492827055 Q264.58900384590083 266.33854492827055 174.5890038459008 266.33854492827055 Q84.5890038459008 266.33854492827055 64.5890038459008 226.33854492827055 Z\" fill=\"#ffb02e\" stroke=\"#5a3210\" stroke-width=\"5\"/><line x1=\"585.4109961540992\" y1=\"163.66145507172945\" x2=\"495.41099615409917\" y2=\"313.66145507172945\" stroke=\"#ffd43b\" stroke-width=\"4\"/>\n        <line x1=\"585.4109961540992\" y1=\"163.66145507172945\" x2=\"675.4109961540992\" y2=\"313.66145507172945\" stroke=\"#ffd43b\" stroke-width=\"4\"/>\n        <g transform=\"translate(585.4109961540992 313.66145507172945)\"><svg x=\"-65\" y=\"-112\" height=\"110\" width=\"130\" viewBox=\"0 30 200 170\" xmlns=\"http://www.w3.org/2000/svg\">\n  <path d=\"M96 64 Q94 44 108 34 L114 40 Q104 48 106 64 Z\" fill=\"#3f8f2f\"/>\n  <ellipse cx=\"62\" cy=\"128\" rx=\"44\" ry=\"62\" fill=\"#e8620c\"/>\n  <ellipse cx=\"138\" cy=\"128\" rx=\"44\" ry=\"62\" fill=\"#e8620c\"/>\n  <ellipse cx=\"100\" cy=\"128\" rx=\"46\" ry=\"66\" fill=\"#ff8a1f\"/>\n  <ellipse cx=\"84\" cy=\"100\" rx=\"12\" ry=\"26\" fill=\"#ffb366\" opacity=\".6\"/>\n  <path d=\"M70 115 L84 98 L96 115 Z\" fill=\"#3a1500\"/><path d=\"M104 115 L116 98 L130 115 Z\" fill=\"#3a1500\"/>\n        <path d=\"M66 140 Q100 168 134 140 Q120 150 112 146 L106 154 L100 146 L94 154 L88 146 Q80 150 66 140 Z\" fill=\"#3a1500\"/>\n  \n  \n</svg><text x=\"0.0\" y=\"0\" text-anchor=\"middle\" font-family=\"Inter Display\" font-weight=\"900\" font-size=\"34\" fill=\"#ffcc33\" stroke=\"#2a0f45\" stroke-width=\"6\" paint-order=\"stroke\">Б</text></g>\n        <path d=\"M475.41099615409917 313.66145507172945 L695.4109961540992 313.66145507172945 Q675.4109961540992 353.66145507172945 585.4109961540992 353.66145507172945 Q495.41099615409917 353.66145507172945 475.41099615409917 313.66145507172945 Z\" fill=\"#ffb02e\" stroke=\"#5a3210\" stroke-width=\"5\"/>\n</svg>", "case2": "<svg width=\"430\" viewBox=\"0 0 760 520\" xmlns=\"http://www.w3.org/2000/svg\">\n  <path d=\"M300 500 L460 500 L420 470 L340 470 Z\" fill=\"#ffb02e\" stroke=\"#5a3210\" stroke-width=\"5\"/>\n  <rect x=\"368\" y=\"110\" width=\"24\" height=\"365\" fill=\"#ffcc33\" stroke=\"#5a3210\" stroke-width=\"5\"/>\n  <line x1=\"170.0\" y1=\"120.0\" x2=\"590.0\" y2=\"120.0\" stroke=\"#ffcc33\" stroke-width=\"18\" stroke-linecap=\"round\"/>\n  <circle cx=\"380\" cy=\"120\" r=\"20\" fill=\"#ff8a1f\" stroke=\"#5a3210\" stroke-width=\"5\"/>\n  <line x1=\"170.0\" y1=\"120.0\" x2=\"80.0\" y2=\"270.0\" stroke=\"#ffd43b\" stroke-width=\"4\"/>\n        <line x1=\"170.0\" y1=\"120.0\" x2=\"260.0\" y2=\"270.0\" stroke=\"#ffd43b\" stroke-width=\"4\"/>\n        <g transform=\"translate(170.0 270.0)\"><svg x=\"-65\" y=\"-112\" height=\"110\" width=\"130\" viewBox=\"0 30 200 170\" xmlns=\"http://www.w3.org/2000/svg\">\n  <path d=\"M96 64 Q94 44 108 34 L114 40 Q104 48 106 64 Z\" fill=\"#3f8f2f\"/>\n  <ellipse cx=\"62\" cy=\"128\" rx=\"44\" ry=\"62\" fill=\"#e8620c\"/>\n  <ellipse cx=\"138\" cy=\"128\" rx=\"44\" ry=\"62\" fill=\"#e8620c\"/>\n  <ellipse cx=\"100\" cy=\"128\" rx=\"46\" ry=\"66\" fill=\"#ff8a1f\"/>\n  <ellipse cx=\"84\" cy=\"100\" rx=\"12\" ry=\"26\" fill=\"#ffb366\" opacity=\".6\"/>\n  <path d=\"M70 115 L84 98 L96 115 Z\" fill=\"#3a1500\"/><path d=\"M104 115 L116 98 L130 115 Z\" fill=\"#3a1500\"/>\n        <path d=\"M66 140 Q100 168 134 140 Q120 150 112 146 L106 154 L100 146 L94 154 L88 146 Q80 150 66 140 Z\" fill=\"#3a1500\"/>\n  \n  \n</svg><text x=\"0.0\" y=\"0\" text-anchor=\"middle\" font-family=\"Inter Display\" font-weight=\"900\" font-size=\"34\" fill=\"#ffcc33\" stroke=\"#2a0f45\" stroke-width=\"6\" paint-order=\"stroke\">А</text></g>\n        <path d=\"M60.0 270.0 L280.0 270.0 Q260.0 310.0 170.0 310.0 Q80.0 310.0 60.0 270.0 Z\" fill=\"#ffb02e\" stroke=\"#5a3210\" stroke-width=\"5\"/><line x1=\"590.0\" y1=\"120.0\" x2=\"500.0\" y2=\"270.0\" stroke=\"#ffd43b\" stroke-width=\"4\"/>\n        <line x1=\"590.0\" y1=\"120.0\" x2=\"680.0\" y2=\"270.0\" stroke=\"#ffd43b\" stroke-width=\"4\"/>\n        <g transform=\"translate(590.0 270.0)\"><svg x=\"-65\" y=\"-112\" height=\"110\" width=\"130\" viewBox=\"0 30 200 170\" xmlns=\"http://www.w3.org/2000/svg\">\n  <path d=\"M96 64 Q94 44 108 34 L114 40 Q104 48 106 64 Z\" fill=\"#3f8f2f\"/>\n  <ellipse cx=\"62\" cy=\"128\" rx=\"44\" ry=\"62\" fill=\"#e8620c\"/>\n  <ellipse cx=\"138\" cy=\"128\" rx=\"44\" ry=\"62\" fill=\"#e8620c\"/>\n  <ellipse cx=\"100\" cy=\"128\" rx=\"46\" ry=\"66\" fill=\"#ff8a1f\"/>\n  <ellipse cx=\"84\" cy=\"100\" rx=\"12\" ry=\"26\" fill=\"#ffb366\" opacity=\".6\"/>\n  <path d=\"M70 115 L84 98 L96 115 Z\" fill=\"#3a1500\"/><path d=\"M104 115 L116 98 L130 115 Z\" fill=\"#3a1500\"/>\n        <path d=\"M66 140 Q100 168 134 140 Q120 150 112 146 L106 154 L100 146 L94 154 L88 146 Q80 150 66 140 Z\" fill=\"#3a1500\"/>\n  \n  \n</svg><text x=\"0.0\" y=\"0\" text-anchor=\"middle\" font-family=\"Inter Display\" font-weight=\"900\" font-size=\"34\" fill=\"#ffcc33\" stroke=\"#2a0f45\" stroke-width=\"6\" paint-order=\"stroke\">Б</text></g>\n        <path d=\"M480.0 270.0 L700.0 270.0 Q680.0 310.0 590.0 310.0 Q500.0 310.0 480.0 270.0 Z\" fill=\"#ffb02e\" stroke=\"#5a3210\" stroke-width=\"5\"/>\n</svg>", "pumpBig": "<svg width=\"130\" viewBox=\"0 30 200 170\" xmlns=\"http://www.w3.org/2000/svg\">\n  <path d=\"M96 64 Q94 44 108 34 L114 40 Q104 48 106 64 Z\" fill=\"#3f8f2f\"/>\n  <ellipse cx=\"62\" cy=\"128\" rx=\"44\" ry=\"62\" fill=\"#e8620c\"/>\n  <ellipse cx=\"138\" cy=\"128\" rx=\"44\" ry=\"62\" fill=\"#e8620c\"/>\n  <ellipse cx=\"100\" cy=\"128\" rx=\"46\" ry=\"66\" fill=\"#ff8a1f\"/>\n  <ellipse cx=\"84\" cy=\"100\" rx=\"12\" ry=\"26\" fill=\"#ffb366\" opacity=\".6\"/>\n  <path d=\"M70 115 L84 98 L96 115 Z\" fill=\"#3a1500\"/><path d=\"M104 115 L116 98 L130 115 Z\" fill=\"#3a1500\"/>\n        <path d=\"M66 140 Q100 168 134 140 Q120 150 112 146 L106 154 L100 146 L94 154 L88 146 Q80 150 66 140 Z\" fill=\"#3a1500\"/>\n  \n  \n</svg>", "spider": "<svg width=\"120\" viewBox=\"-5 0 110 105\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M30 43 Q2 27 6 21\" stroke=\"#2b1f3d\" stroke-width=\"6\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M30 52 Q-4 36 0 49\" stroke=\"#2b1f3d\" stroke-width=\"6\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M30 61 Q-4 45 0 73\" stroke=\"#2b1f3d\" stroke-width=\"6\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M30 69 Q6 53 10 95\" stroke=\"#2b1f3d\" stroke-width=\"6\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M70 43 Q98 27 94 21\" stroke=\"#2b1f3d\" stroke-width=\"6\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M70 52 Q104 36 100 49\" stroke=\"#2b1f3d\" stroke-width=\"6\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M70 61 Q104 45 100 73\" stroke=\"#2b1f3d\" stroke-width=\"6\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M70 69 Q94 53 90 95\" stroke=\"#2b1f3d\" stroke-width=\"6\" fill=\"none\" stroke-linecap=\"round\"/>\n  <circle cx=\"50\" cy=\"58\" r=\"27\" fill=\"#2b1f3d\" stroke=\"#fff\" stroke-width=\"2\"/>\n  <circle cx=\"41\" cy=\"54\" r=\"8\" fill=\"#fff\"/><circle cx=\"59\" cy=\"54\" r=\"8\" fill=\"#fff\"/>\n  <circle cx=\"42\" cy=\"56\" r=\"4\" fill=\"#111\"/><circle cx=\"58\" cy=\"56\" r=\"4\" fill=\"#111\"/>\n  <path d=\"M43 68 Q50 74 57 68\" stroke=\"#fff\" stroke-width=\"3\" fill=\"none\" stroke-linecap=\"round\"/></svg>", "spider_r": "<svg width=\"120\" viewBox=\"-5 0 110 105\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M30 43 Q2 27 6 21\" stroke=\"#e8344a\" stroke-width=\"6\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M30 52 Q-4 36 0 49\" stroke=\"#e8344a\" stroke-width=\"6\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M30 61 Q-4 45 0 73\" stroke=\"#e8344a\" stroke-width=\"6\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M30 69 Q6 53 10 95\" stroke=\"#e8344a\" stroke-width=\"6\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M70 43 Q98 27 94 21\" stroke=\"#e8344a\" stroke-width=\"6\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M70 52 Q104 36 100 49\" stroke=\"#e8344a\" stroke-width=\"6\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M70 61 Q104 45 100 73\" stroke=\"#e8344a\" stroke-width=\"6\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M70 69 Q94 53 90 95\" stroke=\"#e8344a\" stroke-width=\"6\" fill=\"none\" stroke-linecap=\"round\"/>\n  <circle cx=\"50\" cy=\"58\" r=\"27\" fill=\"#e8344a\" stroke=\"#fff\" stroke-width=\"2\"/>\n  <circle cx=\"41\" cy=\"54\" r=\"8\" fill=\"#fff\"/><circle cx=\"59\" cy=\"54\" r=\"8\" fill=\"#fff\"/>\n  <circle cx=\"42\" cy=\"56\" r=\"4\" fill=\"#111\"/><circle cx=\"58\" cy=\"56\" r=\"4\" fill=\"#111\"/>\n  <path d=\"M43 68 Q50 74 57 68\" stroke=\"#fff\" stroke-width=\"3\" fill=\"none\" stroke-linecap=\"round\"/></svg>", "spider_g": "<svg width=\"120\" viewBox=\"-5 0 110 105\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M30 43 Q2 27 6 21\" stroke=\"#2f9e44\" stroke-width=\"6\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M30 52 Q-4 36 0 49\" stroke=\"#2f9e44\" stroke-width=\"6\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M30 61 Q-4 45 0 73\" stroke=\"#2f9e44\" stroke-width=\"6\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M30 69 Q6 53 10 95\" stroke=\"#2f9e44\" stroke-width=\"6\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M70 43 Q98 27 94 21\" stroke=\"#2f9e44\" stroke-width=\"6\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M70 52 Q104 36 100 49\" stroke=\"#2f9e44\" stroke-width=\"6\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M70 61 Q104 45 100 73\" stroke=\"#2f9e44\" stroke-width=\"6\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M70 69 Q94 53 90 95\" stroke=\"#2f9e44\" stroke-width=\"6\" fill=\"none\" stroke-linecap=\"round\"/>\n  <circle cx=\"50\" cy=\"58\" r=\"27\" fill=\"#2f9e44\" stroke=\"#fff\" stroke-width=\"2\"/>\n  <circle cx=\"41\" cy=\"54\" r=\"8\" fill=\"#fff\"/><circle cx=\"59\" cy=\"54\" r=\"8\" fill=\"#fff\"/>\n  <circle cx=\"42\" cy=\"56\" r=\"4\" fill=\"#111\"/><circle cx=\"58\" cy=\"56\" r=\"4\" fill=\"#111\"/>\n  <path d=\"M43 68 Q50 74 57 68\" stroke=\"#fff\" stroke-width=\"3\" fill=\"none\" stroke-linecap=\"round\"/></svg>", "spider_b": "<svg width=\"120\" viewBox=\"-5 0 110 105\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M30 43 Q2 27 6 21\" stroke=\"#1c7ed6\" stroke-width=\"6\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M30 52 Q-4 36 0 49\" stroke=\"#1c7ed6\" stroke-width=\"6\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M30 61 Q-4 45 0 73\" stroke=\"#1c7ed6\" stroke-width=\"6\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M30 69 Q6 53 10 95\" stroke=\"#1c7ed6\" stroke-width=\"6\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M70 43 Q98 27 94 21\" stroke=\"#1c7ed6\" stroke-width=\"6\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M70 52 Q104 36 100 49\" stroke=\"#1c7ed6\" stroke-width=\"6\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M70 61 Q104 45 100 73\" stroke=\"#1c7ed6\" stroke-width=\"6\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M70 69 Q94 53 90 95\" stroke=\"#1c7ed6\" stroke-width=\"6\" fill=\"none\" stroke-linecap=\"round\"/>\n  <circle cx=\"50\" cy=\"58\" r=\"27\" fill=\"#1c7ed6\" stroke=\"#fff\" stroke-width=\"2\"/>\n  <circle cx=\"41\" cy=\"54\" r=\"8\" fill=\"#fff\"/><circle cx=\"59\" cy=\"54\" r=\"8\" fill=\"#fff\"/>\n  <circle cx=\"42\" cy=\"56\" r=\"4\" fill=\"#111\"/><circle cx=\"58\" cy=\"56\" r=\"4\" fill=\"#111\"/>\n  <path d=\"M43 68 Q50 74 57 68\" stroke=\"#fff\" stroke-width=\"3\" fill=\"none\" stroke-linecap=\"round\"/></svg>", "ghostSmall": "<svg width=\"80\" viewBox=\"0 0 120 140\" xmlns=\"http://www.w3.org/2000/svg\">\n  <path d=\"M15 125 L15 60 A45 45 0 0 1 105 60 L105 125 Q95 112 82 125 Q71 137 60 125 Q49 112 38 125 Q27 137 15 125 Z\" fill=\"#f4f0ff\" stroke=\"#1a0b2e\" stroke-width=\"3\"/>\n  <ellipse cx=\"45\" cy=\"62\" rx=\"7\" ry=\"11\" fill=\"#2a1240\"/><ellipse cx=\"75\" cy=\"62\" rx=\"7\" ry=\"11\" fill=\"#2a1240\"/>\n  <ellipse cx=\"34\" cy=\"82\" rx=\"7\" ry=\"4\" fill=\"#ff8fb1\"/><ellipse cx=\"86\" cy=\"82\" rx=\"7\" ry=\"4\" fill=\"#ff8fb1\"/>\n  <path d=\"M50 88 Q60 96 70 88\" stroke=\"#2a1240\" stroke-width=\"3.5\" fill=\"none\" stroke-linecap=\"round\"/>\n</svg>", "bg": "<svg class=\"bg\" width=\"1920\" height=\"1080\" viewBox=\"0 0 1920 1080\" xmlns=\"http://www.w3.org/2000/svg\">\n  <defs>\n    <radialGradient id=\"sky\" cx=\".5\" cy=\".15\" r=\"1\"><stop offset=\"0\" stop-color=\"#4a1d7a\"/><stop offset=\".55\" stop-color=\"#26093f\"/><stop offset=\"1\" stop-color=\"#12041f\"/></radialGradient>\n    <radialGradient id=\"moonglow\"><stop offset=\"0\" stop-color=\"#ffe9a8\" stop-opacity=\".55\"/><stop offset=\"1\" stop-color=\"#ffe9a8\" stop-opacity=\"0\"/></radialGradient>\n    <radialGradient id=\"pglow\"><stop offset=\"0\" stop-color=\"#ff8a1f\" stop-opacity=\".55\"/><stop offset=\"1\" stop-color=\"#ff8a1f\" stop-opacity=\"0\"/></radialGradient>\n  </defs>\n  <rect width=\"1920\" height=\"1080\" fill=\"url(#sky)\"/>\n  <circle cx=\"663\" cy=\"154\" r=\"2.5\" fill=\"#fff\" opacity=\"0.74\"/><circle cx=\"148\" cy=\"548\" r=\"1.5\" fill=\"#fff\" opacity=\"0.57\"/><circle cx=\"118\" cy=\"519\" r=\"2\" fill=\"#fff\" opacity=\"0.37\"/><circle cx=\"888\" cy=\"428\" r=\"1.5\" fill=\"#fff\" opacity=\"0.49\"/><circle cx=\"1128\" cy=\"434\" r=\"1.5\" fill=\"#fff\" opacity=\"0.85\"/><circle cx=\"253\" cy=\"228\" r=\"3.5\" fill=\"#fff\" opacity=\"0.92\"/><circle cx=\"1181\" cy=\"599\" r=\"2.5\" fill=\"#fff\" opacity=\"0.38\"/><circle cx=\"452\" cy=\"47\" r=\"3.5\" fill=\"#fff\" opacity=\"0.87\"/><circle cx=\"593\" cy=\"429\" r=\"2\" fill=\"#fff\" opacity=\"0.67\"/><circle cx=\"1169\" cy=\"315\" r=\"3.5\" fill=\"#fff\" opacity=\"0.84\"/><circle cx=\"370\" cy=\"105\" r=\"3.5\" fill=\"#fff\" opacity=\"0.69\"/><circle cx=\"384\" cy=\"381\" r=\"1.5\" fill=\"#fff\" opacity=\"0.68\"/><circle cx=\"128\" cy=\"577\" r=\"1.5\" fill=\"#fff\" opacity=\"0.72\"/><circle cx=\"1016\" cy=\"696\" r=\"3.5\" fill=\"#fff\" opacity=\"0.61\"/><circle cx=\"643\" cy=\"476\" r=\"3.5\" fill=\"#fff\" opacity=\"0.90\"/><circle cx=\"740\" cy=\"306\" r=\"2\" fill=\"#fff\" opacity=\"0.83\"/><circle cx=\"1431\" cy=\"249\" r=\"1.5\" fill=\"#fff\" opacity=\"0.69\"/><circle cx=\"1075\" cy=\"506\" r=\"2\" fill=\"#fff\" opacity=\"0.79\"/><circle cx=\"589\" cy=\"623\" r=\"1.5\" fill=\"#fff\" opacity=\"0.42\"/><circle cx=\"856\" cy=\"168\" r=\"2\" fill=\"#fff\" opacity=\"0.44\"/><circle cx=\"1001\" cy=\"431\" r=\"1.5\" fill=\"#fff\" opacity=\"0.93\"/><circle cx=\"158\" cy=\"571\" r=\"3.5\" fill=\"#fff\" opacity=\"0.82\"/><circle cx=\"1675\" cy=\"321\" r=\"2\" fill=\"#fff\" opacity=\"0.77\"/><circle cx=\"1217\" cy=\"508\" r=\"3.5\" fill=\"#fff\" opacity=\"0.83\"/><circle cx=\"140\" cy=\"95\" r=\"2\" fill=\"#fff\" opacity=\"0.63\"/><circle cx=\"1360\" cy=\"66\" r=\"1.5\" fill=\"#fff\" opacity=\"0.79\"/><circle cx=\"634\" cy=\"662\" r=\"3.5\" fill=\"#fff\" opacity=\"0.95\"/><circle cx=\"1683\" cy=\"456\" r=\"2\" fill=\"#fff\" opacity=\"0.78\"/><circle cx=\"1816\" cy=\"684\" r=\"2\" fill=\"#fff\" opacity=\"0.36\"/><circle cx=\"945\" cy=\"363\" r=\"2\" fill=\"#fff\" opacity=\"0.72\"/><circle cx=\"1011\" cy=\"60\" r=\"2\" fill=\"#fff\" opacity=\"0.81\"/><circle cx=\"264\" cy=\"756\" r=\"2\" fill=\"#fff\" opacity=\"0.59\"/><circle cx=\"1877\" cy=\"508\" r=\"1.5\" fill=\"#fff\" opacity=\"0.45\"/><circle cx=\"822\" cy=\"562\" r=\"2\" fill=\"#fff\" opacity=\"0.88\"/><circle cx=\"1677\" cy=\"440\" r=\"3.5\" fill=\"#fff\" opacity=\"0.52\"/><circle cx=\"850\" cy=\"367\" r=\"2.5\" fill=\"#fff\" opacity=\"0.92\"/><circle cx=\"309\" cy=\"84\" r=\"2\" fill=\"#fff\" opacity=\"0.44\"/><circle cx=\"1348\" cy=\"238\" r=\"1.5\" fill=\"#fff\" opacity=\"0.64\"/><circle cx=\"1206\" cy=\"186\" r=\"2\" fill=\"#fff\" opacity=\"0.52\"/><circle cx=\"298\" cy=\"429\" r=\"3.5\" fill=\"#fff\" opacity=\"0.57\"/><circle cx=\"1159\" cy=\"326\" r=\"2\" fill=\"#fff\" opacity=\"0.76\"/><circle cx=\"1055\" cy=\"632\" r=\"1.5\" fill=\"#fff\" opacity=\"0.62\"/><circle cx=\"1783\" cy=\"696\" r=\"3.5\" fill=\"#fff\" opacity=\"0.59\"/><circle cx=\"817\" cy=\"403\" r=\"1.5\" fill=\"#fff\" opacity=\"0.64\"/><circle cx=\"820\" cy=\"63\" r=\"2\" fill=\"#fff\" opacity=\"0.39\"/><circle cx=\"427\" cy=\"451\" r=\"2\" fill=\"#fff\" opacity=\"0.42\"/><circle cx=\"1230\" cy=\"53\" r=\"1.5\" fill=\"#fff\" opacity=\"0.35\"/><circle cx=\"309\" cy=\"549\" r=\"1.5\" fill=\"#fff\" opacity=\"0.92\"/><circle cx=\"1256\" cy=\"26\" r=\"1.5\" fill=\"#fff\" opacity=\"0.87\"/><circle cx=\"1257\" cy=\"385\" r=\"2\" fill=\"#fff\" opacity=\"0.73\"/><circle cx=\"711\" cy=\"616\" r=\"2\" fill=\"#fff\" opacity=\"0.63\"/><circle cx=\"236\" cy=\"499\" r=\"2.5\" fill=\"#fff\" opacity=\"0.64\"/><circle cx=\"638\" cy=\"87\" r=\"2\" fill=\"#fff\" opacity=\"0.41\"/><circle cx=\"701\" cy=\"758\" r=\"2\" fill=\"#fff\" opacity=\"0.64\"/><circle cx=\"1417\" cy=\"165\" r=\"3.5\" fill=\"#fff\" opacity=\"0.36\"/><circle cx=\"1081\" cy=\"370\" r=\"2\" fill=\"#fff\" opacity=\"0.76\"/><circle cx=\"1872\" cy=\"27\" r=\"3.5\" fill=\"#fff\" opacity=\"0.53\"/><circle cx=\"1316\" cy=\"93\" r=\"2\" fill=\"#fff\" opacity=\"0.66\"/><circle cx=\"1860\" cy=\"171\" r=\"2\" fill=\"#fff\" opacity=\"0.81\"/><circle cx=\"1090\" cy=\"554\" r=\"3.5\" fill=\"#fff\" opacity=\"0.55\"/><circle cx=\"456\" cy=\"627\" r=\"2\" fill=\"#fff\" opacity=\"0.83\"/><circle cx=\"1675\" cy=\"410\" r=\"2\" fill=\"#fff\" opacity=\"0.47\"/><circle cx=\"1009\" cy=\"364\" r=\"1.5\" fill=\"#fff\" opacity=\"0.94\"/><circle cx=\"1618\" cy=\"286\" r=\"2.5\" fill=\"#fff\" opacity=\"0.51\"/><circle cx=\"1418\" cy=\"619\" r=\"2\" fill=\"#fff\" opacity=\"0.62\"/><circle cx=\"1919\" cy=\"740\" r=\"2\" fill=\"#fff\" opacity=\"0.92\"/><circle cx=\"746\" cy=\"82\" r=\"2\" fill=\"#fff\" opacity=\"0.41\"/><circle cx=\"962\" cy=\"201\" r=\"2\" fill=\"#fff\" opacity=\"0.47\"/><circle cx=\"1278\" cy=\"624\" r=\"1.5\" fill=\"#fff\" opacity=\"0.64\"/><circle cx=\"1337\" cy=\"352\" r=\"1.5\" fill=\"#fff\" opacity=\"0.85\"/><path d=\"M345 425 L348 434 L357 437 L348 440 L345 449 L342 440 L333 437 L342 434 Z\" fill=\"#ffe9a8\" opacity=\".9\"/><path d=\"M1702 232 L1705 241 L1714 244 L1705 247 L1702 256 L1699 247 L1690 244 L1699 241 Z\" fill=\"#ffe9a8\" opacity=\".9\"/><path d=\"M1079 210 L1082 219 L1091 222 L1082 225 L1079 234 L1076 225 L1067 222 L1076 219 Z\" fill=\"#ffe9a8\" opacity=\".9\"/><path d=\"M988 368 L991 377 L1000 380 L991 383 L988 392 L985 383 L976 380 L985 377 Z\" fill=\"#ffe9a8\" opacity=\".9\"/><path d=\"M277 433 L280 442 L289 445 L280 448 L277 457 L274 448 L265 445 L274 442 Z\" fill=\"#ffe9a8\" opacity=\".9\"/><path d=\"M1048 439 L1051 448 L1060 451 L1051 454 L1048 463 L1045 454 L1036 451 L1045 448 Z\" fill=\"#ffe9a8\" opacity=\".9\"/>\n  <circle cx=\"1730\" cy=\"120\" r=\"210\" fill=\"url(#moonglow)\"/>\n  <circle cx=\"1730\" cy=\"120\" r=\"86\" fill=\"#ffe9a8\"/>\n  <circle cx=\"1700\" cy=\"100\" r=\"16\" fill=\"#f2d27e\"/><circle cx=\"1760\" cy=\"150\" r=\"11\" fill=\"#f2d27e\"/><circle cx=\"1752\" cy=\"90\" r=\"7\" fill=\"#f2d27e\"/>\n  <g transform=\"translate(1380 150) scale(1.4)\" opacity=\"0.55\"><path d=\"M0 0 Q-14 -18 -40 -10 Q-30 -4 -32 6 Q-22 2 -18 12 Q-10 4 0 10 Q10 4 18 12 Q22 2 32 6 Q30 -4 40 -10 Q14 -18 0 0 Z M-5 -4 L-7 -12 L-2 -6 Z M5 -4 L7 -12 L2 -6 Z\" fill=\"#0b0414\"/></g><g transform=\"translate(1520 230) scale(0.9)\" opacity=\"0.55\"><path d=\"M0 0 Q-14 -18 -40 -10 Q-30 -4 -32 6 Q-22 2 -18 12 Q-10 4 0 10 Q10 4 18 12 Q22 2 32 6 Q30 -4 40 -10 Q14 -18 0 0 Z M-5 -4 L-7 -12 L-2 -6 Z M5 -4 L7 -12 L2 -6 Z\" fill=\"#0b0414\"/></g><g transform=\"translate(300 120) scale(1.0)\" opacity=\"0.4\"><path d=\"M0 0 Q-14 -18 -40 -10 Q-30 -4 -32 6 Q-22 2 -18 12 Q-10 4 0 10 Q10 4 18 12 Q22 2 32 6 Q30 -4 40 -10 Q14 -18 0 0 Z M-5 -4 L-7 -12 L-2 -6 Z M5 -4 L7 -12 L2 -6 Z\" fill=\"#0b0414\"/></g>\n  <path d=\"M0 1000 Q200 950 420 990 T860 980 T1320 995 T1920 970 L1920 1080 L0 1080 Z\" fill=\"#1a0830\"/>\n  <path d=\"M0 1040 Q300 1010 640 1035 T1300 1030 T1920 1020 L1920 1080 L0 1080 Z\" fill=\"#0b0414\"/>\n  <circle cx=\"60\" cy=\"1050\" r=\"140\" fill=\"url(#pglow)\"/>\n  <circle cx=\"1860\" cy=\"1050\" r=\"140\" fill=\"url(#pglow)\"/>\n</svg>", "hat0n": "<svg width=\"150\" viewBox=\"0 -20 200 220\" xmlns=\"http://www.w3.org/2000/svg\">\n  <path d=\"M96 64 Q94 44 108 34 L114 40 Q104 48 106 64 Z\" fill=\"#3f8f2f\"/>\n  <ellipse cx=\"62\" cy=\"128\" rx=\"44\" ry=\"62\" fill=\"#e8620c\"/>\n  <ellipse cx=\"138\" cy=\"128\" rx=\"44\" ry=\"62\" fill=\"#e8620c\"/>\n  <ellipse cx=\"100\" cy=\"128\" rx=\"46\" ry=\"66\" fill=\"#ff8a1f\"/>\n  <ellipse cx=\"84\" cy=\"100\" rx=\"12\" ry=\"26\" fill=\"#ffb366\" opacity=\".6\"/>\n  \n  <ellipse cx=\"100\" cy=\"52\" rx=\"58\" ry=\"11\" fill=\"#7b2ff7\" stroke=\"#1a0b2e\" stroke-width=\"3\"/>\n        <path d=\"M66 50 Q86 10 112 -14 Q118 22 134 50 Z\" fill=\"#7b2ff7\" stroke=\"#1a0b2e\" stroke-width=\"3\"/>\n        <path d=\"M68 44 Q100 36 132 44 L134 50 Q100 42 66 50 Z\" fill=\"#ffd43b\"/>\n  <text x=\"100\" y=\"152\" text-anchor=\"middle\" font-family=\"Inter Display\" font-weight=\"900\" font-size=\"58\" fill=\"#fff\" stroke=\"#3a1500\" stroke-width=\"6\" paint-order=\"stroke\">17</text>\n</svg>", "hat0": "<svg width=\"150\" viewBox=\"0 -20 200 220\" xmlns=\"http://www.w3.org/2000/svg\">\n  <path d=\"M96 64 Q94 44 108 34 L114 40 Q104 48 106 64 Z\" fill=\"#3f8f2f\"/>\n  <ellipse cx=\"62\" cy=\"128\" rx=\"44\" ry=\"62\" fill=\"#e8620c\"/>\n  <ellipse cx=\"138\" cy=\"128\" rx=\"44\" ry=\"62\" fill=\"#e8620c\"/>\n  <ellipse cx=\"100\" cy=\"128\" rx=\"46\" ry=\"66\" fill=\"#ff8a1f\"/>\n  <ellipse cx=\"84\" cy=\"100\" rx=\"12\" ry=\"26\" fill=\"#ffb366\" opacity=\".6\"/>\n  \n  <ellipse cx=\"100\" cy=\"52\" rx=\"58\" ry=\"11\" fill=\"#7b2ff7\" stroke=\"#1a0b2e\" stroke-width=\"3\"/>\n        <path d=\"M66 50 Q86 10 112 -14 Q118 22 134 50 Z\" fill=\"#7b2ff7\" stroke=\"#1a0b2e\" stroke-width=\"3\"/>\n        <path d=\"M68 44 Q100 36 132 44 L134 50 Q100 42 66 50 Z\" fill=\"#ffd43b\"/>\n  <text x=\"100\" y=\"152\" text-anchor=\"middle\" font-family=\"Inter Display\" font-weight=\"900\" font-size=\"58\" fill=\"#fff\" stroke=\"#3a1500\" stroke-width=\"6\" paint-order=\"stroke\"></text>\n</svg>", "hat1n": "<svg width=\"150\" viewBox=\"0 -20 200 220\" xmlns=\"http://www.w3.org/2000/svg\">\n  <path d=\"M96 64 Q94 44 108 34 L114 40 Q104 48 106 64 Z\" fill=\"#3f8f2f\"/>\n  <ellipse cx=\"62\" cy=\"128\" rx=\"44\" ry=\"62\" fill=\"#e8620c\"/>\n  <ellipse cx=\"138\" cy=\"128\" rx=\"44\" ry=\"62\" fill=\"#e8620c\"/>\n  <ellipse cx=\"100\" cy=\"128\" rx=\"46\" ry=\"66\" fill=\"#ff8a1f\"/>\n  <ellipse cx=\"84\" cy=\"100\" rx=\"12\" ry=\"26\" fill=\"#ffb366\" opacity=\".6\"/>\n  \n  <ellipse cx=\"100\" cy=\"52\" rx=\"58\" ry=\"11\" fill=\"#2f9e44\" stroke=\"#1a0b2e\" stroke-width=\"3\"/>\n        <path d=\"M66 50 Q86 10 112 -14 Q118 22 134 50 Z\" fill=\"#2f9e44\" stroke=\"#1a0b2e\" stroke-width=\"3\"/>\n        <path d=\"M68 44 Q100 36 132 44 L134 50 Q100 42 66 50 Z\" fill=\"#ffd43b\"/>\n  <text x=\"100\" y=\"152\" text-anchor=\"middle\" font-family=\"Inter Display\" font-weight=\"900\" font-size=\"58\" fill=\"#fff\" stroke=\"#3a1500\" stroke-width=\"6\" paint-order=\"stroke\">42</text>\n</svg>", "hat1": "<svg width=\"150\" viewBox=\"0 -20 200 220\" xmlns=\"http://www.w3.org/2000/svg\">\n  <path d=\"M96 64 Q94 44 108 34 L114 40 Q104 48 106 64 Z\" fill=\"#3f8f2f\"/>\n  <ellipse cx=\"62\" cy=\"128\" rx=\"44\" ry=\"62\" fill=\"#e8620c\"/>\n  <ellipse cx=\"138\" cy=\"128\" rx=\"44\" ry=\"62\" fill=\"#e8620c\"/>\n  <ellipse cx=\"100\" cy=\"128\" rx=\"46\" ry=\"66\" fill=\"#ff8a1f\"/>\n  <ellipse cx=\"84\" cy=\"100\" rx=\"12\" ry=\"26\" fill=\"#ffb366\" opacity=\".6\"/>\n  \n  <ellipse cx=\"100\" cy=\"52\" rx=\"58\" ry=\"11\" fill=\"#2f9e44\" stroke=\"#1a0b2e\" stroke-width=\"3\"/>\n        <path d=\"M66 50 Q86 10 112 -14 Q118 22 134 50 Z\" fill=\"#2f9e44\" stroke=\"#1a0b2e\" stroke-width=\"3\"/>\n        <path d=\"M68 44 Q100 36 132 44 L134 50 Q100 42 66 50 Z\" fill=\"#ffd43b\"/>\n  <text x=\"100\" y=\"152\" text-anchor=\"middle\" font-family=\"Inter Display\" font-weight=\"900\" font-size=\"58\" fill=\"#fff\" stroke=\"#3a1500\" stroke-width=\"6\" paint-order=\"stroke\"></text>\n</svg>", "hat2n": "<svg width=\"150\" viewBox=\"0 -20 200 220\" xmlns=\"http://www.w3.org/2000/svg\">\n  <path d=\"M96 64 Q94 44 108 34 L114 40 Q104 48 106 64 Z\" fill=\"#3f8f2f\"/>\n  <ellipse cx=\"62\" cy=\"128\" rx=\"44\" ry=\"62\" fill=\"#e8620c\"/>\n  <ellipse cx=\"138\" cy=\"128\" rx=\"44\" ry=\"62\" fill=\"#e8620c\"/>\n  <ellipse cx=\"100\" cy=\"128\" rx=\"46\" ry=\"66\" fill=\"#ff8a1f\"/>\n  <ellipse cx=\"84\" cy=\"100\" rx=\"12\" ry=\"26\" fill=\"#ffb366\" opacity=\".6\"/>\n  \n  <ellipse cx=\"100\" cy=\"52\" rx=\"58\" ry=\"11\" fill=\"#2a1240\" stroke=\"#1a0b2e\" stroke-width=\"3\"/>\n        <path d=\"M66 50 Q86 10 112 -14 Q118 22 134 50 Z\" fill=\"#2a1240\" stroke=\"#1a0b2e\" stroke-width=\"3\"/>\n        <path d=\"M68 44 Q100 36 132 44 L134 50 Q100 42 66 50 Z\" fill=\"#ffd43b\"/>\n  <text x=\"100\" y=\"152\" text-anchor=\"middle\" font-family=\"Inter Display\" font-weight=\"900\" font-size=\"58\" fill=\"#fff\" stroke=\"#3a1500\" stroke-width=\"6\" paint-order=\"stroke\">8</text>\n</svg>", "hat2": "<svg width=\"150\" viewBox=\"0 -20 200 220\" xmlns=\"http://www.w3.org/2000/svg\">\n  <path d=\"M96 64 Q94 44 108 34 L114 40 Q104 48 106 64 Z\" fill=\"#3f8f2f\"/>\n  <ellipse cx=\"62\" cy=\"128\" rx=\"44\" ry=\"62\" fill=\"#e8620c\"/>\n  <ellipse cx=\"138\" cy=\"128\" rx=\"44\" ry=\"62\" fill=\"#e8620c\"/>\n  <ellipse cx=\"100\" cy=\"128\" rx=\"46\" ry=\"66\" fill=\"#ff8a1f\"/>\n  <ellipse cx=\"84\" cy=\"100\" rx=\"12\" ry=\"26\" fill=\"#ffb366\" opacity=\".6\"/>\n  \n  <ellipse cx=\"100\" cy=\"52\" rx=\"58\" ry=\"11\" fill=\"#2a1240\" stroke=\"#1a0b2e\" stroke-width=\"3\"/>\n        <path d=\"M66 50 Q86 10 112 -14 Q118 22 134 50 Z\" fill=\"#2a1240\" stroke=\"#1a0b2e\" stroke-width=\"3\"/>\n        <path d=\"M68 44 Q100 36 132 44 L134 50 Q100 42 66 50 Z\" fill=\"#ffd43b\"/>\n  <text x=\"100\" y=\"152\" text-anchor=\"middle\" font-family=\"Inter Display\" font-weight=\"900\" font-size=\"58\" fill=\"#fff\" stroke=\"#3a1500\" stroke-width=\"6\" paint-order=\"stroke\"></text>\n</svg>", "hat3n": "<svg width=\"150\" viewBox=\"0 -20 200 220\" xmlns=\"http://www.w3.org/2000/svg\">\n  <path d=\"M96 64 Q94 44 108 34 L114 40 Q104 48 106 64 Z\" fill=\"#3f8f2f\"/>\n  <ellipse cx=\"62\" cy=\"128\" rx=\"44\" ry=\"62\" fill=\"#e8620c\"/>\n  <ellipse cx=\"138\" cy=\"128\" rx=\"44\" ry=\"62\" fill=\"#e8620c\"/>\n  <ellipse cx=\"100\" cy=\"128\" rx=\"46\" ry=\"66\" fill=\"#ff8a1f\"/>\n  <ellipse cx=\"84\" cy=\"100\" rx=\"12\" ry=\"26\" fill=\"#ffb366\" opacity=\".6\"/>\n  \n  <ellipse cx=\"100\" cy=\"52\" rx=\"58\" ry=\"11\" fill=\"#e8344a\" stroke=\"#1a0b2e\" stroke-width=\"3\"/>\n        <path d=\"M66 50 Q86 10 112 -14 Q118 22 134 50 Z\" fill=\"#e8344a\" stroke=\"#1a0b2e\" stroke-width=\"3\"/>\n        <path d=\"M68 44 Q100 36 132 44 L134 50 Q100 42 66 50 Z\" fill=\"#ffd43b\"/>\n  <text x=\"100\" y=\"152\" text-anchor=\"middle\" font-family=\"Inter Display\" font-weight=\"900\" font-size=\"58\" fill=\"#fff\" stroke=\"#3a1500\" stroke-width=\"6\" paint-order=\"stroke\">25</text>\n</svg>", "hat3": "<svg width=\"150\" viewBox=\"0 -20 200 220\" xmlns=\"http://www.w3.org/2000/svg\">\n  <path d=\"M96 64 Q94 44 108 34 L114 40 Q104 48 106 64 Z\" fill=\"#3f8f2f\"/>\n  <ellipse cx=\"62\" cy=\"128\" rx=\"44\" ry=\"62\" fill=\"#e8620c\"/>\n  <ellipse cx=\"138\" cy=\"128\" rx=\"44\" ry=\"62\" fill=\"#e8620c\"/>\n  <ellipse cx=\"100\" cy=\"128\" rx=\"46\" ry=\"66\" fill=\"#ff8a1f\"/>\n  <ellipse cx=\"84\" cy=\"100\" rx=\"12\" ry=\"26\" fill=\"#ffb366\" opacity=\".6\"/>\n  \n  <ellipse cx=\"100\" cy=\"52\" rx=\"58\" ry=\"11\" fill=\"#e8344a\" stroke=\"#1a0b2e\" stroke-width=\"3\"/>\n        <path d=\"M66 50 Q86 10 112 -14 Q118 22 134 50 Z\" fill=\"#e8344a\" stroke=\"#1a0b2e\" stroke-width=\"3\"/>\n        <path d=\"M68 44 Q100 36 132 44 L134 50 Q100 42 66 50 Z\" fill=\"#ffd43b\"/>\n  <text x=\"100\" y=\"152\" text-anchor=\"middle\" font-family=\"Inter Display\" font-weight=\"900\" font-size=\"58\" fill=\"#fff\" stroke=\"#3a1500\" stroke-width=\"6\" paint-order=\"stroke\"></text>\n</svg>", "hat4n": "<svg width=\"150\" viewBox=\"0 -20 200 220\" xmlns=\"http://www.w3.org/2000/svg\">\n  <path d=\"M96 64 Q94 44 108 34 L114 40 Q104 48 106 64 Z\" fill=\"#3f8f2f\"/>\n  <ellipse cx=\"62\" cy=\"128\" rx=\"44\" ry=\"62\" fill=\"#e8620c\"/>\n  <ellipse cx=\"138\" cy=\"128\" rx=\"44\" ry=\"62\" fill=\"#e8620c\"/>\n  <ellipse cx=\"100\" cy=\"128\" rx=\"46\" ry=\"66\" fill=\"#ff8a1f\"/>\n  <ellipse cx=\"84\" cy=\"100\" rx=\"12\" ry=\"26\" fill=\"#ffb366\" opacity=\".6\"/>\n  \n  <ellipse cx=\"100\" cy=\"52\" rx=\"58\" ry=\"11\" fill=\"#1c7ed6\" stroke=\"#1a0b2e\" stroke-width=\"3\"/>\n        <path d=\"M66 50 Q86 10 112 -14 Q118 22 134 50 Z\" fill=\"#1c7ed6\" stroke=\"#1a0b2e\" stroke-width=\"3\"/>\n        <path d=\"M68 44 Q100 36 132 44 L134 50 Q100 42 66 50 Z\" fill=\"#ffd43b\"/>\n  <text x=\"100\" y=\"152\" text-anchor=\"middle\" font-family=\"Inter Display\" font-weight=\"900\" font-size=\"58\" fill=\"#fff\" stroke=\"#3a1500\" stroke-width=\"6\" paint-order=\"stroke\">31</text>\n</svg>", "hat4": "<svg width=\"150\" viewBox=\"0 -20 200 220\" xmlns=\"http://www.w3.org/2000/svg\">\n  <path d=\"M96 64 Q94 44 108 34 L114 40 Q104 48 106 64 Z\" fill=\"#3f8f2f\"/>\n  <ellipse cx=\"62\" cy=\"128\" rx=\"44\" ry=\"62\" fill=\"#e8620c\"/>\n  <ellipse cx=\"138\" cy=\"128\" rx=\"44\" ry=\"62\" fill=\"#e8620c\"/>\n  <ellipse cx=\"100\" cy=\"128\" rx=\"46\" ry=\"66\" fill=\"#ff8a1f\"/>\n  <ellipse cx=\"84\" cy=\"100\" rx=\"12\" ry=\"26\" fill=\"#ffb366\" opacity=\".6\"/>\n  \n  <ellipse cx=\"100\" cy=\"52\" rx=\"58\" ry=\"11\" fill=\"#1c7ed6\" stroke=\"#1a0b2e\" stroke-width=\"3\"/>\n        <path d=\"M66 50 Q86 10 112 -14 Q118 22 134 50 Z\" fill=\"#1c7ed6\" stroke=\"#1a0b2e\" stroke-width=\"3\"/>\n        <path d=\"M68 44 Q100 36 132 44 L134 50 Q100 42 66 50 Z\" fill=\"#ffd43b\"/>\n  <text x=\"100\" y=\"152\" text-anchor=\"middle\" font-family=\"Inter Display\" font-weight=\"900\" font-size=\"58\" fill=\"#fff\" stroke=\"#3a1500\" stroke-width=\"6\" paint-order=\"stroke\"></text>\n</svg>"};
+const TEACHER = /[?&]teacher=1/.test(location.search);
+const $ = (s, r=document) => r.querySelector(s);
+function el(tag, cls, html){const e=document.createElement(tag); if(cls) e.className=cls; if(html!=null) e.innerHTML=html; return e;}
+function sizeSvg(svg, w){return svg.replace(/width="[^"]*"/, `width="${w}"`).replace('<svg ', '<svg style="height:auto" ');}
+
+/* ---------- scaling for iframe ---------- */
+const stage = $('#stage');
+function fit(){const s=Math.min(innerWidth/1600, innerHeight/900); stage.style.transform=`translate(-50%,-50%) scale(${s})`;}
+addEventListener('resize', fit); fit();
+stage.addEventListener('scroll',()=>{stage.scrollTop=0;stage.scrollLeft=0;});
+$('#bg').innerHTML = ART.bg;
+
+/* ---------- sound ---------- */
+let AC=null;
+function tone(seq){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)(); let t=AC.currentTime;
+  for(const [f,d,type] of seq){const o=AC.createOscillator(),g=AC.createGain(); o.type=type||'triangle'; o.frequency.value=f;
+    g.gain.setValueAtTime(.0001,t); g.gain.exponentialRampToValueAtTime(.18,t+.02); g.gain.exponentialRampToValueAtTime(.0001,t+d);
+    o.connect(g); g.connect(AC.destination); o.start(t); o.stop(t+d+.02); t+=d*.8;}}catch(e){}}
+const sOk=()=>tone([[523,.14],[659,.14],[784,.26]]), sBad=()=>tone([[220,.18,'sawtooth'],[180,.25,'sawtooth']]), sTap=()=>tone([[660,.07]]);
+
+function burst(x,y){const set=['🎃','⭐','✨','🍬','🦇','👻'];
+  for(let i=0;i<14;i++){const b=el('div','burst emo',set[i%set.length]); b.style.left=x+'px'; b.style.top=y+'px';
+    const a=Math.random()*Math.PI*2, d=160+Math.random()*220; b.style.setProperty('--dx',Math.cos(a)*d+'px'); b.style.setProperty('--dy',Math.sin(a)*d-80+'px');
+    b.style.setProperty('--r',(Math.random()*720-360)+'deg'); stage.appendChild(b); setTimeout(()=>b.remove(),1200);}}
+
+/* ---------- characters ---------- */
+const CH = {
+  'Тыквина':{art:'tykvina',c:'#ff8a1f'}, 'Сеточка':{art:'setochka',c:'#ff4fa3'},
+  'Ночка':{art:'nochka',c:'#b48cff'}, 'Бусинка':{art:'businka',c:'#4fd1ff'}};
+const CAT = {logic:['Логика','#4fd1ff'], puzzle:['Головоломка','#ffcc33'], memory:['Запомни!','#ff4fa3'], space:['Пространство','#7cff6b'], trap:['Ловушка','#b48cff']};
+
+/* ---------- progress ---------- */
+const done = new Set();
+
+/* ================= ROOMS ================= */
+const ROOMS = [];
+
+/* 1. Sudoku */
+ROOMS.push({title:'Ведьмин судоку', cat:'puzzle', grade:'2–4 класс', who:'Тыквина',
+  intro:'Расставь жителей замка так, чтобы в каждой <b>строке</b>, каждом <b>столбце</b> и каждом <b>квадрате 2×2</b> были все четверо — и никто не повторялся!',
+  hint:'Строки: 🎃👻🦇🕷 · 🦇🕷🎃👻 · 👻🎃🕷🦇 · 🕷🦇👻🎃',
+  build(P, api){
+    const SOL=[['p','g','b','s'],['b','s','p','g'],['g','p','s','b'],['s','b','g','p']];
+    const GIV=[[1,0,1,0],[0,1,0,1],[1,0,1,0],[0,1,0,1]];
+    const state=SOL.map((r,i)=>r.map((v,j)=>GIV[i][j]?v:null));
+    let sel='p';
+    const wrap=el('div','center'); wrap.style.cssText='position:absolute;inset:0;gap:60px;padding-bottom:70px';
+    const grid=el('div','sgrid'); const cells=[];
+    for(let i=0;i<4;i++)for(let j=0;j<4;j++){
+      const c=el('div','scell'+(GIV[i][j]?' given':' user')); if(GIV[i][j]) c.innerHTML=ART[SOL[i][j]];
+      else c.onclick=()=>{ if(api.isDone()) return; sTap(); state[i][j]= state[i][j]===sel? null : sel; c.classList.remove('err'); c.innerHTML= state[i][j]?ART[state[i][j]]:''; check(); };
+      cells.push(c); grid.appendChild(c);}
+    grid.append(el('div','sline-v'), el('div','sline-h'));
+    const pal=el('div','pal');
+    pal.appendChild(el('div',null,'<div style="font-size:22px;font-weight:800;text-align:center;color:#ffe9c7">Выбери жителя:</div>'));
+    const pbs={};
+    for(const k of ['p','g','b','s']){const b=el('button','pbtn'+(k===sel?' sel':''),ART[k]); b.onclick=()=>{sTap(); sel=k; Object.values(pbs).forEach(x=>x.classList.remove('sel')); b.classList.add('sel');}; pbs[k]=b; pal.appendChild(b);}
+    wrap.append(grid,pal); P.appendChild(wrap);
+    function check(){
+      const full=state.every(r=>r.every(v=>v));
+      if(!full) return;
+      let bad=0;
+      for(let i=0;i<4;i++)for(let j=0;j<4;j++){ if(!GIV[i][j]){ const ok=state[i][j]===SOL[i][j]; cells[i*4+j].classList.toggle('err',!ok); if(!ok) bad++; } }
+      if(bad) api.bad('Кто-то повторяется! Красные клеточки — проверь ещё раз.');
+      else { cells.forEach(c=>c.classList.add('okc')); api.win('Ура! Все жители на своих местах!'); }
+    }
+    api.onReveal=()=>{ for(let i=0;i<4;i++)for(let j=0;j<4;j++){state[i][j]=SOL[i][j]; cells[i*4+j].innerHTML=ART[SOL[i][j]]; cells[i*4+j].classList.remove('err');} check(); };
+  }});
+
+/* 2. Youngest */
+ROOMS.push({title:'Кто самый младший?', cat:'logic', grade:'2 класс', who:'Ночка',
+  intro:'<b>Ведьма старше кошки.</b><br><b>Кошка старше мышки.</b><br>Нажми, кто самый <b>младший</b>!',
+  hint:'Младшая — мышка, старшая — ведьма.',
+  build(P, api){
+    const items=[['Ведьма',sizeSvg(ART.tykvina,150)],['Кошка','<span class="emo" style="font-size:150px">🐈</span>'],['Мышка','<span class="emo" style="font-size:130px">🐭</span>']];
+    const q=el('div','q','Кто самый <b>младший</b>?'); q.style.marginTop='40px';
+    const row=el('div','who3'); row.style.marginTop='60px';
+    let stage2=false; const cards={};
+    for(const [n,a] of items){const c=el('div','wcard',`${a}<div class="nm">${n}</div><div class="lb"></div>`); cards[n]=c; c.onclick=()=>pick(n); row.appendChild(c);}
+    P.append(q,row);
+    function pick(n){ if(api.isDone()) return;
+      const target= stage2?'Ведьма':'Мышка';
+      if(n===target){ const c=cards[n]; c.classList.add('right'); $('.lb',c).textContent= stage2?'самая старшая':'самая младшая';
+        if(!stage2){ stage2=true; sOk(); api.ok('Верно! Мышка младше всех.'); q.innerHTML='А кто самый <b>старший</b>?'; api.say('Молодец! А теперь найди, кто самый <b>старший</b>!'); }
+        else api.win('Верно! Ведьма старше всех — она старше кошки, а кошка старше мышки.');
+      } else { cards[n].classList.remove('wrong'); void cards[n].offsetWidth; cards[n].classList.add('wrong'); api.bad('Подумай ещё: кто младше всех по цепочке?'); }
+    }
+    api.onReveal=()=>{ if(!stage2) pick('Мышка'); pick('Ведьма'); };
+  }});
+
+/* 3. Spiders in windows */
+const SPI={1:[[0,1],[1,2],[2,0]], 2:[[0,0],[0,2],[1,1],[2,1],[2,2]], 3:[[0,1,'r'],[1,0,'g'],[1,2,'b'],[2,0,'r'],[2,2,'g']]};
+ROOMS.push({title:'Пауки в окнах', cat:'memory', grade:'2–4 класс', who:'Сеточка', levels:['Уровень 1','Уровень 2','Уровень 3'],
+  intro:'В окнах замка сидят пауки. Нажми <b>«Смотреть»</b> и запомни, где они!',
+  hintL:['3 паука: верх-середина, середина-право, низ-лево','5 пауков: углы сверху, центр, низ-середина, низ-право','Красный — верх-середина и низ-лево, зелёный — середина-лево и низ-право, синий — середина-право'],
+  build(P, api, L){
+    const lv=L+1, sp=SPI[lv], secs= lv===3?7:5, colors=lv===3;
+    const ans={}; sp.forEach(([r,c,col])=>ans[r+','+c]=col||'k');
+    const user={};
+    const top=el('div','col'); top.style.cssText='position:absolute;left:0;right:0;top:56px;gap:14px';
+    const q=el('div','q', colors?'Запомни, где сидит каждый паук и <b>какого он цвета</b>!':'Запомни, в каких окнах сидят пауки!');
+    const castle=el('div','castle'); const wins={};
+    for(let r=0;r<3;r++)for(let c=0;c<3;c++){const w=el('div','win'); wins[r+','+c]=w; castle.appendChild(w);}
+    const ctrl=el('div','col'); ctrl.style.cssText='position:absolute;right:40px;top:300px;width:250px;gap:20px';
+    const start=el('button','bigbtn','Смотреть'); start.style.cssText='font-size:32px;padding:0 30px';
+    const timer=el('div','timer'); timer.style.width='240px'; timer.innerHTML='<i></i>'; timer.style.visibility='hidden';
+    const checkB=el('button','bigbtn green','Проверить'); checkB.style.cssText='font-size:30px;padding:0 24px;display:none';
+    const legend=el('div',null,''); legend.style.cssText='font-size:20px;font-weight:700;color:#ffe9c7;text-align:center;display:none';
+    legend.innerHTML= colors?'Нажимай на окно:<br>паук → меняй цвет → убрать':'Нажми на окно, где был паук';
+    ctrl.append(start,timer,checkB,legend);
+    castle.style.marginRight='260px';
+    top.append(q,castle); P.append(top,ctrl);
+    const spSvg=k=>({k:ART.spider,r:ART.spider_r,g:ART.spider_g,b:ART.spider_b})[k];
+    function show(map){for(const key in wins){const w=wins[key]; w.innerHTML= map[key]?`<div class="sp">${spSvg(map[key])}</div>`:'';}}
+    let phase='idle';
+    start.onclick=()=>{ sTap(); phase='look'; start.style.display='none'; show(ans); timer.style.visibility='visible'; const i=$('i',timer);
+      i.style.transition='none'; i.style.transform='scaleX(1)'; void i.offsetWidth; i.style.transition=`transform ${secs}s linear`; i.style.transform='scaleX(0)';
+      api.say(`Запоминай! У тебя <b>${secs} секунд</b>!`);
+      setTimeout(()=>{ phase='answer'; show({}); timer.style.visibility='hidden'; checkB.style.display=''; legend.style.display='';
+        Object.values(wins).forEach(w=>w.classList.add('click'));
+        api.say(colors?'Пауки спрятались! Покажи, где сидел каждый паук и <b>какого он был цвета</b>.':'Пауки спрятались! <b>Нажми на окна</b>, где они сидели.'); }, secs*1000); };
+    const cyc = colors? [undefined,'r','g','b'] : [undefined,'k'];
+    for(const key in wins){ wins[key].onclick=()=>{ if(phase!=='answer') return; sTap();
+      const i=cyc.indexOf(user[key]); user[key]=cyc[(i+1)%cyc.length]; if(!user[key]) delete user[key];
+      wins[key].innerHTML= user[key]?`<div class="sp pop">${spSvg(user[key])}</div>`:''; }; }
+    checkB.onclick=()=>{ phase='checked'; checkB.style.display='none'; legend.style.display='none'; let bad=0;
+      for(const key in wins){ const w=wins[key]; w.classList.remove('click'); const a=ans[key], u=user[key];
+        if(a && u===a) w.classList.add('good');
+        else if(a && !u){ w.classList.add('miss'); w.innerHTML=`<div class="sp">${spSvg(a)}</div>`; w.classList.add('badw'); bad++; }
+        else if(a && u!==a){ w.classList.add('badw'); w.innerHTML=`<div class="sp">${spSvg(a)}</div>`; bad++; }
+        else if(!a && u){ w.classList.add('badw'); bad++; } }
+      if(!bad) api.win('Вот это память! Все пауки найдены!');
+      else { api.bad('Почти! Красные окна — ошибки. Зелёные — верно.'); retry(); } };
+    function retry(){ const b=el('button','bigbtn','Ещё раз'); b.style.cssText='font-size:30px;padding:0 24px'; b.onclick=()=>api.restart(); ctrl.appendChild(b); }
+    api.onReveal=()=>{ phase='checked'; start.style.display='none'; checkB.style.display='none'; legend.style.display='none'; timer.style.visibility='hidden'; show(ans);
+      for(const key in ans) wins[key].classList.add('good'); api.win('Вот где сидели пауки!'); };
+  }});
+
+/* 4. Brooms */
+function broomsSVG(n, s=76){ const w=n*s+30, h=s+30; let g='';
+  const V=(x,y)=>`<rect x="${x-7}" y="${y+6}" width="14" height="${s-12}" rx="7" fill="#a0612a" stroke="#5a3210" stroke-width="3"/><rect x="${x-9}" y="${y+s*0.22}" width="18" height="8" fill="#ffcc33"/>`;
+  const H=(x,y)=>`<rect x="${x+6}" y="${y-7}" width="${s-12}" height="14" rx="7" fill="#a0612a" stroke="#5a3210" stroke-width="3"/><rect x="${x+s*0.22}" y="${y-9}" width="8" height="18" fill="#ffcc33"/>`;
+  for(let i=0;i<=n;i++) g+=V(15+i*s,15);
+  for(let i=0;i<n;i++){ g+=H(15+i*s,15); g+=H(15+i*s,15+s); }
+  return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">${g}</svg>`; }
+ROOMS.push({title:'Мётлы-палочки', cat:'puzzle', grade:'2–3 класс', who:'Сеточка',
+  intro:'Я складываю квадратики из мётел. Соседние квадраты <b>делят одну метлу</b>. Сколько мётел нужно для <b>четырёх</b> квадратов?',
+  hint:'13 мётел: каждый новый квадрат добавляет 3 метлы (4, 7, 10, 13).',
+  build(P, api){
+    const box=el('div'); box.style.cssText='position:absolute;left:60px;top:40px;display:flex;flex-direction:column;gap:20px';
+    [[1,'4 метлы'],[2,'7 мётел'],[3,'10 мётел']].forEach(([n,t])=>{const r=el('div',null,`${broomsSVG(n)}<span style="font-size:34px;font-weight:900;color:var(--gold);margin-left:30px">${n} ${n===1?'квадрат':'квадрата'} — ${t}</span>`); r.style.cssText='display:flex;align-items:center'; box.appendChild(r);});
+    const r4=el('div',null,`<div style="width:334px;height:106px;border:4px dashed rgba(255,255,255,.4);border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:56px;font-weight:900;color:var(--gold)">?</div><span style="font-size:34px;font-weight:900;color:#fff;margin-left:30px">4 квадрата — <span style="color:var(--orange)">? мётел</span></span>`);
+    r4.style.cssText='display:flex;align-items:center'; box.appendChild(r4);
+    const opts=el('div','opts'); opts.style.cssText='position:absolute;left:0;right:0;bottom:110px';
+    P.append(box,opts);
+    const reveal=()=>{ r4.innerHTML=`${broomsSVG(4)}<span class="pop" style="font-size:34px;font-weight:900;color:var(--lime);margin-left:30px">4 квадрата — 13 мётел</span>`; };
+    api.choice(opts,['12','13','14','16'],'13',{ok:'Верно! Каждый новый квадрат добавляет 3 метлы: 4, 7, 10, 13!',bad:'Посмотри: на сколько мётел больше становится с каждым квадратом?',after:reveal});
+  }});
+
+/* 5. Traps */
+const TRAPS=[
+ {q:'На грядке у Тыквины росло <b>5 тыкв</b>. Она сорвала <b>2 тыквы</b> и посадила <b>3 семечка</b>. Сколько тыкв на грядке?', pic:'🎃🎃🎃🎃🎃 🌱', o:['3','5','6','8'], a:'3', why:'Семечки — ещё не тыквы! Было 5, сорвали 2 — осталось 3.'},
+ {q:'Одна паучиха плетёт паутину за <b>1 час</b>. За сколько часов <b>две</b> паучихи сплетут <b>две</b> паутины?', pic:'🕷🕸 🕷🕸', o:['1 час','2 часа','4 часа'], a:'1 час', why:'Каждая паучиха плетёт свою паутину, и работают они одновременно.'},
+ {q:'Летучая мышь висит вниз головой <b>3 часа</b>. Сколько часов провисят <b>3</b> летучие мыши, если повиснут одновременно?', pic:'🦇🦇🦇 ⏰', o:['3 часа','6 часов','9 часов'], a:'3 часа', why:'Они висят одновременно — время не складывается!'},
+ {q:'Сколько концов у <b>трёх</b> мётел? А у <b>трёх с половиной</b>?', pic:'🧹🧹🧹', o:['6 и 7','6 и 8','3 и 4'], a:'6 и 8', why:'У каждой метлы 2 конца. У половинки метлы тоже 2 конца!'},
+ {q:'Сколько ног у <b>двух паучих</b> и <b>одной летучей мыши</b>?', pic:'🕷🕷🦇', o:['16','18','20','26'], a:'18', why:'У каждой паучихи 8 ног, у летучей мыши — 2. 8 + 8 + 2 = 18.'}];
+ROOMS.push({title:'Ловушки Бусинки', cat:'trap', grade:'2–4 класс', who:'Бусинка', levels:['№1','№2','№3','№4','№5'],
+  intro:'Хи-хи! Не торопись с ответом — <b>подумай хорошенько</b>, тут есть подвох!',
+  hintL:TRAPS.map(t=>'Ответ: '+t.a+'. '+t.why),
+  build(P, api, L){ const t=TRAPS[L];
+    const q=el('div','q',t.q); q.style.cssText='position:absolute;left:50px;right:50px;top:80px;text-align:left;font-size:40px';
+    const pic=el('div','emo',t.pic); pic.style.cssText='position:absolute;left:50px;top:330px;font-size:90px';
+    const opts=el('div','opts'); opts.style.cssText='position:absolute;left:0;right:0;bottom:120px';
+    P.append(q,pic,opts);
+    api.choice(opts,t.o,t.a,{ok:'Не попался! '+t.why, bad:'Попался! Перечитай ещё раз — где подвох?', after:()=>api.say(t.why)});
+  }});
+
+/* 6. Heavy pumpkin */
+ROOMS.push({title:'Тяжёлая тыква', cat:'logic', grade:'3–4 класс', who:'Тыквина',
+  intro:'У меня <b>три одинаковые тыквы</b>, но одна чуть <b>тяжелее</b>. На весах можно взвесить <b>только один раз</b>. Как найти тяжёлую?',
+  hint:'По тыкве на каждую чашу, третью в сторону. Перевесила чаша — там тяжёлая; равновесие — тяжёлая третья.',
+  build(P, api){
+    const top=el('div','center'); top.style.cssText='position:absolute;left:0;right:0;top:30px;gap:40px';
+    top.innerHTML=sizeSvg(ART.scaleEmpty,420)+`<div style="display:flex;gap:14px">${['А','Б','В'].map(n=>`<div class="col">${sizeSvg(ART.p,110)}<div style="font-size:34px;font-weight:900;color:var(--gold)">${n}</div></div>`).join('')}</div>`;
+    const opts=el('div','col'); opts.style.cssText='position:absolute;left:0;right:0;top:370px;gap:16px';
+    P.append(top,opts);
+    const O=['Положить <b>по одной тыкве</b> на каждую чашу, а третью оставить в стороне','Положить <b>две тыквы</b> на одну чашу, а одну — на другую','Это невозможно — нужно взвешивать <b>два раза</b>'];
+    O.forEach((t,i)=>{const b=el('button','opt small',t); b.onclick=()=>{ if(api.isDone()) return;
+      if(i===0){ b.classList.add('right'); show(); } else { b.classList.remove('wrong'); void b.offsetWidth; b.classList.add('wrong'); api.bad('Подумай: что покажут весы в этом случае?'); } }; opts.appendChild(b);});
+    function show(){ opts.remove();
+      const ans=el('div','center fade'); ans.style.cssText='position:absolute;left:0;right:0;top:340px;gap:60px';
+      ans.innerHTML=`<div class="col" style="width:440px">${ART.case1}<div style="font-size:24px;font-weight:700;text-align:center;margin-top:6px">Одна чаша опустилась —<br><b style="color:var(--lime)">тяжёлая тыква на ней</b></div></div>
+        <div class="col" style="width:440px">${ART.case2}<div style="font-size:24px;font-weight:700;text-align:center;margin-top:6px">Весы в равновесии —<br><b style="color:var(--lime)">тяжёлая третья тыква (В)</b></div></div>`;
+      P.appendChild(ans); top.style.display='none'; api.win('Верно! Одного взвешивания хватит!'); }
+    api.onReveal=()=>show();
+  }});
+
+/* 7. Pumpkins with numbers */
+const HATN=[[17,'фиолетовой'],[42,'зелёной'],[8,'чёрной'],[25,'красной'],[31,'синей']];
+ROOMS.push({title:'Тыквы с числами', cat:'memory', grade:'3–4 класс', who:'Ночка',
+  intro:'В каждой тыкве спрятано число. Нажми <b>«Смотреть»</b> и запомни, какое число под какой шляпой!',
+  hint:'Фиолетовая шляпа — 17, самое большое 42 — зелёная шляпа.',
+  build(P, api){
+    const row=el('div','pumpcards'); row.style.cssText='position:absolute;left:0;right:0;top:70px';
+    const cards=HATN.map((h,i)=>{const c=el('div','pcard',ART['hat'+i]); row.appendChild(c); return c;});
+    const zone=el('div','col'); zone.style.cssText='position:absolute;left:0;right:0;top:340px;gap:26px';
+    const start=el('button','bigbtn','Смотреть'); zone.appendChild(start);
+    const timer=el('div','timer'); timer.innerHTML='<i></i>'; timer.style.visibility='hidden'; zone.appendChild(timer);
+    P.append(row,zone);
+    const showNums=on=>cards.forEach((c,i)=>c.innerHTML=ART['hat'+i+(on?'n':'')]);
+    start.onclick=()=>{ sTap(); start.remove(); showNums(true); timer.style.visibility='visible'; const i=$('i',timer);
+      void i.offsetWidth; i.style.transition='transform 10s linear'; i.style.transform='scaleX(0)'; api.say('Запоминай! У тебя <b>10 секунд</b>!');
+      setTimeout(()=>{ showNums(false); timer.remove(); q1(); },10000); };
+    function q1(){ api.say('Ой, числа исчезли! Вспомни и ответь.');
+      const q=el('div','q','Какое число было в тыкве с <b style="color:var(--violet)">фиолетовой</b> шляпой?'); const o=el('div','opts');
+      zone.append(q,o);
+      api.choice(o,['8','17','25','31'],'17',{ok:'Верно, 17!',bad:'Не то число. Попробуй ещё!',after:()=>setTimeout(()=>{zone.innerHTML=''; q2();},900),final:false}); }
+    function q2(){ const q=el('div','q','Под какой шляпой было <b>самое большое</b> число? <br><span style="font-size:26px;color:#ffe9c7">Нажми на тыкву</span>'); zone.appendChild(q);
+      cards.forEach((c,i)=>{c.classList.add('click'); c.onclick=()=>{ if(api.isDone()) return;
+        if(i===1){ c.classList.add('right'); showNums(true); api.win('Да! Самое большое число — 42, под зелёной шляпой!'); }
+        else { c.classList.remove('wrong'); void c.offsetWidth; c.classList.add('wrong'); api.bad('Нет, там число поменьше. Вспоминай!'); } };}); }
+    api.onReveal=()=>{ start.remove(); timer.remove(); zone.innerHTML=''; showNums(true); cards[0].classList.add('right'); cards[1].classList.add('right');
+      zone.innerHTML='<div class="q">Фиолетовая шляпа — <b>17</b><br>Самое большое число — <b>42</b> (зелёная шляпа)</div>'; api.win('Вот какие числа прятались в тыквах!'); };
+  }});
+
+/* 8. Chest */
+ROOMS.push({title:'Сундук с кодом', cat:'puzzle', grade:'3–4 класс', who:'Бусинка',
+  intro:'Код — трёхзначное число из цифр <b>1, 3 и 5</b>.<br>• Первая цифра — <b>самая большая</b>.<br>• Последняя цифра <b>меньше средней</b>.<br>Нажимай на цифры!',
+  hint:'Код 531.',
+  build(P, api){
+    const ch=el('div'); ch.style.cssText='position:absolute;left:50%;top:40px;transform:translateX(-50%)'; ch.innerHTML=ART.chest;
+    const slots=el('div','slots'); const S=[null,null,null]; const sl=[];
+    for(let i=0;i<3;i++){const s=el('div','slot'); s.onclick=()=>{ if(api.isDone()||S[i]==null) return; sTap(); dbtn[S[i]].classList.remove('used'); S[i]=null; s.textContent=''; s.classList.remove('f'); }; sl.push(s); slots.appendChild(s);}
+    ch.appendChild(slots);
+    const digs=el('div','opts'); digs.style.cssText='position:absolute;left:0;right:0;bottom:110px;gap:40px'; const dbtn={};
+    for(const d of [1,3,5]){const b=el('button','digit',d); b.onclick=()=>{ const i=S.indexOf(null); if(i<0||api.isDone()) return; sTap(); S[i]=d; sl[i].textContent=d; sl[i].classList.add('f'); b.classList.add('used'); if(!S.includes(null)) check(); }; dbtn[d]=b; digs.appendChild(b);}
+    P.append(ch,digs);
+    function check(){ if(S.join('')==='531') open(); else { slots.classList.remove('shake'); void slots.offsetWidth; slots.classList.add('shake'); api.bad('Сундук не открылся! Проверь подсказки ещё раз.');
+      setTimeout(()=>{ for(let i=0;i<3;i++){S[i]=null; sl[i].textContent=''; sl[i].classList.remove('f');} Object.values(dbtn).forEach(b=>b.classList.remove('used')); },900); } }
+    function open(){ [5,3,1].forEach((d,i)=>{S[i]=d; sl[i].textContent=d; sl[i].classList.add('f'); dbtn[d].classList.add('used');});
+      const t=el('div','emo pop','💎👑💰'); t.style.cssText='position:absolute;left:0;right:0;top:-10px;text-align:center;font-size:90px'; ch.appendChild(t);
+      api.win('Щёлк! Сундук открыт! Код — 531.'); api.say('Самая большая цифра — 5, она первая. Осталось 1 и 3: последняя меньше средней, значит, <b>531</b>!'); }
+    api.onReveal=()=>open();
+  }});
+
+/* 9. Pattern */
+ROOMS.push({title:'Тыквенный узор', cat:'puzzle', grade:'2–4 класс', who:'Ночка',
+  intro:'Мой узор повторяется снова и снова. Подумай, какой житель окажется <b>далеко-далеко</b> в ряду!',
+  hint:'10-е место — тыква, 20-е — привидение (узор из 3 картинок).',
+  build(P, api){
+    const PAT=['p','g','b'];
+    const row=el('div','prow'); row.style.cssText='position:absolute;left:40px;right:40px;top:50px;justify-content:center';
+    for(let i=0;i<9;i++){row.appendChild(el('div','it',ART[PAT[i%3]]+`<div class="num">${i+1}</div>`));}
+    const dots=el('div',null,'<span style="font-size:60px;font-weight:900;color:var(--gold)">…</span>'); row.appendChild(dots);
+    const zone=el('div','col'); zone.style.cssText='position:absolute;left:0;right:0;top:260px;gap:30px';
+    P.append(row,zone);
+    const icon=k=>`<span style="display:flex">${sizeSvg(ART[k],100)}</span>`;
+    function ask(n, ans, next){ zone.innerHTML=''; const q=el('div','q',`Кто будет на <b>${n}-м</b> месте?`); const o=el('div','opts'); zone.append(q,o);
+      const map={p:'тыква',g:'привидение',b:'летучая мышь'};
+      ['p','g','b'].forEach(k=>{const b=el('button','opt icon',icon(k)); b.onclick=()=>{ if(b.disabled) return;
+        if(k===ans){ b.classList.add('right'); [...o.children].forEach(x=>x.disabled=true); next(); }
+        else { b.classList.remove('wrong'); void b.offsetWidth; b.classList.add('wrong'); api.bad('Не угадал! Посчитай, сколько раз повторится узор.'); } }; o.appendChild(b);}); }
+    function stage1(){ ask(10,'p',()=>{ sOk(); api.ok('Верно! 9 мест — три полных узора, а 10-е — снова тыква!'); api.say('Узор повторяется <b>каждые 3 картинки</b>. А теперь задачка посложнее!'); setTimeout(stage2,1300); }); }
+    function stage2(){ ask(20,'g',()=>{ api.win('Верно! 18 мест — шесть узоров, 19-е — тыква, 20-е — привидение!'); }); }
+    stage1();
+    api.onReveal=()=>{ zone.innerHTML=`<div class="q fade">10-е место — <b>тыква</b> ${icon('p')}<br>20-е место — <b>привидение</b> ${icon('g')}</div>`; zone.firstChild.style.cssText='display:flex;flex-direction:column;align-items:center;gap:10px'; api.win('Узор повторяется каждые 3 картинки!'); };
+  }});
+
+/* 10. Ghost path */
+const GRID=[['🕯','🍬','🔮','🎩','🕸'],['🦉','🍭','🧹','📜','🗝'],['🧪','🍄','🌙','⭐','🎈'],['🐸','🍂','🧁','🦴','🍫'],['S','🔔','📕','☕','🧦']];
+const PATHS=[['→','→','↑'],['→','→','↑','→','↓'],['↑','↑','→','→','→','↑','←','↑']];
+const ENDN=['кексом 🧁','чашкой ☕','волшебным шаром 🔮'];
+ROOMS.push({title:'Путь привидения', cat:'space', grade:'2–4 класс', who:'Бусинка', levels:['Уровень 1','Уровень 2','Уровень 3'],
+  intro:'Я спряталась в одной из комнат! Начни с <b>голубой клетки</b> и шагай по стрелкам: <b>одна стрелка — одна клетка</b>. Нажми, где я!',
+  hintL:['Ответ: кекс 🧁','Ответ: чашка ☕','Ответ: волшебный шар 🔮'],
+  build(P, api, L){
+    const path=PATHS[L]; const D={'→':[0,1],'←':[0,-1],'↑':[-1,0],'↓':[1,0]};
+    const pts=[[4,0]]; for(const a of path){const [r,c]=pts[pts.length-1]; pts.push([r+D[a][0],c+D[a][1]]);}
+    const end=pts[pts.length-1];
+    const wrap=el('div','center'); wrap.style.cssText='position:absolute;inset:0;gap:46px;padding-bottom:70px';
+    const grid=el('div','ggrid'); const cells={};
+    GRID.forEach((row,r)=>row.forEach((v,c)=>{const g=el('div','gcell'+(v==='S'?' start':''), v==='S'?'':`<span class="emo">${v}</span>`); cells[r+','+c]=g;
+      g.onclick=()=>{ if(api.isDone()||v==='S') return; if(r===end[0]&&c===end[1]) go(); else { g.classList.remove('no'); void g.offsetWidth; g.classList.add('no'); api.bad('Меня там нет! Пройди по стрелкам ещё раз.'); } }; grid.appendChild(g);}));
+    const tok=el('div','ghostTok',sizeSvg(ART.ghostSmall,80)); grid.appendChild(tok);
+    const place=([r,c])=>{tok.style.left=(c*112)+'px'; tok.style.top=(r*112)+'px';}; place(pts[0]);
+    const side=el('div','col'); side.style.cssText='width:250px;align-items:flex-start';
+    side.innerHTML='<div style="font-size:26px;font-weight:800;color:#ffe9c7;margin-bottom:8px">Шаги Бусинки:</div>';
+    const arrs=el('div'); arrs.style.cssText='display:flex;flex-wrap:wrap;width:240px'; const ab=path.map(a=>{const x=el('div','arr',a); arrs.appendChild(x); return x;});
+    side.appendChild(arrs); wrap.append(grid,side); P.appendChild(wrap);
+    let going=false;
+    function go(){ if(going) return; going=true; let k=0;
+      const step=()=>{ k++; if(k<pts.length){ place(pts[k]); cells[pts[k].join(',')].classList.add('trail'); ab[k-1].classList.add('lit'); setTimeout(step,480);}
+        else { cells[end.join(',')].classList.add('end'); api.win('Нашли! Я пряталась рядом с '+ENDN[L]+'!'); } };
+      setTimeout(step,200); }
+    api.onReveal=()=>go();
+  }});
+
+/* ================= SCREENS ================= */
+const scr=$('#screen'), tools=$('#tools');
+let cur=-1, curLevel=0;
+
+function toolbar(){ tools.innerHTML='';
+  if(cur>=0){
+    const m=el('button','tbtn','<span class="emo">🏰</span> Меню'); m.onclick=()=>{sTap(); menu();};
+    const p=el('button','tbtn arrow','◀'); p.onclick=()=>{sTap(); openRoom(cur-1);}; if(cur===0) p.disabled=true;
+    const n=el('button','tbtn arrow','▶'); n.onclick=()=>{sTap(); cur===ROOMS.length-1? finale() : openRoom(cur+1);};
+    tools.append(m,p,n);
+  }
+}
+
+function cover(){ cur=-1; toolbar(); scr.innerHTML='';
+  const t=el('div','abs col'); t.style.cssText='left:0;right:0;top:70px;text-align:center';
+  t.innerHTML=`<div class="chip" style="background:var(--gold);font-size:24px">Математические разминки · 2–4 класс</div>
+    <div class="title" style="font-size:112px;margin-top:22px">Ночь в замке<br>Тыквины</div>
+    <div style="font-size:30px;font-weight:700;margin-top:18px;color:#ffe9c7">Логика · головоломки · память · пространственное мышление</div>`;
+  const chars=el('div','abs'); chars.style.cssText='left:0;right:0;bottom:30px;display:flex;justify-content:center;align-items:flex-end;gap:70px';
+  chars.innerHTML=[sizeSvg(ART.setochka,190),sizeSvg(ART.tykvina,220),sizeSvg(ART.nochka,240),sizeSvg(ART.businka,190)].map((s,i)=>`<div class="bob" style="animation-delay:${i*.4}s">${s}</div>`).join('');
+  const go=el('button','bigbtn abs','Войти в замок'); go.style.cssText+='left:50%;top:470px;transform:translateX(-50%)'; go.onclick=()=>{sTap(); menu();};
+  const cr=el('div','abs','«Твой идеальный урок» · @ideallesson'); cr.style.cssText='right:24px;bottom:12px;font-size:18px;font-weight:700;color:#ffe9c7;opacity:.85';
+  scr.append(t,chars,go,cr); }
+
+function menu(){ cur=-1; toolbar(); scr.innerHTML='';
+  const h=el('div','head',`<div class="title" style="font-size:60px;margin-top:6px">Выбери комнату замка</div>`); scr.appendChild(h);
+  const prog=el('div','abs',`<span class="emo">🧪</span> Собрано ингредиентов: <b style="color:var(--lime)">${done.size}</b> из ${ROOMS.length}`);
+  prog.style.cssText='right:36px;top:40px;font-size:28px;font-weight:800;background:rgba(0,0,0,.4);padding:12px 22px;border-radius:20px;border:3px solid var(--lime)';
+  scr.appendChild(prog);
+  ROOMS.forEach((R,i)=>{ const [cn,cc]=CAT[R.cat]; const r=Math.floor(i/5), c=i%5;
+    const b=el('button','room'+(done.has(i)?' isdone':''),`<div class="n">${i+1}</div><div class="t">${R.title}</div><div class="c"><span class="chip" style="background:${cc};font-size:16px">${cn}</span></div><div class="done">✓</div>`);
+    b.style.setProperty('--cc',cc); b.style.left=(70+c*296)+'px'; b.style.top=(150+r*340)+'px'; b.onclick=()=>{sTap(); openRoom(i);}; scr.appendChild(b); });
+  if(done.size===ROOMS.length){ const f=el('button','bigbtn green abs','Сварить зелье!'); f.style.cssText+='left:50%;bottom:6px;transform:translateX(-50%);height:76px;font-size:32px'; f.onclick=finale; scr.appendChild(f); }
+}
+
+function openRoom(i, level=0){ if(i<0) return; cur=i; curLevel=level; toolbar(); const R=ROOMS[i]; scr.innerHTML='';
+  const [cn,cc]=CAT[R.cat];
+  scr.appendChild(el('div','head',`<span class="chip" style="background:${cc}">${cn}</span> <span class="chip" style="background:#fff">${R.grade}</span><div class="title">${R.title}</div>`));
+  const ch=CH[R.who];
+  const say=el('div','say'); say.style.setProperty('--cc',ch.c); say.style.setProperty('--tx','170px');
+  const setSay=t=>{ say.innerHTML=`<div class="who">${R.who}</div>${t}`; say.classList.remove('fade'); void say.offsetWidth; say.classList.add('fade'); };
+  setSay(R.intro);
+  const cb=el('div','charbox',`<div class="bob">${ART[ch.art]}</div>`);
+  const panel=el('div','panel'); const body=el('div','pbody'); const fb=el('div','fb'); panel.append(body,fb);
+  scr.append(say,cb,panel);
+  if(R.levels){ const tabs=el('div','tabs'); R.levels.forEach((t,k)=>{const b=el('button','tab'+(k===level?' on':''),t); b.onclick=()=>{sTap(); openRoom(i,k);}; tabs.appendChild(b);}); panel.appendChild(tabs); }
+  let fin=false, fbT=null;
+  const flash=(cls,msg)=>{ fb.className='fb '+cls+' show'; fb.textContent=msg; clearTimeout(fbT); if(cls==='bad') fbT=setTimeout(()=>fb.classList.remove('show'),2600); };
+  const api={
+    say:setSay,
+    isDone:()=>fin,
+    ok:msg=>flash('ok',msg),
+    bad:msg=>{ sBad(); flash('bad',msg); },
+    win:msg=>{ if(fin) return; fin=true; sOk(); flash('ok',msg); panel.classList.add('solved'); const r=panel.getBoundingClientRect(), s=stage.getBoundingClientRect(), k=s.width/1600;
+      burst((r.left-s.left)/k+545,(r.top-s.top)/k+300); done.add(i); },
+    restart:()=>openRoom(i,level),
+    onReveal:null,
+    choice(box, options, right, msgs){ options.forEach(o=>{ const b=el('button','opt',o); b.onclick=()=>{ if(b.disabled||fin) return;
+        if(o===right){ b.classList.add('right'); [...box.children].forEach(x=>x.disabled=true); if(msgs.final===false){ sOk(); flash('ok',msgs.ok);} else api.win(msgs.ok); msgs.after&&msgs.after(); }
+        else { b.classList.remove('wrong'); void b.offsetWidth; b.classList.add('wrong'); api.bad(msgs.bad); } }; box.appendChild(b); });
+      api.onReveal= api.onReveal || (()=>{ [...box.children].find(x=>x.textContent===right).click(); }); }
+  };
+  R.build(body, api, level);
+  if(TEACHER){ const t=el('div','teach'); const tin=el('div','teach-in');
+    const note=el('div','tnote','🎓 '+(R.hintL? R.hintL[level] : R.hint)); const sh=el('button','tshow','Показать ответ');
+    sh.onclick=()=>{ if(!fin && api.onReveal) api.onReveal(); };
+    tin.append(note,sh); t.appendChild(tin); scr.appendChild(t); }
+}
+
+function finale(){ cur=-1; toolbar(); scr.innerHTML='';
+  const t=el('div','abs col'); t.style.cssText='left:0;right:0;top:90px;text-align:center';
+  t.innerHTML=`<div class="title" style="font-size:120px">Зелье готово!</div><div style="font-size:38px;font-weight:700;margin-top:20px;color:#ffe9c7">Вы разгадали загадки замка. Счастливого Хэллоуина! <span class="emo">🎃</span></div>`;
+  const chars=el('div','abs'); chars.style.cssText='left:0;right:0;bottom:30px;display:flex;justify-content:center;align-items:flex-end;gap:70px';
+  chars.innerHTML=[sizeSvg(ART.setochka,190),sizeSvg(ART.tykvina,220),sizeSvg(ART.nochka,240),sizeSvg(ART.businka,190)].map((s,i)=>`<div class="bob" style="animation-delay:${i*.4}s">${s}</div>`).join('');
+  const back=el('button','tbtn abs','<span class="emo">🏰</span> В меню'); back.style.cssText+='right:26px;top:24px'; back.onclick=menu;
+  scr.append(t,chars,back); sOk(); setTimeout(()=>{burst(800,250); burst(400,400); burst(1200,400);},200);
+}
+
+addEventListener('keydown', e=>{
+  if(e.key==='ArrowRight'){ if(cur<0) openRoom(0); else if(cur<ROOMS.length-1) openRoom(cur+1); else finale(); }
+  if(e.key==='ArrowLeft' && cur>0) openRoom(cur-1);
+});
+cover();
+</script>
+</body>
+</html>
