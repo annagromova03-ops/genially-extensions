@@ -179,7 +179,7 @@ function gridSVG(rows,cell=32){const R=rows.length,C=Math.max(...rows.map(r=>r.l
 function cubesSVG(a,b,c,s=24){const w=s*0.866,h=s*0.5; const L=[];
   for(let k=0;k<c;k++)for(let j=0;j<b;j++)for(let i=0;i<a;i++)L.push([i,j,k]);
   L.sort((p,q)=>(p[0]+p[1]+p[2])-(q[0]+q[1]+q[2]));
-  const ox=b*w+6, oy=c*s+6, W=(a+b)*w+12, H=(a+b)*h+c*s+12;
+  const ox=b*w+6, oy=(c-1)*s+6, W=(a+b)*w+12, H=(a+b)*h+c*s+12;
   const P=(x,y)=>x.toFixed(1)+','+y.toFixed(1);
   let g='';
   for(const [i,j,k] of L){const x=ox+(i-j)*w, y=oy+(i+j)*h-k*s;
