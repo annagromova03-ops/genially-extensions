@@ -105,7 +105,7 @@ button{font-family:inherit;cursor:pointer;border:none;color:inherit}
 .tshow{background:var(--gold);color:#5b3600;font-weight:900;font-size:17px;padding:8px 14px;border-radius:12px;border:3px solid var(--goldDark)}
 
 /* ---------- map ---------- */
-.station{position:absolute;display:flex;align-items:center;gap:18px;transition:transform .15s}
+.station{background:none;padding:0;position:absolute;display:flex;align-items:center;gap:18px;transition:transform .15s}
 .station:hover{transform:translateX(6px)}
 .port{width:118px;height:118px;border-radius:50%;flex:none;background:radial-gradient(circle at 35% 30%,#e8fdff,#7fe0e8 45%,#0b7d86);border:7px solid #d8b46a;
   box-shadow:0 0 0 5px #8a6a2a,0 10px 22px rgba(0,0,0,.45),inset 0 0 20px rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center;font-size:58px;position:relative}
@@ -113,7 +113,7 @@ button{font-family:inherit;cursor:pointer;border:none;color:inherit}
   display:flex;align-items:center;justify-content:center;border:3px solid #fff;font-family:'Rubik'}
 .stinfo{background:rgba(6,36,58,.85);border:3px solid var(--aqua2);border-radius:24px;padding:12px 22px;text-align:left;min-width:420px;backdrop-filter:blur(6px)}
 .stinfo .t{font-size:28px;font-weight:900}
-.stinfo .s{font-size:18px;font-weight:600;color:var(--aqua2);margin-top:2px}
+.stinfo .s{font-size:19px;font-weight:600;color:var(--aqua2);margin-top:2px}
 .stinfo .p{margin-top:8px;display:flex;gap:6px;align-items:center}
 .mini{width:20px;height:20px;border-radius:50%;border:2px solid rgba(255,255,255,.5)}
 .mini.on{background:radial-gradient(circle at 32% 28%,#fff,#d9d0f5 60%,#a99bd6);border-color:#fff}
@@ -126,6 +126,14 @@ button{font-family:inherit;cursor:pointer;border:none;color:inherit}
 
 /* ---------- briefing ---------- */
 .layer{border-radius:26px;padding:14px 22px;display:inline-flex;flex-direction:column;align-items:center;gap:8px;font-size:30px;font-weight:800}
+.fr-eq{display:flex;justify-content:center;align-items:flex-start;gap:10px;margin:8px 0 6px}
+.fr-eq .tk{display:flex;flex-direction:column;align-items:center;gap:8px}
+.fr-eq .v{font-size:40px;font-weight:800;padding:6px 10px;white-space:nowrap;line-height:1.1}
+.fr-eq .box .v{border:4px dashed var(--gold);border-radius:18px;background:rgba(255,201,60,.16);color:var(--gold);padding:6px 16px;animation:glow 1.6s ease-in-out infinite}
+@keyframes glow{0%,100%{box-shadow:0 0 0 0 rgba(255,201,60,.0)}50%{box-shadow:0 0 0 8px rgba(255,201,60,.25)}}
+.fr-eq .op .v{width:62px;height:62px;border-radius:50%;background:var(--coral);color:#fff;display:flex;align-items:center;justify-content:center;padding:0;font-size:44px;box-shadow:0 0 0 6px rgba(255,123,92,.3)}
+.fr-eq .lab{font-size:16px;font-weight:700;color:var(--aqua2);text-align:center;max-width:170px;line-height:1.2}
+.fr-eq .box .lab{color:var(--gold)} .fr-eq .op .lab{color:#ffb7a1}
 .algo li{margin:10px 0;font-size:25px;font-weight:600;line-height:1.35}
 .algo li b{color:var(--gold)}
 </style>
@@ -191,7 +199,7 @@ function depthMap(){ setBg('cover'); scr.innerHTML='<div class="abs" style="inse
  const h=el('div','abs fade'); h.style.cssText='left:40px;top:26px'; h.innerHTML=title3d('Карта погружения',56); scr.appendChild(h);
  scr.appendChild(el('div','rope'));
  const items=[{icon:'🎓',name:'Брифинг у капитана',sub:'Объяснение: как решать составные уравнения',depth:'0 м',fn:()=>brief(0),done:briefSeen}].concat(
-   LV.map((L,i)=>({icon:L.icon,name:L.name,sub:L.sub+' · звание «'+L.rank+'»',depth:L.depth,fn:()=>dive(i,firstUnsolved(L)),done:levelDone(L),L})));
+   LV.map((L,i)=>({icon:L.icon,name:L.name,sub:L.sub+': <b style="color:#fff;font-size:20px;white-space:nowrap">'+TASKS[L.id][0].eq+'</b>',depth:L.depth,fn:()=>dive(i,firstUnsolved(L)),done:levelDone(L),L})));
  items.forEach((it,i)=>{ const s=el('button','station fade'+(it.done?' done':''));
    s.style.left='90px'; s.style.top=(140+i*142)+'px';
    let pearls=''; if(it.L){ pearls='<div class="p">'+TASKS[it.L.id].map((_,k)=>`<div class="mini${solved[it.L.id].has(k)?' on':''}"></div>`).join('')+'</div>'; }
@@ -211,6 +219,12 @@ const firstUnsolved=L=>{const i=TASKS[L.id].findIndex((_,k)=>!solved[L.id].has(k
 /* ---------- BRIEFING ---------- */
 let briefSeen=false;
 const EX1=TASKS.ship[2], EX2=TASKS.ship[0], EX3=TASKS.cave[0];
+function framed(parts){ return '<div class="fr-eq">'+parts.map(p=>`<div class="tk ${p.c||''}"><div class="v">${p.t}</div>${p.l?`<div class="lab">${p.l}</div>`:''}</div>`).join('')+'</div>'; }
+const FR={
+ ex1:[{t:'x · 6',c:'box',l:'одно целое —<br>уменьшаемое'},{t:'−',c:'op',l:'последнее<br>действие'},{t:'956',l:'вычитаемое'},{t:'='},{t:'280',l:'разность'}],
+ ex2:[{t:'(x + 15)',c:'box',l:'одно целое —<br>множитель'},{t:'·',c:'op',l:'последнее<br>действие'},{t:'4',l:'множитель'},{t:'='},{t:'100',l:'произведение'}],
+ ex3:[{t:'x · 6',c:'box',l:'одно целое —<br>уменьшаемое'},{t:'−',c:'op',l:'последнее<br>действие'},{t:'956',l:'вычитаемое'},{t:'='},{t:'70 · 4',l:'разность<br>(сначала вычислим!)'}],
+};
 function layersHTML(){ // x · 6 − 956 = 280 as nested layers
  return `<div style="display:flex;justify-content:center;margin-top:10px">
   <div class="layer" style="background:rgba(63,208,212,.18);border:3px solid var(--aqua)"><span style="font-size:18px;color:var(--aqua2)">слой 1 (верхний) — вычитание</span>
@@ -219,23 +233,29 @@ function layersHTML(){ // x · 6 − 956 = 280 as nested layers
       <div style="display:flex;align-items:center;gap:12px"><div class="layer" style="background:rgba(255,201,60,.2);border:3px solid var(--gold);padding:10px 22px"><span style="font-size:16px;color:var(--gold)">сокровище</span><span style="font-size:44px;color:var(--gold)">x</span></div><span>· 6</span></div>
     </div><span>− 956</span></div></div></div>
   <div style="text-align:center;font-size:30px;font-weight:800;margin-top:16px">= 280</div>`; }
-function exampleSteps(T,shown){ let h=`<div class="line given">${T.eq}</div>`;
+function exampleSteps(T,shown,fr){ let h= fr? framed(FR[fr]) : `<div class="line given">${T.eq}</div>`;
  T.steps.slice(0,shown).forEach((s,i)=>{ h+=`<div class="line done fade" style="justify-content:flex-start">${s.pre}<span class="ans" style="color:#fff">${s.ans}</span>${s.post}</div>`; });
  if(shown===T.steps.length) h+=`<div class="line chk fade">✔ Проверка: ${chkText(T)}</div>`;
  return h; }
 const BRIEF=[
  {say:'Привет, юнга! Я — <b>капитан Аква</b>. Сегодня мы научимся решать <b>составные уравнения</b>. В них неизвестное, как сокровище, спрятано на дне — под несколькими действиями.',
-  html:()=>`<div style="font-size:26px;font-weight:700;text-align:center;line-height:1.4;margin-top:10px">Вот уравнение: <b style="color:var(--gold)">x · 6 − 956 = 280</b><br>Над x «плещется» два слоя воды — два действия:</div>${layersHTML()}`},
+  html:()=>`<div style="font-size:25px;font-weight:700;text-align:center;line-height:1.4;margin-top:4px">Вот уравнение. Над x «плещется» два слоя воды — два действия:</div>${layersHTML()}`},
+ {say:'Посмотри внимательно: всё, что стоит <b>до последнего действия</b>, — это <b>одно целое</b>. Обведём его рамкой! Тогда сразу видно: главное действие здесь — <b>вычитание</b>.',
+  html:()=>`${framed(FR.ex1)}<div style="font-size:24px;font-weight:600;line-height:1.45;padding:14px 26px 0;text-align:center">
+   Рамка <b style="color:var(--gold)">x · 6</b> — это одно число, которое мы пока не знаем.<br>
+   Значит, перед нами простое уравнение на вычитание:<br>
+   <span style="font-size:30px;font-weight:800"><span style="border:3px dashed var(--gold);border-radius:12px;padding:0 10px;color:var(--gold)">?</span> − 956 = 280</span><br>
+   Неизвестно <b style="color:var(--gold)">уменьшаемое</b> → к разности прибавляем вычитаемое.</div>`},
  {say:'Главное правило ныряльщика: <b>сначала снимаем верхний слой</b> — то действие, которое при вычислении выполнялось бы <b>последним</b>.',
-  html:()=>`<div style="font-size:26px;font-weight:600;line-height:1.5;padding:10px 20px">
+  html:()=>`${framed(FR.ex1)}<div style="font-size:24px;font-weight:600;line-height:1.5;padding:4px 20px">
    Если бы x был известен, мы считали бы так:<br>
    <span style="color:var(--aqua2)">1)</span> x · 6 &nbsp;&nbsp; <span style="color:var(--aqua2)">2)</span> … − 956<br>
    Последнее действие — <b style="color:var(--gold)">вычитание</b>. Значит, это верхний слой!<br><br>
    Всё, что стоит перед «− 956», — это <b style="color:var(--gold)">уменьшаемое</b>: <b>x · 6</b>.<br>
    Находим его по правилу: <i>к разности прибавляем вычитаемое</i>.</div>`},
- {say:'Смотри, как погружаемся по шагам. Каждый шаг — новая строчка: сначала записываем действие, а результат — <b>на следующей строке</b>.',ex:EX1},
- {say:'Если верхний слой — <b>скобка</b>, то неизвестным компонентом считаем <b>всю скобку целиком</b>.',ex:EX2},
- {say:'А если в правой части стоит выражение — <b>сначала вычисляем его</b>, а потом ныряем как обычно.',ex:EX3},
+ {fr:'ex1',say:'Смотри, как погружаемся по шагам. Каждый шаг — новая строчка: сначала записываем действие, а результат — <b>на следующей строке</b>.',ex:EX1},
+ {fr:'ex2',say:'Если верхний слой — <b>скобка</b>, то неизвестным компонентом считаем <b>всю скобку целиком</b>.',ex:EX2},
+ {fr:'ex3',say:'А если в правой части стоит выражение — <b>сначала вычисляем его</b>, а потом ныряем как обычно.',ex:EX3},
  {say:'Запомни памятку ныряльщика — и вперёд, на глубину!',
   html:()=>`<ol class="algo" style="padding:4px 30px 0 60px">
    <li>Если справа выражение — <b>вычисли его</b>.</li>
@@ -253,7 +273,7 @@ function brief(i){ briefSeen=true; setBg('brief'); scr.innerHTML=''; const B=BRI
  g.innerHTML=`<div class="speech">${AV}<div class="say"><span class="nm">Капитан Аква</span><span id="bsay">${B.say}</span></div></div><div id="bbody" class="log"></div>`;
  scr.appendChild(g);
  const body=$('#bbody',g);
- if(B.ex){ const T=B.ex; const draw=()=>{ body.innerHTML=exampleSteps(T,exShown);
+ if(B.ex){ const T=B.ex; const draw=()=>{ body.innerHTML=exampleSteps(T,exShown,B.fr);
      const s=T.steps[exShown-1]; if(s) $('#bsay',g).innerHTML=s.hint.replace(' Выбери знак действия.','');
      const btn=el('button','bub'+(exShown<T.steps.length?'':' green'), exShown<T.steps.length?'Следующий шаг ⬇':'Дальше ➜'); btn.style.cssText='height:66px;font-size:26px;align-self:center;margin-top:10px';
      btn.onclick=()=>{ sBlub(); if(exShown<T.steps.length){exShown++; draw();} else nextBrief(i); }; body.appendChild(btn); };
