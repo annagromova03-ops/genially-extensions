@@ -31,6 +31,13 @@ button{font-family:inherit;cursor:pointer;border:none;color:inherit}
 .shake{animation:shake .4s}
 
 /* ---- royal ribbon title ---- */
+.t3d{position:relative;display:inline-block;font-weight:900;letter-spacing:2px;line-height:.98;text-align:center;font-family:'Nunito',Arial,sans-serif}
+.t3d .back{position:absolute;inset:0;color:#0d5e5d;-webkit-text-stroke:24px #0d5e5d;text-shadow:0 10px 0 #083f3e,0 20px 34px rgba(0,0,0,.4);z-index:0}
+.t3d .mid{position:absolute;inset:0;color:#fff;-webkit-text-stroke:12px #fff;z-index:1}
+.t3d .front{position:relative;z-index:2;background:linear-gradient(180deg,#fff6c9 0%,#ffd56b 35%,#f0a81c 70%,#c47a00 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.t3d .shine{position:absolute;inset:0;z-index:3;background:linear-gradient(180deg,rgba(255,255,255,.8) 0%,rgba(255,255,255,0) 40%);-webkit-background-clip:text;background-clip:text;color:transparent;pointer-events:none}
+@keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.cbadge{display:inline-flex;align-items:center;gap:10px;background:linear-gradient(#2cc0bd,#178f8d);color:#fff;font-weight:900;font-size:30px;padding:10px 34px;border-radius:40px;border:5px solid #fff;box-shadow:0 7px 0 #0d5e5d,0 12px 24px rgba(0,0,0,.3);text-shadow:0 2px 0 #0d5e5d}
 .ribbon{position:relative;display:inline-block;padding:14px 60px 16px;background:linear-gradient(#2cc0bd,#178f8d);color:#fff;
   font-family:'Lobster',cursive;font-size:44px;border-radius:12px;box-shadow:0 6px 0 var(--tealDark),0 10px 24px rgba(0,0,0,.25);
   text-shadow:0 3px 0 var(--tealDark)}
@@ -361,19 +368,19 @@ function setTools(list){tools.innerHTML=''; list.forEach(b=>tools.appendChild(b)
 function tb(html,fn,cls=''){const b=el('button','tbtn '+cls,html); b.onclick=()=>{sTap(); fn();}; return b;}
 
 /* ---------- COVER ---------- */
+function title3d(text,size){return `<div class="t3d" style="font-size:${size}px"><div class="back">${text}</div><div class="mid">${text}</div><div class="front">${text}</div><div class="shine">${text}</div></div>`;}
 function cover(){ curLand=null; setBg('throne'); setTools([]); scr.innerHTML='';
-  const t=el('div','abs fade'); t.style.cssText='left:0;right:0;top:44px;text-align:center';
-  t.innerHTML=`<div class="ribbon" style="font-size:72px;padding:18px 80px 22px">Королевство Мерилия</div>
-    <div style="margin-top:22px;font-size:28px;font-weight:900;color:#fff;text-shadow:0 2px 6px rgba(0,0,0,.55)">Тренажёр по единицам измерения</div>
-    <div style="margin-top:12px"><span style="display:inline-block;background:linear-gradient(#ffd56b,#e8a923);color:#5a3a00;font-weight:900;font-size:26px;padding:8px 26px;border-radius:30px;border:3px solid #fff;box-shadow:0 5px 0 #8a5a00">По программе Л.Г. Петерсон · 2–4 класс</span></div>`;
-  const story=el('div','card abs fade'); story.style.cssText='left:330px;top:330px;width:940px;padding:30px 40px;text-align:center';
-  story.innerHTML=`<div style="font-size:27px;font-weight:800;line-height:1.4">Колдунья <b style="color:#7b3fbf">Путаница</b> перепутала все меры в королевстве:
-    торт весит «три метра», а часы на башне показывают килограммы! Королева Мерилия просит тебя пройти по землям,
-    навести порядок и собрать <b style="color:#b07800">королевские печати</b>.</div>
-    <div style="margin-top:22px;font-size:26px;font-weight:900;color:var(--tealDark)">Выбери свой класс:</div>
-    <div style="display:flex;gap:30px;justify-content:center;margin-top:16px" id="gb"></div>`;
+  const t=el('div','abs fade'); t.style.cssText='left:0;right:0;top:46px;text-align:center';
+  t.innerHTML=`<div class="emo" style="font-size:62px;margin-bottom:-6px">👑</div>
+    <div style="animation:floaty 4s ease-in-out infinite">${title3d('ЕДИНИЦЫ<br>ИЗМЕРЕНИЯ',124)}</div>
+    <div style="margin-top:22px;display:flex;gap:18px;justify-content:center;align-items:center">
+      <div class="ribbon" style="font-size:36px;padding:8px 40px 10px">Королевство Мерилия</div></div>
+    <div style="margin-top:22px"><span class="cbadge">📏 Петерсон · 2–4 класс</span></div>`;
+  const story=el('div','card abs fade'); story.style.cssText='left:400px;top:600px;width:800px;padding:18px 30px 22px;text-align:center';
+  story.innerHTML=`<div style="font-size:22px;font-weight:800;line-height:1.35">Колдунья <b style="color:#7b3fbf">Путаница</b> перепутала все меры! Наведи порядок и собери <b style="color:#b07800">королевские печати</b>.</div>
+    <div style="display:flex;gap:22px;justify-content:center;align-items:center;margin-top:14px" id="gb"><span style="font-size:24px;font-weight:900;color:var(--tealDark)">Выбери класс:</span></div>`;
   scr.append(t,story);
-  [2,3,4].forEach(g=>{const b=el('button','gembtn gradeBtn'+(g===3?' gold':''),`<b>${g}</b><span>класс</span>`); b.onclick=()=>{sTap(); grade=g; seals.clear(); solved={}; map();}; $('#gb',story).appendChild(b);});
+  [2,3,4].forEach(g=>{const b=el('button','gembtn gradeBtn'+(g===3?' gold':''),`<b>${g}</b><span>класс</span>`); b.style.cssText='width:150px;height:110px'; b.querySelector('b').style.fontSize='48px'; b.querySelector('span').style.fontSize='20px'; b.onclick=()=>{sTap(); grade=g; seals.clear(); solved={}; map();}; $('#gb',story).appendChild(b);});
   const cr=el('div','abs','«Твой идеальный урок» · @ideallesson'); cr.style.cssText='right:20px;bottom:12px;font-size:17px;font-weight:800;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.7)';
   scr.appendChild(cr);
 }
