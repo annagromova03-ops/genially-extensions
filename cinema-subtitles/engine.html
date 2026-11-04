@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>Субтитры для премьеры</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&family=PT+Serif:wght@400;700&family=Playfair+Display:wght@700;900&display=swap">
+<style>
+/* Layout concept: a cinema on premiere night. Dark hall with red velvet curtains at the edges and a marquee sign on top. The task is shown on a bright screen in the middle; a small clapperboard character named Clap stands in the left column and his speech bubble is the answer panel, so answers do not cover the task on desktop. Progress and navigation are one film strip fixed at the bottom: nine frames (a finished step lights its frame and shows a picture), arrows at both ends, and a button for the slide list. Headings are set in a high-contrast display serif like a film poster, task lines in a book serif, the prompt of every choice looks like a subtitle bar (white text on black). */
+*{box-sizing:border-box}
+:root{
+  color-scheme:dark;
+  --gx:clamp(16px,4vw,36px);
+  --bg0:#0e0a12;--bg1:#1a0f1c;--velvet:#7a1520;--velvet-d:#4e0c15;
+  --gold:#e8b13a;--gold-d:#a8760f;
+  --ink:#1f1620;--ink-soft:#675564;--paper:#fffdf7;--line:#e6dccd;--tint:#fbf3e4;--tint-line:#ecdcbc;
+  --c:#9a6212;--c-deep:#6b4208;--ct:#f7e8c9;
+  --ok:#1f8a4c;--ok-t:#e1f4e8;--bad:#c23b2e;--mint:#17a58a;--amber:#d98200;--focus:#2f7cf0;
+  --f-head:"Playfair Display",Georgia,"Times New Roman",serif;
+  --f-ui:"Montserrat","Segoe UI",system-ui,-apple-system,Arial,sans-serif;
+  --f-text:"PT Serif",Georgia,"Times New Roman",serif;
+}
+/* у каждого блока урока свой цвет */
+html[data-b="1"]{--c:#9a6212;--c-deep:#6b4208;--ct:#f7e8c9}
+html[data-b="2"]{--c:#b3261e;--c-deep:#7c1812;--ct:#fbe0dd}
+html[data-b="3"]{--c:#0f7b78;--c-deep:#0a5452;--ct:#d6eeed}
+html[data-b="4"]{--c:#6b4fb8;--c-deep:#473384;--ct:#e8e1f7}
+html[data-b="5"]{--c:#2f7d4f;--c-deep:#1f5535;--ct:#dcf0e3}
+[hidden]{display:none!important}
+html{height:100%;background:var(--bg0)}
+body{position:relative;min-height:100%;margin:0;color:#f4ecf0;font:500 17px/1.55 var(--f-ui);background-color:var(--bg0);background-image:radial-gradient(900px 500px at 50% -6%,rgba(255,226,150,.22),transparent 65%),linear-gradient(180deg,var(--bg0) 0,var(--bg1) 100%);background-attachment:fixed;-webkit-text-size-adjust:100%}
+h1,h2,h3,p,ol,ul{margin:0}
+
+/* ---------- зал: шторы по краям ---------- */
+.hall{position:fixed;inset:0;z-index:0;pointer-events:none}
+.curtain{position:absolute;top:0;bottom:0;width:clamp(18px,8vw,130px);background:repeating-linear-gradient(90deg,var(--velvet) 0 14px,var(--velvet-d) 14px 28px,#8e1b28 28px 40px);box-shadow:0 0 40px 10px rgba(0,0,0,.6)}
+.curtain.l{left:0;border-right:3px solid var(--gold-d);clip-path:polygon(0 0,100% 0,100% 100%,0 100%)}
+.curtain.r{right:0;border-left:3px solid var(--gold-d)}
+.curtain::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.55),transparent 22%,transparent 80%,rgba(0,0,0,.5))}
+.floor{position:absolute;left:0;right:0;bottom:0;height:90px;background:linear-gradient(180deg,transparent,rgba(122,21,32,.35))}
+
+/* ---------- каркас ---------- */
+.shell{position:relative;z-index:1;display:grid;grid-template-columns:250px minmax(0,780px);gap:26px;justify-content:center;align-items:start;max-width:1180px;margin:0 auto;padding:18px max(calc(var(--gx) + clamp(0px,6vw,100px)),env(safe-area-inset-right,0px)) 150px max(calc(var(--gx) + clamp(0px,6vw,100px)),env(safe-area-inset-left,0px))}
+.marq{grid-column:1/-1;position:relative;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 18px;padding:14px 24px;border:3px solid var(--gold);border-radius:14px;background:linear-gradient(180deg,#5c0f18,#3a0a12);box-shadow:0 0 30px rgba(232,177,58,.25),inset 0 0 0 2px rgba(0,0,0,.35)}
+.marq::before,.marq::after{content:"";position:absolute;left:14px;right:14px;height:7px;background:radial-gradient(circle,#ffe08a 2.6px,rgba(255,224,138,0) 3.4px) 0 0/20px 7px repeat-x;filter:drop-shadow(0 0 3px rgba(255,224,138,.9))}
+.marq::before{top:3px}
+.marq::after{bottom:3px}
+.marq h1{font:900 clamp(18px,2.8vw,28px)/1.1 var(--f-head);letter-spacing:.06em;text-transform:uppercase;color:var(--gold);text-shadow:0 0 14px rgba(232,177,58,.6)}
+.marq small{display:block;margin-top:3px;font:700 12.5px/1.2 var(--f-ui);color:#f0d9b2;letter-spacing:.04em}
+.stat{padding:6px 12px;border-radius:99px;background:rgba(0,0,0,.35);border:1px solid rgba(232,177,58,.5);color:#f6e6c4;font:700 12px/1.2 var(--f-ui);white-space:nowrap}
+.left{position:sticky;top:18px;display:flex;flex-direction:column;align-items:flex-start;gap:12px}
+.main{min-width:0}
+
+/* ---------- Хлопушка и его облачко ---------- */
+.mbox{display:flex;flex-direction:column;align-items:flex-start;gap:6px;width:100%}
+.mascot{flex:none;width:92px;height:auto;filter:drop-shadow(0 8px 14px rgba(0,0,0,.55));animation:bob 4.8s ease-in-out infinite}
+.mascot .clap{transform-box:view-box;transform-origin:16px 38px;transform:rotate(-7deg);transition:transform .25s}
+.mascot .eyes-ok,.mascot .m-ok,.mascot .m-bad,.mascot .brow{display:none}
+.mbox.ok .eyes-idle,.mbox.free .eyes-idle,.mbox.ok .m-idle,.mbox.free .m-idle,.mbox.bad .m-idle{display:none}
+.mbox.ok .eyes-ok,.mbox.free .eyes-ok{display:inline}
+.mbox.ok .m-ok,.mbox.free .m-ok{display:inline}
+.mbox.bad .m-bad,.mbox.bad .brow{display:inline}
+.mbox.ok .clap{transform:rotate(0)}
+.mbox.free .clap{transform:rotate(-26deg)}
+.mbox.bad .mascot{animation:shake .5s,bob 4.8s ease-in-out infinite}
+.mbox.free .mascot{animation:hop 1.2s ease-in-out infinite}
+.bubble{position:relative;width:100%;display:flex;gap:8px;align-items:flex-start;padding:12px 8px 12px 16px;background:#fffdf7;color:var(--ink);border:3px solid var(--gold);border-radius:18px;box-shadow:0 14px 28px -12px rgba(0,0,0,.7)}
+.bubble::before{content:"";position:absolute;left:34px;top:-11px;width:16px;height:16px;background:#fffdf7;border-left:3px solid var(--gold);border-top:3px solid var(--gold);transform:rotate(45deg)}
+.bubble .tx2{flex:1;min-width:0;font-size:14.5px;line-height:1.45}
+.bubble .lb{display:block;margin-bottom:2px;font:800 11px/1.2 var(--f-ui);letter-spacing:.14em;text-transform:uppercase;color:var(--gold-d)}
+.bubble .dx{all:unset;box-sizing:border-box;cursor:pointer;flex:none;display:grid;place-items:center;width:26px;height:26px;border-radius:50%;color:var(--ink-soft);font:700 20px/1 var(--f-ui)}
+.bubble .dx:hover{background:rgba(0,0,0,.07)}
+.bubble .dx:focus-visible{outline:3px solid var(--focus)}
+.bubble.ok{border-color:var(--ok)}
+.bubble.ok::before{border-color:var(--ok)}
+.bubble.ok .lb{color:var(--ok)}
+.bubble.bad{border-color:var(--bad)}
+.bubble.bad::before{border-color:var(--bad)}
+.bubble.bad .lb{color:var(--bad)}
+.bubble.pop{animation:rise .3s ease-out}
+
+/* ---------- экран с заданием ---------- */
+.screen{position:relative;min-height:min(58vh,500px);color:var(--ink);background:var(--paper);border:10px solid #07050a;border-radius:16px;box-shadow:0 0 0 3px #3a2a30,0 0 70px 10px rgba(255,236,170,.22),0 30px 60px -20px rgba(0,0,0,.8);overflow:hidden}
+.sh-head{position:relative;display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;padding:18px 24px 4px}
+.nut{display:inline-grid;place-items:center;flex:none;min-width:46px;height:46px;padding:0 6px;border-radius:50%;background:var(--c);color:#fff;font:900 19px/1 var(--f-head);box-shadow:inset 0 -4px 0 rgba(0,0,0,.2)}
+.sh-head h2{flex:1 1 8ch;min-width:0;font:900 clamp(21px,2.9vw,30px)/1.15 var(--f-head);color:var(--c-deep);text-wrap:balance;outline:none}
+.sh-head .meta{margin-left:auto;padding:6px 14px;border-radius:99px;background:var(--ct);color:var(--c-deep);font:800 11.5px/1.2 var(--f-ui);letter-spacing:.1em;text-transform:uppercase}
+.sh-head.hero .nut{background:linear-gradient(135deg,#b3261e,#e8b13a)}
+.sh-body{padding:12px 24px 28px}
+.lead{max-width:60ch;margin-bottom:12px;font:600 18.5px/1.6 var(--f-ui)}
+.task{max-width:66ch;margin-bottom:16px;color:var(--ink-soft)}
+.rules{display:grid;gap:10px;margin:8px 0 22px;padding:0;list-style:none}
+.rules li{display:flex;gap:12px;padding:10px 16px;border-radius:14px;background:var(--tint);border:1px solid var(--tint-line)}
+.rules li::before{content:"";flex:none;width:12px;height:12px;margin-top:.5em;border-radius:50%;background:var(--c)}
+.row{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;margin-top:18px}
+.sub{margin:18px 0 10px;font:800 13px/1.2 var(--f-ui);letter-spacing:.08em;text-transform:uppercase;color:var(--c-deep)}
+
+/* ---------- кнопки ---------- */
+.btn{all:unset;box-sizing:border-box;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:52px;padding:0 26px;border-radius:99px;font:800 15px/1 var(--f-ui);letter-spacing:.01em;text-align:center;transition:transform .12s,box-shadow .12s,filter .12s}
+.btn:focus-visible,.opt:focus-visible,.wd:focus-visible,.sl:focus-visible,.sgm button:focus-visible,.toc button:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.btn-go{background:var(--c);color:#fff;box-shadow:0 12px 20px -10px rgba(20,8,12,.8),inset 0 -3px 0 rgba(0,0,0,.2)}
+.btn-go:hover{filter:brightness(1.1);transform:translateY(-1px)}
+.btn-go:active{transform:translateY(1px);box-shadow:0 4px 8px -4px rgba(20,8,12,.8),inset 0 -1px 0 rgba(0,0,0,.2)}
+.btn-line{border:2px solid var(--c);color:var(--c-deep);background:#fff}
+.btn-line:hover:not(:disabled){background:var(--ct)}
+.btn-line:disabled{opacity:.4;cursor:default}
+.btn.sm{min-height:42px;padding:0 18px;font-size:13.5px}
+
+/* ---------- объяснение ---------- */
+.ex{display:grid;gap:12px;margin:0 0 6px;padding:0;list-style:none}
+.ex>li{display:grid;grid-template-columns:42px minmax(0,1fr);gap:14px;align-items:start;padding:14px 18px 14px 14px;border-radius:14px;background:var(--tint);border:1px solid var(--tint-line);font-size:17.5px;line-height:1.6}
+.ex>li>.no{display:grid;place-items:center;width:42px;height:42px;border-radius:50%;background:var(--c);color:#fff;font:900 16px/1 var(--f-head)}
+.ex>li.new{animation:rise .35s ease-out}
+.ex b{font-weight:800}
+.ex i{font-family:var(--f-text);font-size:1.03em}
+.ex i b{color:var(--c-deep);font-size:1.12em}
+.ex .box{display:block;margin-top:10px;padding:10px 16px;background:#fff;border:1px solid var(--tint-line);border-radius:12px;font-family:var(--f-text);font-size:1.03em}
+.ex .box span{display:block}
+.ex .box b{color:var(--c-deep);font-size:1.12em}
+
+/* ---------- выбор ответа: условие как строка субтитров ---------- */
+.prog{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}
+.prog i{width:30px;height:8px;border-radius:99px;background:var(--line)}
+.prog i.d{background:var(--c)}
+.prog i.c{background:var(--gold);box-shadow:0 0 0 2px var(--ink)}
+.mc-p{margin:4px 0 14px}
+.big{display:block;padding:12px 18px;border-radius:8px;background:#0b080d;color:#fff;font:700 clamp(18px,2.4vw,23px)/1.5 var(--f-ui);text-shadow:0 1px 2px #000;white-space:pre-line}
+.opts{display:grid;gap:12px;margin-top:8px;counter-reset:o}
+.opt{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;gap:14px;min-height:60px;padding:12px 18px 12px 12px;background:#fff;color:var(--ink);border:2px solid var(--line);border-radius:16px;font:400 clamp(16px,2.1vw,20px)/1.45 var(--f-text);box-shadow:0 4px 0 var(--line);counter-increment:o;transition:transform .12s,border-color .12s}
+.opt::before{content:counter(o);flex:none;display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:var(--ct);color:var(--c-deep);font:900 15px/1 var(--f-head)}
+.opt .ot{white-space:pre-line}
+.opt:hover:not(:disabled){border-color:var(--c);transform:translateY(-2px)}
+.opt:active:not(:disabled){transform:translateY(1px);box-shadow:0 1px 0 var(--line)}
+.opt.no{opacity:.45;cursor:not-allowed;box-shadow:none;transform:none}
+.opt.no .ot{text-decoration:line-through}
+.opt.right{background:var(--ok-t);border-color:var(--ok);box-shadow:0 4px 0 var(--ok)}
+.opt.right::before{content:"✓";background:var(--ok);color:#fff}
+.opt:disabled{cursor:default}
+.result{margin:10px 0 4px;padding:14px 18px;background:var(--ok-t);border:1px solid #b8dcc4;border-radius:14px;font-size:16.5px}
+
+/* ---------- найди прямую речь: слова-кадры ---------- */
+.sent{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:flex-end;margin:12px 0 16px;font:400 clamp(19px,2.5vw,25px)/1.4 var(--f-text)}
+.wd{all:unset;box-sizing:border-box;position:relative;cursor:pointer;padding:6px 14px 8px;background:#fff;color:var(--ink);border:2px solid var(--line);border-radius:12px;font:inherit;transition:transform .08s,background .15s,border-color .15s}
+.wd:hover:not(:disabled){background:var(--ct);border-color:var(--c)}
+.wd:active:not(:disabled){transform:scale(.97)}
+.wd:disabled{cursor:default}
+.wd.sel{background:#fff0bd;border-color:var(--gold-d);box-shadow:0 0 0 3px rgba(232,177,58,.4)}
+.wd.good{border-color:var(--ok);background:var(--ok-t)}
+.wd.bad{border-color:var(--bad);animation:shake .35s}
+.wd.hint{animation:pulse 1s ease-in-out 4}
+
+/* ---------- замена слов автора ---------- */
+.edtext{margin:14px 0 16px;padding:16px 22px;border-radius:8px;background:#0b080d;color:#fff;font:600 clamp(17px,2.3vw,22px)/2.5 var(--f-ui);white-space:normal;text-shadow:0 1px 2px #000}
+.slw{position:relative;display:inline-block}
+.sl{all:unset;box-sizing:border-box;cursor:pointer;padding:1px 14px 3px;border-radius:10px;background:var(--gold);border:2px dashed #fff3c4;color:#2a1c00;font:inherit;font-weight:800;text-shadow:none}
+.sl.set{background:#bfe8cc;border:2px solid #1f8a4c;color:#0b3320}
+.sl.bad{background:#ffc9c2;border:2px solid var(--bad);color:#4a0f0a;animation:shake .35s}
+.sl:disabled{cursor:default}
+.sgm{position:absolute;z-index:8;top:calc(100% + 2px);left:0;display:flex;flex-wrap:wrap;gap:8px;min-width:170px;max-width:340px;padding:8px;background:#fff;border:2px solid var(--c);border-radius:16px;box-shadow:0 18px 34px -12px rgba(0,0,0,.6);line-height:1.2;text-shadow:none}
+.sgm button{all:unset;box-sizing:border-box;cursor:pointer;display:grid;place-items:center;height:42px;padding:0 16px;background:var(--ct);border-radius:99px;font:700 16px/1 var(--f-ui);color:var(--ink);white-space:nowrap}
+.sgm button:hover{background:var(--gold)}
+
+/* ---------- финал ---------- */
+.found{display:grid;gap:10px;margin:0 0 14px;padding:0;list-style:none}
+.found li{display:grid;grid-template-columns:36px 1fr;gap:14px;align-items:start;padding:12px 16px;border-radius:14px;background:var(--tint);border:1px solid var(--tint-line);font-size:16.5px;line-height:1.55}
+.found .no{display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:var(--c);color:#fff;font:900 14px/1 var(--f-head)}
+.hw{margin:16px 0;padding:16px 20px;background:#fff6d6;border:2px dashed #d9a21b;border-radius:16px;font-size:16.5px}
+.hw b{color:#8a5a00}
+.stats-line{margin:8px 0 4px;font:700 15px/1.6 var(--f-ui)}
+.verdict{display:flex;justify-content:flex-end;margin:4px 0 16px}
+.stamp{display:inline-block;padding:.12em .5em;border:4px solid var(--velvet);color:var(--velvet);font:900 clamp(18px,3.6vw,28px)/1.1 var(--f-head);letter-spacing:.04em;text-transform:uppercase;transform:rotate(-6deg);opacity:.9;border-radius:6px}
+.stamp.in{animation:stampIn .55s cubic-bezier(.2,.9,.3,1.2) both}
+
+.confetti{position:absolute;inset:0;z-index:5;overflow:hidden;pointer-events:none}
+.confetti i{position:absolute;top:-16px;width:9px;height:15px;border-radius:2px;opacity:0;animation:cf 2.2s ease-in forwards}
+@keyframes cf{0%{opacity:1;transform:translate(0,0) rotate(0)}100%{opacity:0;transform:translate(var(--dx),460px) rotate(var(--r))}}
+@keyframes popin{0%{transform:scale(.6);opacity:.3}60%{transform:scale(1.12)}100%{transform:none;opacity:1}}
+@keyframes shake{20%{transform:translateX(-4px)}40%{transform:translateX(4px)}60%{transform:translateX(-3px)}80%{transform:translateX(3px)}}
+@keyframes rise{from{transform:translateY(8px);opacity:0}to{transform:none;opacity:1}}
+@keyframes stampIn{0%{transform:rotate(-14deg) scale(2.2);opacity:0}60%{transform:rotate(-6deg) scale(.96);opacity:1}100%{transform:rotate(-6deg) scale(1);opacity:.9}}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes hop{0%,100%{transform:translateY(0)}40%{transform:translateY(-12px)}}
+@keyframes pulse{50%{box-shadow:0 0 0 6px rgba(232,177,58,.6)}}
+@keyframes fpulse{50%{box-shadow:0 0 0 3px rgba(255,224,138,.65),0 0 18px 4px rgba(255,224,138,.6)}}
+
+/* ---------- киноплёнка внизу: прогресс и переходы ---------- */
+.strip{position:fixed;z-index:30;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;gap:10px;padding:9px max(var(--gx),env(safe-area-inset-right,0px)) calc(9px + env(safe-area-inset-bottom,0px)) max(var(--gx),env(safe-area-inset-left,0px));background:#07050a;border-top:2px solid #2a1c22}
+.strip::before,.strip::after{content:"";position:absolute;left:0;right:0;height:6px;background:repeating-linear-gradient(90deg,transparent 0 6px,#2d2229 6px 14px)}
+.strip::before{top:3px}
+.strip::after{bottom:3px}
+.reel{display:flex;gap:6px;flex:1;max-width:760px;min-width:0}
+.fr{all:unset;box-sizing:border-box;cursor:pointer;position:relative;flex:1 1 0;min-width:0;height:48px;display:grid;place-items:center;background:#1b141a;border:2px solid #3a2c33;border-radius:4px;color:#a8949e;font:900 15px/1 var(--f-head);transition:transform .15s,border-color .15s}
+.fr svg{width:62%;height:70%;fill:none;stroke:#fff;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.fr:hover{border-color:var(--gold)}
+.fr:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.fr.on{background:var(--fc);border-color:#fff3d0}
+.fr.cur{border-color:#ffe08a;color:#ffe08a;animation:fpulse 1.6s ease-in-out infinite;transform:translateY(-4px)}
+.fr.cur.on{color:#fff}
+.fr.pop{animation:popin .6s ease-out}
+.sbtn{all:unset;box-sizing:border-box;cursor:pointer;flex:none;display:grid;place-items:center;width:44px;height:44px;border-radius:50%;background:var(--gold);color:#2a1c00;box-shadow:inset 0 -3px 0 rgba(0,0,0,.2)}
+.sbtn svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:3.4;stroke-linecap:round;stroke-linejoin:round}
+.sbtn:hover:not(:disabled){filter:brightness(1.1)}
+.sbtn:active:not(:disabled){transform:scale(.94)}
+.sbtn:disabled{opacity:.3;cursor:default}
+.sbtn:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.sbtn.list{background:#2a1f26;color:#f4e3b8;width:40px;height:40px}
+
+/* ---------- список слайдов ---------- */
+.toc{position:fixed;z-index:40;left:max(var(--gx),env(safe-area-inset-left,0px));bottom:calc(76px + env(safe-area-inset-bottom,0px));width:min(380px,calc(100% - 2*var(--gx)));max-height:calc(100vh - 110px);overflow:auto;padding:6px 14px 14px;background:#fffdf7;color:var(--ink);border-radius:20px;box-shadow:0 30px 60px -16px rgba(0,0,0,.8),0 0 0 2px var(--gold)}
+.toc h3{display:flex;align-items:center;gap:8px;margin:14px 0 6px;font:800 12px/1.2 var(--f-ui);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft)}
+.toc h3 i{flex:none;width:12px;height:12px;border-radius:50%;background:var(--rc)}
+.toc .st{margin:10px 2px 0;font:700 13px/1.3 var(--f-ui);color:var(--ink-soft)}
+.toc button{all:unset;box-sizing:border-box;cursor:pointer;display:flex;gap:12px;align-items:baseline;width:100%;padding:9px 12px;border-radius:12px;font:700 16px/1.3 var(--f-ui)}
+.toc button:hover{background:var(--tint)}
+.toc button.cur{background:var(--gold);color:#2a1c00;font-weight:800}
+.toc .no{flex:none;min-width:2ch;font:900 12.5px/1.3 var(--f-head);color:var(--ink-soft)}
+.toc button.cur .no{color:#2a1c00}
+
+@media (max-width:1000px){
+  .shell{grid-template-columns:200px minmax(0,1fr);gap:18px;padding-left:max(calc(var(--gx) + 28px),env(safe-area-inset-left,0px));padding-right:max(calc(var(--gx) + 28px),env(safe-area-inset-right,0px))}
+  .curtain{width:clamp(18px,5vw,50px)}
+  .mascot{width:74px}
+}
+@media (max-width:760px){
+  .shell{grid-template-columns:minmax(0,1fr);gap:12px;padding-top:12px;padding-bottom:250px;padding-left:max(14px,env(safe-area-inset-left,0px));padding-right:max(14px,env(safe-area-inset-right,0px))}
+  .curtain{width:10px}
+  .marq{padding:12px 16px}
+  .stat{display:none}
+  .left{position:fixed;z-index:31;left:max(12px,env(safe-area-inset-left,0px));right:max(12px,env(safe-area-inset-right,0px));bottom:calc(74px + env(safe-area-inset-bottom,0px));top:auto}
+  .mbox{flex-direction:row;align-items:flex-end;gap:8px}
+  .mascot{width:54px}
+  .bubble{margin-bottom:10px;padding:10px 8px 10px 14px}
+  .bubble::before{left:-11px;top:auto;bottom:14px;border-top:0;border-left:3px solid var(--gold);border-bottom:3px solid var(--gold);transform:rotate(45deg)}
+  .bubble.ok::before{border-left-color:var(--ok);border-bottom-color:var(--ok)}
+  .bubble.bad::before{border-left-color:var(--bad);border-bottom-color:var(--bad)}
+  .bubble .tx2{font-size:14px;line-height:1.4}
+  .screen{border-width:7px}
+  .sh-head{padding:14px 14px 4px}
+  .sh-body{padding:10px 14px 22px}
+  .ex>li{grid-template-columns:36px minmax(0,1fr);gap:10px;padding:12px 12px 12px 10px;font-size:16.5px}
+  .ex>li>.no{width:36px;height:36px}
+  .edtext{padding:10px 14px}
+  .fr{height:40px;border-width:2px;font-size:13px}
+  .reel{gap:4px}
+  .sbtn{width:38px;height:38px}
+  .sbtn.list{width:34px;height:34px}
+  .strip{gap:6px}
+  .toc{left:max(12px,env(safe-area-inset-left,0px));right:max(12px,env(safe-area-inset-right,0px));width:auto;bottom:calc(72px + env(safe-area-inset-bottom,0px));max-height:62vh}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
+}
+</style>
+</head>
+<body>
+<div class="hall" aria-hidden="true"><div class="curtain l"></div><div class="curtain r"></div><div class="floor"></div></div>
+<div class="shell">
+  <header class="marq">
+    <div><h1>Субтитры для премьеры</h1><small id="now"></small></div>
+    <span class="stat" id="stats"></span>
+  </header>
+  <aside class="left">
+    <div class="mbox" id="clap">
+      <svg class="mascot" viewBox="0 0 100 110" aria-hidden="true" focusable="false">
+        <rect x="30" y="94" width="12" height="12" rx="3" fill="#2a2430"/><rect x="58" y="94" width="12" height="12" rx="3" fill="#2a2430"/>
+        <rect x="14" y="40" width="72" height="56" rx="6" fill="#1d1822" stroke="#fff" stroke-width="2.5"/>
+        <path d="M14 55h72" stroke="#fff" stroke-width="2" opacity=".55"/>
+        <g class="clap">
+          <rect x="12" y="22" width="76" height="16" rx="3" fill="#1d1822" stroke="#fff" stroke-width="2.5"/>
+          <path d="M24 22l-8 16h10l8-16zM46 22l-8 16h10l8-16zM68 22l-8 16h10l8-16z" fill="#fff"/>
+        </g>
+        <g class="eyes-idle"><circle cx="38" cy="69" r="8" fill="#fff"/><circle cx="62" cy="69" r="8" fill="#fff"/><circle cx="39" cy="70" r="3.6" fill="#1d1822"/><circle cx="61" cy="70" r="3.6" fill="#1d1822"/></g>
+        <g class="eyes-ok" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round"><path d="M31 71q7-9 14 0M55 71q7-9 14 0"/></g>
+        <g class="brow" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><path d="M30 62l14-6M70 62l-14-6"/></g>
+        <path class="m-idle" d="M40 85q10 7 20 0" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+        <path class="m-ok" d="M37 83q13 15 26 0z" fill="#fff"/>
+        <path class="m-bad" d="M40 90q5-6 10 0t10 0" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+      </svg>
+      <div class="bubble" id="pa" role="status" aria-live="polite" hidden></div>
+    </div>
+  </aside>
+  <main class="main">
+    <article class="screen" id="stage"></article>
+  </main>
+</div>
+<nav class="strip" aria-label="Переход по слайдам">
+  <button type="button" class="sbtn" id="navPrev" data-act="prev" aria-label="Предыдущий слайд" title="Назад (стрелка влево)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 4 7 12l8 8"/></svg></button>
+  <div class="reel" id="reel"></div>
+  <button type="button" class="sbtn" id="navNext" data-act="next" aria-label="Следующий слайд" title="Дальше (стрелка вправо)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 4 8 8-8 8"/></svg></button>
+  <button type="button" class="sbtn list" id="navMid" data-act="toc" aria-expanded="false" aria-controls="toc" title="Список слайдов"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M5 12h14M5 17h14"/></svg></button>
+</nav>
+<div class="toc" id="toc" aria-label="Список слайдов" hidden></div>
+
+<script>
+(function(){
+'use strict';
+
+/* ======================= помощники ======================= */
+const $=(s,r)=>(r||document).querySelector(s);
+const $$=(s,r)=>Array.prototype.slice.call((r||document).querySelectorAll(s));
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+const reduceMotion=()=>window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+const OK=(t,why)=>({t,ok:1,why});
+const NO=(t,why)=>({t,why});
+const MC=(p,o)=>({p:`<span class="big">${p}</span>`,o});
+
+const BLOCKS={1:'Разминка',2:'Автор перед речью',3:'Автор после речи',4:'Диалог',5:'Без повторов'};
+const BC=['#9a6212','#b3261e','#0f7b78','#6b4fb8','#2f7d4f'];
+
+/* ======================= содержание урока =======================
+   Типы шагов: explain (карточки с пунктами), mark (нажать на слова прямой речи), mc (выбор оформления), edit (заменить слово в репликах). */
+const STEPS=[
+ {id:'warm',t:'explain',b:1,all:1,title:'Придумай сцену',go:'Дальше',meta:'устно',points:[
+   'Накануне премьеры в кинотеатре «Звезда» перед самым началом сеанса вдруг погас свет. Придумайте и расскажите, что было дальше, как историю для друга: 4–6 предложений. Подумайте полминуты.']},
+
+ {id:'exA',t:'explain',b:2,title:'Слова автора и прямая речь',go:'К заданию',points:[
+   'Когда мы пишем, что кто-то сказал, мы можем передать его слова точно. Это <b>прямая речь</b>. Слова, которые показывают, кто говорит, называются <b>словами автора</b>: <i>Пётр сказал: «Я устал».</i> Слова автора здесь «Пётр сказал», а прямая речь «Я устал».',
+   'Если слова автора стоят <b>перед</b> прямой речью, после них ставится <b>двоеточие</b>. Прямая речь пишется в <b>кавычках</b> с <b>заглавной</b> буквы. Точка стоит после кавычек:<span class="box"><span>Пётр сказал<b>:</b> <b>«</b>Я устал<b>»</b>.</span></span>Если речь заканчивается знаком <b>?</b> или <b>!</b>, он остаётся внутри кавычек, а точки после них нет:<span class="box"><span>Радист спросил<b>:</b> <b>«</b>Где вертолёт?<b>»</b></span><span>Капитан крикнул<b>:</b> <b>«</b>Поднимайте якорь!<b>»</b></span></span>']},
+
+ {id:'mkA',t:'mark',b:2,title:'Найди прямую речь',
+  intro:'Нажимайте на слова, которые говорит герой. Слова автора выбирать не нужно. Потом нажмите «Проверить».',items:[
+   {words:['Пётр','сказал:','«Я','устал».'],speech:[2,3],why:'Прямая речь «Я устал», слова автора «Пётр сказал».'},
+   {words:['Радист','спросил:','«Где','вертолёт?»'],speech:[2,3],why:'Прямая речь «Где вертолёт?», слова автора «Радист спросил».'},
+   {words:['«Мы','почти','дошли»,','— сказал','проводник.'],speech:[0,1,2],why:'Прямая речь «Мы почти дошли», слова автора «сказал проводник». Слова автора могут стоять и после речи.'}
+ ]},
+
+ {id:'mcA',t:'mc',b:2,title:'Автор перед речью',intro:'Выберите предложение, в котором всё оформлено правильно.',items:[
+   MC('Пётр сказал я устал',[
+     OK('Пётр сказал: «Я устал».','Верно. После слов автора двоеточие, речь в кавычках с заглавной буквы, точка после кавычек.'),
+     NO('Пётр сказал «Я устал».','После слов автора перед прямой речью нужно двоеточие.'),
+     NO('Пётр сказал: «я устал».','Прямая речь начинается с заглавной буквы.')]),
+   MC('Радист спросил где вертолёт',[
+     OK('Радист спросил: «Где вертолёт?»','Верно. Вопросительный знак стоит внутри кавычек, точки после них нет.'),
+     NO('Радист спросил: «Где вертолёт?».','Если речь заканчивается знаком «?», точка после кавычек не нужна.'),
+     NO('Радист спросил, «Где вертолёт?»','Перед прямой речью после слов автора ставится двоеточие, а не запятая.')]),
+   MC('Капитан крикнул поднимайте якорь',[
+     OK('Капитан крикнул: «Поднимайте якорь!»','Верно. Восклицательный знак стоит внутри кавычек.'),
+     NO('Капитан крикнул: Поднимайте якорь!','Прямая речь пишется в кавычках.'),
+     NO('Капитан крикнул: «Поднимайте якорь»!','Восклицательный знак относится к речи и стоит внутри кавычек.')]),
+   MC('Девочка ответила я не знаю',[
+     OK('Девочка ответила: «Я не знаю».','Верно. Точка стоит после кавычек, а речь начинается с заглавной буквы.'),
+     NO('Девочка ответила: «Я не знаю.»','Точка в конце предложения стоит после кавычек, а не внутри.'),
+     NO('Девочка ответила: «я не знаю».','Прямая речь начинается с заглавной буквы.')])
+ ]},
+
+ {id:'exB',t:'explain',b:3,title:'Автор после речи',go:'К заданию',points:[
+   'Слова автора могут стоять <b>после</b> прямой речи: <i>«Я устал», — сказал Пётр.</i> После закрывающей кавычки ставятся <b>запятая и тире</b>, а слова автора пишутся с <b>маленькой</b> буквы.',
+   'Если речь заканчивается знаком <b>?</b> или <b>!</b>, запятой нет, сразу тире:<span class="box"><span>«Где вертолёт?» — спросил радист.</span><span>«Поднимайте якорь!» — крикнул капитан.</span></span>Слова автора и здесь с маленькой буквы.',
+   'Сравните: <i>Радист спросил: «Где вертолёт?»</i> и <i>«Где вертолёт?» — спросил радист.</i> Слова одни и те же, меняются только место слов автора и знаки.']},
+
+ {id:'mcB',t:'mc',b:3,title:'Автор после речи',intro:'Выберите предложение, в котором всё оформлено правильно.',items:[
+   MC('Я устал сказал Пётр',[
+     OK('«Я устал», — сказал Пётр.','Верно. После кавычки запятая и тире, слова автора с маленькой буквы.'),
+     NO('«Я устал» — сказал Пётр.','После закрывающей кавычки нужна запятая, а потом тире.'),
+     NO('«Я устал», — Сказал Пётр.','Слова автора после прямой речи пишутся с маленькой буквы.')]),
+   MC('Где вертолёт спросил радист',[
+     OK('«Где вертолёт?» — спросил радист.','Верно. После вопросительного знака запятой нет, сразу тире.'),
+     NO('«Где вертолёт?», — спросил радист.','После знака «?» запятая не ставится.'),
+     NO('«Где вертолёт?» — Спросил радист.','Слова автора пишутся с маленькой буквы.')]),
+   MC('Поднимайте якорь крикнул капитан',[
+     OK('«Поднимайте якорь!» — крикнул капитан.','Верно. Восклицательный знак внутри кавычек, потом тире.'),
+     NO('«Поднимайте якорь!», — крикнул капитан.','После знака «!» запятая не ставится.'),
+     NO('«Поднимайте якорь», — крикнул капитан!','Восклицательный знак относится к речи и стоит внутри кавычек.')]),
+   MC('Мы почти дошли ответил проводник',[
+     OK('«Мы почти дошли», — ответил проводник.','Верно. После речи запятая и тире.'),
+     NO('«Мы почти дошли.» — ответил проводник.','Вместо точки после речи ставится запятая.'),
+     NO('«Мы почти дошли», ответил проводник.','Перед словами автора нужно тире.')])
+ ]},
+
+ {id:'exC',t:'explain',b:4,title:'Диалог',go:'К заданию',points:[
+   'Когда разговаривают двое или больше, получается <b>диалог</b>. Каждая реплика записывается с <b>новой строки</b>, а перед ней ставится <b>тире</b>. Кавычек нет:<span class="box"><span>— Ты уже собрал рюкзак?</span><span>— Почти, — ответил Саша. — Осталось найти фонарь.</span></span>',
+   'Слова автора в диалоге оформляются так же, как после прямой речи: тире, а после «?» и «!» запятой нет. Если в реплике есть обращение, оно выделяется запятой:<span class="box"><span>— Радист<b>,</b> принеси письма! — попросила Анна.</span></span>']},
+
+ {id:'mcC',t:'mc',b:4,title:'Оформи диалог',intro:'Выберите вариант, где разговор записан как диалог правильно.',items:[
+   MC('Миша спросил: «Ты собрал рюкзак?» Саша ответил: «Почти».',[
+     OK('— Ты собрал рюкзак? — спросил Миша.\n— Почти, — ответил Саша.','Верно. Каждая реплика с новой строки, перед ней тире, кавычек нет.'),
+     NO('— Ты собрал рюкзак? — спросил Миша. — Почти, — ответил Саша.','Каждая реплика диалога пишется с новой строки.'),
+     NO('«Ты собрал рюкзак?» — спросил Миша.\n«Почти», — ответил Саша.','В диалоге вместо кавычек перед каждой репликой ставится тире.')]),
+   MC('Анна попросила: «Радист, принеси письма!»',[
+     OK('— Радист, принеси письма! — попросила Анна.','Верно. Обращение выделено запятой, после «!» только тире.'),
+     NO('— Радист принеси письма! — попросила Анна.','Обращение «радист» выделяется запятой.'),
+     NO('— Радист, принеси письма!, — попросила Анна.','После знака «!» запятая не ставится.')])
+ ]},
+
+ {id:'ed',t:'edit',b:5,title:'Слова автора без повторов',orig:'сказал',
+  intro:'Во всех четырёх репликах стоит «сказал». Нажмите на каждое слово и выберите глагол, который точнее передаёт, как говорит герой. Все замены должны быть разными.',
+  parts:['— Ты уже собрал рюкзак? — ',{slot:0,w:'сказал'},' Миша.\n— Почти, — ',{slot:1,w:'сказал'},' Саша. — Осталось найти фонарь.\n— Он под столом! — ',{slot:2,w:'сказал'},' Миша.\n— Тише, мама спит, — ',{slot:3,w:'сказал'},' Саша.'],
+  slots:[
+   {o:['сказал','спросил','ответил','крикнул'],ok:['спросил'],bad:{'ответил':'Миша задаёт вопрос, а «ответил» говорят, когда отвечают на него.','крикнул':'Это спокойный вопрос, не крик.'}},
+   {o:['сказал','спросил','ответил','прошептал'],ok:['ответил'],bad:{'спросил':'Саша не спрашивает, а отвечает на вопрос.','прошептал':'Саша отвечает обычным голосом, а не шёпотом.'}},
+   {o:['сказал','крикнул','воскликнул','прошептал'],ok:['крикнул','воскликнул'],bad:{'прошептал':'Реплика со знаком «!»: её говорят громко, а не шёпотом.'}},
+   {o:['сказал','прошептал','шепнул','воскликнул'],ok:['прошептал','шепнул'],bad:{'воскликнул':'«Мама спит»: так говорят тихо, а не восклицают.'}}
+  ]}
+];
+
+/* ======================= картинки на кадрах киноленты ======================= */
+const ICONS=[
+ '<svg viewBox="0 0 40 40"><path d="M20 5l4.5 10 11 1-8.3 7.4 2.5 10.8L20 28.4l-9.7 5.8 2.5-10.8L4.5 16l11-1z"/></svg>',
+ '<svg viewBox="0 0 40 40"><rect x="6" y="17" width="28" height="17" rx="2"/><path d="M6 17l4-9 6 9M16 17l4-9 6 9M26 17l4-9 4 9"/></svg>',
+ '<svg viewBox="0 0 40 40"><rect x="5" y="15" width="22" height="16" rx="3"/><path d="M27 21l9-5v14l-9-5z"/><circle cx="12" cy="10" r="4"/><circle cx="22" cy="10" r="4"/></svg>',
+ '<svg viewBox="0 0 40 40"><path d="M10 19h20l-3 16H13zM14 19v16M20 19v16M26 19v16"/><circle cx="14" cy="13" r="4"/><circle cx="21" cy="11" r="4"/><circle cx="27" cy="14" r="4"/></svg>',
+ '<svg viewBox="0 0 40 40"><path d="M5 12h30v6a3 3 0 0 0 0 6v6H5v-6a3 3 0 0 0 0-6z"/><path d="M24 12v18" stroke-dasharray="2 3"/></svg>',
+ '<svg viewBox="0 0 40 40"><path d="M8 8h18v12c0 6-4 10-9 10s-9-4-9-10z"/><circle cx="13" cy="16" r="1.5"/><circle cx="21" cy="16" r="1.5"/><path d="M13 22q4 3 8 0"/><path d="M26 14h8v10c0 5-3 8-7 8"/></svg>',
+ '<svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="14"/><circle cx="20" cy="20" r="3"/><circle cx="20" cy="10" r="2.5"/><circle cx="20" cy="30" r="2.5"/><circle cx="10" cy="20" r="2.5"/><circle cx="30" cy="20" r="2.5"/></svg>',
+ '<svg viewBox="0 0 40 40"><path d="M8 31l8-14 10 6-6 14z"/><path d="M26 22l9-4M24 18l9-8M22 14l5-9"/></svg>',
+ '<svg viewBox="0 0 40 40"><path d="M12 6h16v8a8 8 0 0 1-16 0zM12 9H6v3a6 6 0 0 0 6 6M28 9h6v3a6 6 0 0 1-6 6M20 22v8M13 34h14"/></svg>'
+];
+
+/* ======================= реплики Хлопушки на вступлении и в конце ======================= */
+const HI={kind:'hi',html:'Скорее! Сеанс скоро начнётся, а субтитры перепутались. Нажмите «Начать».'};
+const FREE={kind:'free',html:'Субтитры готовы! Сеанс начинается. Спасибо, редактор!'};
+
+/* ======================= состояние ======================= */
+let S;
+const newState=()=>({phase:'brief',pi:0,mistakes:0,hints:3,msg:HI,refocus:null,rev:1,seen:{},mc:null,mk:null,ed:null});
+const step=()=>STEPS[S.pi];
+const mist=()=>{S.mistakes++;paintStats();};
+
+/* ======================= сообщения ======================= */
+const LABEL={info:'Подсказка',ok:'Верно',bad:'Не то',hi:'Хлопушка',free:'Хлопушка'};
+function paintPA(){
+  const el=$('#pa'),g=$('#clap');
+  g.classList.remove('ok','bad','free');
+  if(!S.msg){el.hidden=true;el.innerHTML='';return;}
+  el.hidden=false;
+  if(S.msg.kind==='ok'||S.msg.kind==='bad'||S.msg.kind==='free')g.classList.add(S.msg.kind);
+  el.className='bubble '+(S.msg.kind==='ok'?'ok':S.msg.kind==='bad'?'bad':'');
+  el.innerHTML=`<div class="tx2"><span class="lb">${LABEL[S.msg.kind]}</span>${S.msg.html}</div><button type="button" class="dx" data-act="dockx" aria-label="Закрыть сообщение">×</button>`;
+  el.classList.remove('pop');void el.offsetWidth;el.classList.add('pop');
+}
+/* на телефоне облачко лежит поверх страницы: прокручиваем так, чтобы кнопки задания остались над ним */
+function nudge(){
+  const el=$('#pa'),row=$$('#stage .row,#stage .opts').pop();
+  if(el.hidden||!row||getComputedStyle($('.left')).position!=='fixed')return;
+  const d=el.getBoundingClientRect(),r=row.getBoundingClientRect();
+  if(r.bottom>d.top-12)window.scrollBy({top:r.bottom-d.top+20,behavior:reduceMotion()?'auto':'smooth'});
+}
+function say(kind,html){S.msg={kind,html};paintPA();setTimeout(nudge,0);}
+const statsText=()=>`Ошибки ${S.mistakes} · Подсказки ${S.hints}`;
+function paintStats(){$('#stats').textContent=statsText();}
+
+/* ======================= экраны ======================= */
+const head=(title,meta)=>`<div class="sh-head"><span class="nut">${S.pi+1}</span><h2 data-h tabindex="-1">${title}</h2><span class="meta">${meta}</span></div>`;
+const V={};
+const dotsHtml=(n,i)=>`<div class="prog" aria-hidden="true">${Array.from({length:n},(_,k)=>`<i class="${k<i?'d':k===i?'c':''}"></i>`).join('')}</div>`;
+const nextBtn=(label)=>`<div class="row"><button type="button" class="btn btn-go" data-act="${label.act}" data-af>${label.t}</button></div>`;
+
+V.brief=()=>`
+<div class="sh-head hero"><span class="nut">★</span><h2 data-h tabindex="-1">Перед премьерой</h2><span class="meta">кинотеатр «Звезда»</span></div>
+<div class="sh-body">
+<p class="lead">Сегодня в кинотеатре «Звезда» премьера. Но в последний момент сломался принтер субтитров: реплики героев перепутались, пропали кавычки и тире, а во всех ремарках осталось одно слово «сказал».</p>
+<p class="lead">Хлопушка просит помощи. Вы редактор субтитров: приведите всё в порядок до начала сеанса.</p>
+<ul class="rules"><li>Сначала объяснение, потом задания.</li><li>За каждое задание на киноленте внизу загорается кадр.</li><li>Ошибки не страшны, подсказок три. Слайды переключают стрелки.</li></ul>
+<div class="row"><button type="button" class="btn btn-go" data-act="start" data-af>Начать</button></div>
+</div>`;
+
+V.explain=st=>{
+  const total=st.points.length,n=st.all?total:Math.min(S.rev,total),last=n>=total;
+  const list=st.points.slice(0,n).map((p,i)=>`<li${i===n-1&&n>1&&!st.all?' class="new"':''}><span class="no">${i+1}</span><div>${p}</div></li>`).join('');
+  const btn=last?`<button type="button" class="btn btn-go" data-act="exdone" data-af>${st.go||'К заданию'}</button>`:`<button type="button" class="btn btn-go" data-act="exmore" data-af>Дальше</button>`;
+  return `${head(st.title,st.meta||'объяснение')}<div class="sh-body"><ol class="ex">${list}</ol><div class="row">${btn}</div></div>`;
+};
+
+V.mc=st=>{
+  const m=S.mc,it=st.items[m.i],total=st.items.length;
+  let af=false;
+  const opts=m.ord.map(k=>{
+    const o=it.o[k],dis=m.no.includes(k)||m.lock;
+    const a=!dis&&!af?(af=true,' data-af'):'';
+    const cls=['opt'];
+    if(m.no.includes(k))cls.push('no');
+    if(m.lock&&o.ok)cls.push('right');
+    return `<button type="button" class="${cls.join(' ')}" data-act="mc" data-k="${k}"${dis?' disabled':''}${a}><span class="ot">${esc(o.t)}</span></button>`;
+  }).join('');
+  const ctl=m.lock?`<div class="row"><button type="button" class="btn btn-go" data-act="mcnext" data-af>${m.i===total-1?'Дальше':'Следующее'}</button></div>`:'';
+  return `${head(st.title,'задание')}<div class="sh-body">${st.intro?`<p class="task">${st.intro}</p>`:''}${dotsHtml(total,m.i)}<p class="mc-p">${it.p}</p><div class="opts">${opts}</div>${ctl}</div>`;
+};
+
+V.mark=st=>{
+  const M=S.mk,it=st.items[M.i],total=st.items.length;
+  const chips=it.words.map((w,i)=>{
+    const cls=['wd'];
+    if(M.sel[i])cls.push('sel');
+    if(M.flags[i])cls.push(M.flags[i]);
+    if(M.hintIdx&&M.hintIdx.indexOf(i)>=0)cls.push('hint');
+    return `<button type="button" class="${cls.join(' ')}" data-act="mkw" data-i="${i}"${M.ok?' disabled':''}>${esc(w)}</button>`;
+  }).join('');
+  const res=M.ok?`<div class="result">${esc(it.why)}</div>`:'';
+  const ctl=M.ok?`<div class="row"><button type="button" class="btn btn-go" data-act="mknext" data-af>${M.i===total-1?'Дальше':'Следующее'}</button></div>`
+    :`<div class="row"><button type="button" class="btn btn-go" data-act="mkcheck">Проверить</button><button type="button" class="btn btn-line sm" data-act="mkhint"${S.hints<1||M.hintIdx?' disabled':''}>Подсказка</button><button type="button" class="btn btn-line sm" data-act="mkreset">Сбросить</button></div>`;
+  return `${head(st.title,'задание')}<div class="sh-body"><p class="task">${st.intro}</p>${dotsHtml(total,M.i)}<div class="sent" aria-label="Предложение">${chips}</div>${res}${ctl}</div>`;
+};
+
+V.edit=st=>{
+  const E=S.ed;
+  const parts=st.parts.map(p=>{
+    if(typeof p==='string')return esc(p).replace(/\n/g,'<br>');
+    const v=E.pick[p.slot];
+    const cls=['sl'];if(v)cls.push('set');if(E.flags[p.slot])cls.push(E.flags[p.slot]);
+    const menu=E.menu===p.slot?`<div class="sgm" role="group" aria-label="Выберите глагол">${st.slots[p.slot].o.map(o=>`<button type="button" data-act="slotopt" data-i="${p.slot}" data-v="${esc(o)}">${esc(o)}</button>`).join('')}</div>`:'';
+    return `<span class="slw"><button type="button" class="${cls.join(' ')}" data-act="slot" data-i="${p.slot}"${E.ok?' disabled':''}>${esc(v||p.w)}</button>${menu}</span>`;
+  }).join('');
+  const ctl=E.ok?`<div class="row"><button type="button" class="btn btn-go" data-act="ednext" data-af>Дальше</button></div>`
+    :`<div class="row"><button type="button" class="btn btn-go" data-act="edcheck">Проверить</button><button type="button" class="btn btn-line sm" data-act="edreset">Сбросить</button></div>`;
+  return `${head(st.title,'повторы')}<div class="sh-body"><p class="task">${st.intro}</p><div class="edtext">${parts}</div>${ctl}</div>`;
+};
+
+V.end=()=>{
+  const rank=S.mistakes<=6?'главный редактор':S.mistakes<=14?'редактор':'помощник редактора';
+  return `<div class="sh-head hero"><span class="nut">✓</span><h2 data-h tabindex="-1">Сеанс начинается</h2><span class="meta">субтитры готовы</span></div>
+<div class="sh-body"><div class="verdict"><span class="stamp in">Принято</span></div>
+<p class="lead">Реплики героев оформлены, повторы убраны, а на киноленте горят все девять кадров.</p>
+<h3 class="sub">Что мы узнали</h3><ol class="found">
+<li><span class="no">1</span><span><b>Слова автора перед прямой речью:</b> после них двоеточие, речь в кавычках с заглавной буквы. Знаки «?» и «!» остаются внутри кавычек.</span></li>
+<li><span class="no">2</span><span><b>Слова автора после прямой речи:</b> запятая и тире (после «?» и «!» только тире), слова автора с маленькой буквы.</span></li>
+<li><span class="no">3</span><span><b>В диалоге</b> перед каждой репликой тире, каждая реплика с новой строки, кавычек нет.</span></li>
+<li><span class="no">4</span><span><b>Чтобы не повторять «сказал»,</b> берём точные глаголы: спросил, ответил, крикнул, прошептал.</span></li>
+</ol>
+<div class="hw"><b>Домашнее задание.</b> Рабочий лист: спишите предложения и оформите прямую речь и диалог.</div>
+<p class="stats-line">Ошибок: ${S.mistakes}. Подсказок использовано: ${3-S.hints}. Звание: <b>${rank}</b>.</p>
+<div class="row"><button type="button" class="btn btn-go" data-act="again" data-af>Пройти ещё раз</button></div></div>`;
+};
+
+/* ======================= отрисовка ======================= */
+function viewHtml(){
+  if(S.phase==='brief')return V.brief();
+  if(S.phase==='end')return V.end();
+  const st=step();
+  return V[st.t](st);
+}
+function nowText(){
+  if(S.phase==='brief')return 'Знакомимся с кинотеатром';
+  if(S.phase==='end')return 'Сеанс начинается';
+  const st=step();
+  return `Блок ${st.b} · ${BLOCKS[st.b]}`;
+}
+/* киноплёнка внизу: кадр получает картинку, когда шаг пройден */
+function paintReel(){
+  const box=$('#reel');
+  if(!box.children.length)box.innerHTML=STEPS.map((s,k)=>`<button type="button" class="fr" data-act="goto" data-i="${k+1}" style="--fc:${BC[s.b-1]}" title="${esc(s.title)}" aria-label="Кадр ${k+1}: ${esc(s.title)}"></button>`).join('');
+  $$('#reel .fr').forEach((b,k)=>{
+    const on=S.phase==='end'||!!S.seen[STEPS[k].id],cur=S.phase==='step'&&S.pi===k,was=b.classList.contains('on');
+    b.classList.toggle('on',on);b.classList.toggle('cur',cur);
+    if(on!==was||!b.firstChild)b.innerHTML=on?ICONS[k]:String(k+1);
+    if(cur)b.setAttribute('aria-current','step');else b.removeAttribute('aria-current');
+    if(on&&!was){b.classList.add('pop');setTimeout(()=>b.classList.remove('pop'),800);}
+  });
+}
+function render(){
+  document.documentElement.dataset.b=S.phase==='step'?String(step().b):'1';
+  $('#now').textContent=nowText();
+  $('#stage').innerHTML=viewHtml();
+  paintStats();paintPA();paintNav();paintReel();
+  if(S.refocus){
+    const el=(S.refocus==='af'&&$('#stage [data-af]'))||$('#stage [data-h]');
+    if(el)el.focus({preventScroll:true});
+    S.refocus=null;
+  }
+}
+const toTop=()=>window.scrollTo({top:0,behavior:reduceMotion()?'auto':'smooth'});
+function confetti(n){
+  if(reduceMotion())return;
+  const host=$('#stage');
+  const old=host.querySelector('.confetti');if(old)old.remove();
+  const box=document.createElement('div');
+  box.className='confetti';box.setAttribute('aria-hidden','true');
+  const colors=['#e8b13a','#b3261e','#0f7b78','#6b4fb8','#2f7d4f','#ffffff'];
+  for(let i=0;i<n;i++){
+    const p=document.createElement('i');
+    p.style.left=(Math.random()*100)+'%';
+    p.style.background=colors[i%colors.length];
+    p.style.setProperty('--dx',(Math.random()*160-80)+'px');
+    p.style.setProperty('--r',(Math.random()*720-360)+'deg');
+    p.style.animationDelay=(Math.random()*.6)+'s';
+    p.style.animationDuration=(1.6+Math.random()*1.2)+'s';
+    box.appendChild(p);
+  }
+  host.appendChild(box);
+  setTimeout(()=>box.remove(),3600);
+}
+
+/* ======================= ход урока ======================= */
+const newMark=i=>({i:i||0,sel:{},flags:{},ok:false,hintIdx:null});
+const newEdit=()=>({pick:{},menu:null,flags:{},ok:false});
+function enterStep(){
+  S.rev=1;S.msg=null;
+  const st=step();
+  if(st.t==='mc'){S.mc={i:0,no:[],lock:false,ord:[]};prepItem();}
+  if(st.t==='mark')S.mk=newMark(0);
+  if(st.t==='edit')S.ed=newEdit();
+}
+function finishStep(){S.seen[step().id]=1;}
+function nextStep(){
+  finishStep();
+  if(S.pi<STEPS.length-1){S.pi++;enterStep();S.refocus='h';render();toTop();}
+  else{S.phase='end';S.msg=FREE;S.refocus='h';render();toTop();confetti(90);}
+}
+function onExMore(){S.rev++;S.refocus='af';render();}
+
+/* выбор ответа */
+function prepItem(){
+  const st=step(),m=S.mc,it=st.items[m.i];
+  m.no=[];m.lock=false;
+  m.ord=shuffle(it.o.map((_,k)=>k));
+}
+function mcAdvance(){
+  const st=step(),m=S.mc;
+  if(m.i>=st.items.length-1){nextStep();return;}
+  m.i++;prepItem();S.msg=null;S.refocus='af';render();
+}
+function onMC(k){
+  const st=step(),m=S.mc,it=st.items[m.i],o=it.o[k];
+  if(m.lock)return;
+  if(o.ok){m.lock=true;if(m.i===st.items.length-1)S.seen[st.id]=1;S.refocus='af';render();say('ok',esc(o.why)||'Верно.');}
+  else{m.no.push(k);mist();render();say('bad',esc(o.why)||'Не то. Подумайте ещё.');}
+}
+
+/* прямая речь: нажать на слова героя */
+function onMkW(i){
+  const M=S.mk;
+  if(M.ok)return;
+  if(M.sel[i])delete M.sel[i];else M.sel[i]=1;
+  M.flags={};M.hintIdx=null;render();
+}
+function onMkCheck(){
+  const st=step(),M=S.mk,it=st.items[M.i];
+  const sel=Object.keys(M.sel).map(Number),want=it.speech;
+  if(!sel.length){say('info','Нажмите на слова, которые говорит герой.');return;}
+  const extra=sel.filter(i=>want.indexOf(i)<0),miss=want.filter(i=>!M.sel[i]);
+  M.flags={};sel.forEach(i=>{M.flags[i]=want.indexOf(i)>=0?'good':'bad';});
+  if(!extra.length&&!miss.length){M.flags={};M.ok=true;if(M.i===st.items.length-1)S.seen[st.id]=1;S.refocus='af';render();say('ok',esc(it.why));return;}
+  mist();render();
+  let m='';
+  if(extra.length)m='Слова автора выбирать не нужно: они показывают, кто говорит.';
+  if(miss.length)m+=(m?' ':'')+'Выбраны не все слова прямой речи.';
+  say('bad',m);
+}
+function onMkHint(){
+  const st=step(),M=S.mk,it=st.items[M.i];
+  if(S.hints<1||M.hintIdx||M.ok)return;
+  S.hints--;M.hintIdx=it.speech.slice();render();
+  say('info','Прямая речь, это слова героя. Подсвечены слова, которые он говорит.');
+}
+function mkAdvance(){
+  const st=step(),M=S.mk;
+  if(M.i>=st.items.length-1){nextStep();return;}
+  S.mk=newMark(M.i+1);S.msg=null;S.refocus='af';render();
+}
+
+/* слова автора без повторов */
+function onSlot(i){const E=S.ed;if(E.ok)return;E.menu=(E.menu===i)?null:i;render();}
+function onSlotOpt(i,v){const E=S.ed;E.pick[i]=v;E.menu=null;E.flags={};render();}
+function onEdCheck(){
+  const st=step(),E=S.ed;
+  if(st.slots.findIndex((_,i)=>!E.pick[i])>=0){say('info','Выберите глагол для каждой реплики: нажмите на выделенное слово.');return;}
+  E.flags={};
+  let msg='';
+  st.slots.forEach((s,i)=>{if(E.pick[i]===st.orig){E.flags[i]='bad';if(!msg)msg='Слово «сказал» осталось. Выберите глагол точнее.';}});
+  if(!msg){const seen={};st.slots.forEach((s,i)=>{const v=E.pick[i];if(seen[v]!==undefined){E.flags[i]='bad';E.flags[seen[v]]='bad';if(!msg)msg=`Глагол «${esc(v)}» повторился. Каждая замена должна быть своей.`;}else seen[v]=i;});}
+  if(!msg){st.slots.forEach((s,i)=>{if(s.ok.indexOf(E.pick[i])<0){E.flags[i]='bad';if(!msg)msg=esc((s.bad&&s.bad[E.pick[i]])||`Глагол «${E.pick[i]}» здесь по смыслу не подходит.`);}});}
+  if(msg){mist();render();say('bad',msg);return;}
+  E.ok=true;S.seen[st.id]=1;S.refocus='af';render();say('ok','Субтитры читаются легко: слова автора точно передают, как говорят герои.');
+}
+
+/* переход по слайдам (стрелки) */
+function slides(){
+  const L=[{k:'brief',t:'Знакомство с кинотеатром',b:0}];
+  STEPS.forEach((s,pi)=>L.push({k:'step',pi,t:s.title,b:s.b}));
+  L.push({k:'end',t:'Сеанс начинается',b:6});
+  return L;
+}
+function curIdx(L){
+  if(S.phase==='brief')return 0;
+  if(S.phase==='end')return L.length-1;
+  return S.pi+1;
+}
+function goSlide(idx,dir){
+  const L=slides();
+  idx=Math.max(0,Math.min(L.length-1,idx));
+  const T=L[idx];
+  for(let i=1;i<=Math.min(idx-1,STEPS.length);i++)S.seen[STEPS[i-1].id]=1;
+  S.msg=null;
+  if(T.k==='brief'){S.phase='brief';S.msg=HI;}
+  else if(T.k==='step'){S.phase='step';S.pi=T.pi;enterStep();if(step().t==='explain'&&dir<0)S.rev=step().points.length;}
+  else{S.phase='end';S.msg=FREE;}
+  render();toTop();
+  if(T.k==='end')confetti(60);
+}
+function slideStep(dir){
+  const L=slides(),i=curIdx(L);
+  if(S.phase==='step'){
+    const st=step();
+    if(st.t==='explain'&&dir>0&&!st.all&&S.rev<st.points.length){S.rev++;render();return;}
+  }
+  goSlide(i+dir,dir);
+}
+function renderToc(L,cur){
+  let h=`<p class="st">${esc(statsText())}</p>`,last=-1;
+  L.forEach((x,k)=>{
+    if(x.b!==last){
+      last=x.b;
+      h+=x.b===0?'<h3><i style="--rc:#e8b13a"></i>Вступление</h3>':x.b===6?'<h3><i style="--rc:#7a1520"></i>Финал</h3>':`<h3><i style="--rc:${BC[x.b-1]}"></i>Блок ${x.b} · ${esc(BLOCKS[x.b])}</h3>`;
+    }
+    h+=`<button type="button" data-act="goto" data-i="${k}"${k===cur?' class="cur" aria-current="step"':''}><span class="no">${x.k==='step'?x.pi+1:x.k==='end'?'★':'№'}</span><span>${esc(x.t)}</span></button>`;
+  });
+  $('#toc').innerHTML=h;
+  const c=$('#toc .cur');
+  if(c)$('#toc').scrollTop=Math.max(0,c.offsetTop-90);
+}
+function toggleToc(force){
+  const el=$('#toc'),open=force===undefined?el.hidden:force;
+  el.hidden=!open;
+  $$('[data-act="toc"]').forEach(b=>b.setAttribute('aria-expanded',String(open)));
+  if(open){const L=slides();renderToc(L,curIdx(L));}
+}
+function paintNav(){
+  const L=slides(),i=curIdx(L),T=L[i];
+  $('#navPrev').disabled=i===0;
+  $('#navNext').disabled=i===L.length-1;
+  $('#navMid').setAttribute('aria-label','Список слайдов. Сейчас: '+(T.k==='step'?`кадр ${T.pi+1} из ${STEPS.length}`:T.k==='end'?'финал':'начало'));
+  if(!$('#toc').hidden)renderToc(L,i);
+}
+
+/* ======================= события ======================= */
+document.addEventListener('click',e=>{
+  if(!$('#toc').hidden&&!e.target.closest('#toc,[data-act="toc"]'))toggleToc(false);
+  if(S&&S.ed&&S.ed.menu!==null&&!e.target.closest('.slw')){S.ed.menu=null;render();}
+  const b=e.target.closest('[data-act]');
+  if(!b||b.disabled)return;
+  switch(b.dataset.act){
+    case 'prev':slideStep(-1);break;
+    case 'next':slideStep(1);break;
+    case 'toc':toggleToc();break;
+    case 'dockx':S.msg=null;paintPA();break;
+    case 'goto':{const k=+b.dataset.i,cur=curIdx(slides());toggleToc(false);goSlide(k,k>cur?1:-1);break;}
+    case 'start':S.phase='step';S.pi=0;enterStep();S.refocus='h';render();toTop();break;
+    case 'exmore':onExMore();break;
+    case 'exdone':nextStep();break;
+    case 'mc':onMC(+b.dataset.k);break;
+    case 'mcnext':mcAdvance();break;
+    case 'mkw':onMkW(+b.dataset.i);break;
+    case 'mkcheck':onMkCheck();break;
+    case 'mkhint':onMkHint();break;
+    case 'mkreset':{const M=S.mk;M.sel={};M.flags={};M.hintIdx=null;S.msg=null;render();break;}
+    case 'mknext':mkAdvance();break;
+    case 'slot':onSlot(+b.dataset.i);break;
+    case 'slotopt':onSlotOpt(+b.dataset.i,b.dataset.v);break;
+    case 'edcheck':onEdCheck();break;
+    case 'edreset':S.ed=newEdit();S.msg=null;render();break;
+    case 'ednext':nextStep();break;
+    case 'again':S=newState();render();toTop();break;
+  }
+});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){
+    if(!$('#toc').hidden)toggleToc(false);
+    else if(S.ed&&S.ed.menu!==null){S.ed.menu=null;render();}
+    return;
+  }
+  if((e.key==='ArrowRight'||e.key==='ArrowLeft')&&!e.altKey&&!e.ctrlKey&&!e.metaKey&&!e.shiftKey
+     &&!/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)){
+    e.preventDefault();slideStep(e.key==='ArrowRight'?1:-1);
+  }
+});
+
+S=newState();
+render();
+})();
+</script>
+</body>
+</html>
